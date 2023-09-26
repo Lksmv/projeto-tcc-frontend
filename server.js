@@ -1,22 +1,17 @@
-const express = require('express')
-const { resolve } = require('path')
+const express = require('express');
 const path = require('path');
-const app = express()
+const app = express();
 
-//Estáticos -> Roteamento dos Componentes
-app.use('/',
-  express.static(
-    resolve(
-      __dirname,
-      './build'
-    )
-  )
-) 
+// Serve os arquivos estáticos da pasta 'dist' gerada pelo Vite
+app.use(express.static(path.join(__dirname, 'dist')));
 
- app.get('/*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'build', 'index.html'));
-})
+// Rota principal para servir o HTML
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'dist/index.html'));
+});
 
-app.listen(process.env.PORT || 3000, (err) => {
-  err ? console.log("err", err) : console.log("Tudo Funcionando!")
+// Porta em que o servidor irá ouvir
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });

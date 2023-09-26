@@ -1,12 +1,15 @@
 {
-  "name": "projeto-tcc-frontend",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
+  "name": "seu-projeto",
+  "version": "1.0.0",
+  "description": "Descrição do seu projeto",
+  "main": "server.js",
+  "engines": {
+    "node": "18.x"
+  },
   "scripts": {
-    "start": "node server.js",
-    "build": "npm run build",
-    "dev": "vite",
+    "start": "node server.js", 
+    "build": "vite build", 
+    "dev": "vite", 
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
