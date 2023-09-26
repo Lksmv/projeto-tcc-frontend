@@ -4,9 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "start": "vite preview",
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "vite build",
+    "start": "npm run build && http-server dist -p $PORT",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
