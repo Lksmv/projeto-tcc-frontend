@@ -4,8 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "start": "node server.js", 
-    "build": "vite build",
+    "start": "node server.js",
+    "build": "react-scripts build",
     "dev": "vite",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
@@ -26,10 +26,5 @@
     "eslint-plugin-react-refresh": "^0.4.3",
     "typescript": "^5.0.2",
     "vite": "^4.4.5"
-  },
-  "heroku": {
-    "nodejs": {
-      "build": "npm install && npm run build"
-    }
   }
 }
