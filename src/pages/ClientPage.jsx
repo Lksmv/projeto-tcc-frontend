@@ -89,7 +89,7 @@ export default function ClientPage() {
           filterName={filterName} 
           onFilterName={handleFilterByName}
           placeHolder={'Procurar por Código ou Nome'}
-          buttonText={'Adicionar  Cliente'}
+          buttonText={'Adicionar Cliente'}
           toPage={"/cliente/cadastro"}
           />
 
