@@ -6,7 +6,7 @@ import SimpleLayout from './layouts/simple';
 import ClientPage from './pages/ClientPage';
 import LoginPage from './pages/LoginPage';
 import Page404 from './pages/Page404';
-import ProductsPage from './pages/ProductsPage';
+import ProductPage from './pages/ProductPage';
 import DashboardAppPage from './pages/DashboardAppPage';
 import ClientCreatePage from './pages/ClientCreatePage';
 import RentalPage from './pages/RentalPage';
@@ -23,7 +23,7 @@ export default function Router() {
         { path: 'dashboard', element: <DashboardAppPage /> },
         { path: 'cliente', element: <ClientPage/>},
         { path: 'login', element: <LoginPage />},
-        { path: 'products', element: <ProductsPage /> },
+        { path: 'produto', element: <ProductPage /> },
         { path: 'aluguel', element: <RentalPage /> },
       ],
     },

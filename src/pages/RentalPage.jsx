@@ -24,7 +24,7 @@ const TABLE_HEAD = [
   { id: 'id', label: 'Código', alignRight: false },
   { id: 'cliente', label: 'Cliente', alignRight: false },
   { id: 'produto', label: 'Produto', alignRight: false },
-  { id: 'qtdProdutos', label: 'Quantidade de produtos', alignRight: false },
+  { id: 'qtdProdutos', label: 'Quantidade', alignRight: false },
   { id: 'saida', label: 'Saída', alignRight: false },
   { id: 'devolucao', label: 'Devolução', alignRight: false },
   { id: 'valor', label: 'Valor', alignRight: false },
@@ -124,7 +124,7 @@ export default function RentalPage() {
 
                       <TableCell align="left">{produto}</TableCell>
 
-                      <TableCell align="center">{qtdProdutos}</TableCell>
+                      <TableCell align="left">{qtdProdutos}</TableCell>
 
                       <TableCell align="left">{saida}</TableCell>
 
@@ -132,7 +132,7 @@ export default function RentalPage() {
 
                       <TableCell align="left">{valor}</TableCell>
 
-                      <TableCell align="center">{finalizado}</TableCell>
+                      <TableCell align="left">{finalizado}</TableCell>
 
                     </TableRow>
                   );

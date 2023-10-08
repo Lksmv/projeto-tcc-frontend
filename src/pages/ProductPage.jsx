@@ -16,15 +16,17 @@ import {
   TablePagination,
 } from '@mui/material';
 import { ListHead, ListToolBar } from '../sections/@dashboard/list';
-import LIST from '../__mock/cliente';
+import LIST from '../__mock/products';
 
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
+  { id: 'imagem', label: 'Imagem', alignRight: false },
   { id: 'id', label: 'Código', alignRight: false },
   { id: 'nome', label: 'Nome', alignRight: false },
-  { id: 'telefone', label: 'Telefone', alignRight: false },
-  { id: 'cpf', label: 'CPF', alignRight: false }
+  { id: 'tamanho', label: 'Tamanho', alignRight: false },
+  { id: 'cor', label: 'Cores', alignRight: false },
+  { id: 'preco', label: 'Preço', alignRight: false }
 ];
 
 // ----------------------------------------------------------------------
@@ -33,14 +35,14 @@ function applySortFilter(array, query) {
   const stabilizedThis = array.map((el, index) => [el, index]);
   if (query) {
     return filter(array, (client) =>
-    client.nome.toLowerCase().indexOf(query.toLowerCase()) !== -1 ||
-    client.id.indexOf(query) !== -1
+      client.nome.toLowerCase().indexOf(query.toLowerCase()) !== -1 ||
+      client.id.indexOf(query) !== -1
     );
   }
   return stabilizedThis.map((el) => el[0]);
 }
 
-export default function ClientPage() {
+export default function ProductPage() {
   const [page, setPage] = useState(0);
 
   const [order] = useState('asc');
@@ -75,22 +77,22 @@ export default function ClientPage() {
   return (
     <>
       <Helmet>
-        <title> Cliente</title>
+        <title> Produto</title>
       </Helmet>
 
       <Container maxWidth="xl" sx={{marginBottom:"30px"}}>
-      <Typography variant="subtitle1" sx={{ mb: 2}}>
-        {'>'} Cliente
-        <Divider sx={{backgroundColor: '#606060', mb: 3}} />
-      </Typography>
+        <Typography variant="subtitle1" sx={{ mb: 2 }}>
+          {'>'} Produto
+          <Divider sx={{ backgroundColor: '#606060', mb: 3 }} />
+        </Typography>
 
         <Card>
-          <ListToolBar 
-          filterName={filterName} 
-          onFilterName={handleFilterByName}
-          placeHolder={'Procurar por Código ou Nome'}
-          buttonText={'Adicionar Cliente'}
-          toPage={"/cliente/cadastro"}
+          <ListToolBar
+            filterName={filterName}
+            onFilterName={handleFilterByName}
+            placeHolder={'Procurar por Código ou Nome'}
+            buttonText={'Adicionar Produto'}
+            toPage={"/produto/cadastro"}
           />
 
           <TableContainer>
@@ -103,10 +105,12 @@ export default function ClientPage() {
               />
               <TableBody>
                 {filteredList.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                  const { id, nome, telefone, cpf } = row;
-
+                  const { id, imagem, nome, tamanho, cor, preco } = row;
                   return (
                     <TableRow hover key={id} tabIndex={-1}>
+
+
+                      <TableCell align="left">{<img src={imagem} style={{ maxWidth: '75px', borderRadius:'10px' }}></img>}</TableCell>
 
                       <TableCell component="th" scope="row" padding="normal" >
                         <Stack direction="row" alignItems="center" spacing={2}>
@@ -118,9 +122,11 @@ export default function ClientPage() {
 
                       <TableCell align="left">{nome}</TableCell>
 
-                      <TableCell align="left">{telefone}</TableCell>
+                      <TableCell align="left">{tamanho}</TableCell>
 
-                      <TableCell align="left">{cpf}</TableCell>
+                      <TableCell align="left">{cor}</TableCell>
+
+                      <TableCell align="left">{preco}</TableCell>
 
                     </TableRow>
                   );
