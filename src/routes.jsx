@@ -9,6 +9,7 @@ import Page404 from './pages/Page404';
 import ProductsPage from './pages/ProductsPage';
 import DashboardAppPage from './pages/DashboardAppPage';
 import ClientCreatePage from './pages/ClientCreatePage';
+import RentalPage from './pages/RentalPage';
 
 // ----------------------------------------------------------------------
 
@@ -22,7 +23,8 @@ export default function Router() {
         { path: 'dashboard', element: <DashboardAppPage /> },
         { path: 'cliente', element: <ClientPage/>},
         { path: 'login', element: <LoginPage />},
-        { path: 'products', element: <ProductsPage /> }
+        { path: 'products', element: <ProductsPage /> },
+        { path: 'aluguel', element: <RentalPage /> },
       ],
     },
     {
