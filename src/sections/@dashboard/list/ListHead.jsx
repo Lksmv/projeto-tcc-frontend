@@ -1,7 +1,6 @@
 import PropTypes from 'prop-types';
 // @mui
 import { Box, TableRow, TableCell, TableHead, TableSortLabel } from '@mui/material';
-
 // ----------------------------------------------------------------------
 
 const visuallyHidden = {
@@ -16,14 +15,14 @@ const visuallyHidden = {
   clip: 'rect(0 0 0 0)',
 };
 
-UserListHead.propTypes = {
+ListHead.propTypes = {
   order: PropTypes.oneOf(['asc', 'desc']),
   orderBy: PropTypes.string,
   headLabel: PropTypes.array,
   onRequestSort: PropTypes.func,
 };
 
-export default function UserListHead({
+export default function ListHead({
   order,
   orderBy,
   headLabel,
@@ -42,7 +41,7 @@ export default function UserListHead({
             key={headCell.id}
             align={headCell.alignRight ? 'right' : 'left'}
             sortDirection={orderBy === headCell.id ? order : false}
-            sx={{backgroundColor:'#C4CDD5'}}
+            sx={{backgroundColor:'#3c3c3c', color: '#dedede'}}
           >
             <TableSortLabel
               hideSortIcon

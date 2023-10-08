@@ -12,7 +12,7 @@ const navConfig = [
         Home
       </Typography>
     ),
-    path: '/dashboard/app',
+    path: '/dashboard',
     icon: <HomeIcon sx={{color:'#fff'}}/>,
   },
   {
@@ -21,7 +21,7 @@ const navConfig = [
         Cliente
       </Typography>
     ),
-    path: '/dashboard/cliente',
+    path: '/cliente',
     icon: <PeopleAltIcon sx={{color:'#fff'}}/>,
   },
   {
@@ -30,7 +30,7 @@ const navConfig = [
         Produto
       </Typography>
     ),
-    path: '/dashboard/produto',
+    path: '/produto',
     icon: <CheckroomIcon sx={{color:'#fff'}}/>,
   },
   {
@@ -39,7 +39,7 @@ const navConfig = [
         Movimentação
       </Typography>
     ),
-    path: '/dashboard/aluguel',
+    path: '/aluguel',
     icon: <CurrencyExchangeIcon sx={{color:'#fff'}}/>,
   },
   {
@@ -48,7 +48,7 @@ const navConfig = [
         Relatório
       </Typography>
     ),
-    path: '/dashboard/relatorio',
+    path: '/relatorio',
     icon: <SummarizeIcon sx={{color:'#fff'}}/>,
   }
 ];

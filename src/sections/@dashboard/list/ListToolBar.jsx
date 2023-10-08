@@ -1,9 +1,9 @@
 import PropTypes from 'prop-types';
-// @mui
 import { styled, alpha } from '@mui/material/styles';
 import { Toolbar, OutlinedInput, InputAdornment, Button } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
+import { Link as RouterLink } from 'react-router-dom';
 
 // ----------------------------------------------------------------------
 
@@ -33,18 +33,21 @@ const StyledSearch = styled(OutlinedInput)(({ theme }) => ({
 
 // ----------------------------------------------------------------------
 
-UserListToolbar.propTypes = {
+ListToolBar.propTypes = {
   filterName: PropTypes.string,
   onFilterName: PropTypes.func,
+  placeHolder: PropTypes.string,
+  buttonText: PropTypes.string,
+  toPage: PropTypes.string,
 };
 
-export default function UserListToolbar({filterName, onFilterName }) {
+export default function ListToolBar({filterName, onFilterName, placeHolder,buttonText,toPage }) {
   return (
     <StyledRoot    >
         <StyledSearch
           value={filterName}
           onChange={onFilterName}
-          placeholder="Procurar por Código ou Nome..."
+          placeholder ={placeHolder}
           startAdornment={
             <InputAdornment position="start">
               <SearchIcon />
@@ -52,8 +55,13 @@ export default function UserListToolbar({filterName, onFilterName }) {
           }
         />
 
-      <Button variant="contained" sx={{ backgroundColor: '#336DC3', color: '#fff', maxWidth: '190px', display:'flex' }} startIcon={<AddIcon/>}>
-        Adicionar Cliente
+      <Button variant="contained" 
+       sx={{ backgroundColor: '#336DC3', color: '#fff', maxWidth: '190px', display:'flex' }}
+       startIcon={<AddIcon/>}
+       to={toPage}
+       component={RouterLink}
+       >
+        {buttonText}
       </Button>
     </StyledRoot>
   );

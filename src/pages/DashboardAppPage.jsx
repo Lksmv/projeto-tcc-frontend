@@ -26,9 +26,9 @@ export default function DashboardAppPage() {
       </Helmet>
 
       <Container maxWidth="xl">
-      <Typography variant="subtitle1" sx={{ mb: 2, color: '#DFE3E8'}}>
+      <Typography variant="subtitle1" sx={{ mb: 2}}>
         {'>'} Dashboard
-      <Divider sx={{backgroundColor: '#fff', mb: 3}} />
+      <Divider sx={{backgroundColor: '#606060', mb: 3}} />
       </Typography>
 
         <Grid container spacing={3}>

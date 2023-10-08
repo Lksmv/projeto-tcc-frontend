@@ -15,8 +15,8 @@ import {
   TableContainer,
   TablePagination,
 } from '@mui/material';
-import { UserListHead, UserListToolbar } from '../sections/@dashboard/user';
-import USERLIST from '../__mock/user';
+import { ListHead, ListToolBar } from '../sections/@dashboard/list';
+import LIST from '../__mock/cliente';
 
 // ----------------------------------------------------------------------
 
@@ -32,15 +32,15 @@ const TABLE_HEAD = [
 function applySortFilter(array, query) {
   const stabilizedThis = array.map((el, index) => [el, index]);
   if (query) {
-    return filter(array, (_user) =>
-      _user.nome.toLowerCase().indexOf(query.toLowerCase()) !== -1 ||
-      _user.id.indexOf(query) !== -1
+    return filter(array, (client) =>
+    client.nome.toLowerCase().indexOf(query.toLowerCase()) !== -1 ||
+    client.id.indexOf(query) !== -1
     );
   }
   return stabilizedThis.map((el) => el[0]);
 }
 
-export default function UserPage() {
+export default function ClientPage() {
   const [page, setPage] = useState(0);
 
   const [order] = useState('asc');
@@ -66,11 +66,11 @@ export default function UserPage() {
     setFilterName(event.target.value);
   };
 
-  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - USERLIST.length) : 0;
+  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - LIST.length) : 0;
 
-  const filteredUsers = applySortFilter(USERLIST, filterName);
+  const filteredList = applySortFilter(LIST, filterName);
 
-  const isNotFound = !filteredUsers.length && !!filterName;
+  const isNotFound = !filteredList.length && !!filterName;
 
   return (
     <>
@@ -79,24 +79,30 @@ export default function UserPage() {
       </Helmet>
 
       <Container maxWidth="xl">
-      <Typography variant="subtitle1" sx={{ mb: 2, color: '#DFE3E8'}}>
+      <Typography variant="subtitle1" sx={{ mb: 2}}>
         {'>'} Cliente
-        <Divider sx={{backgroundColor: '#fff', mb: 3}} />
+        <Divider sx={{backgroundColor: '#606060', mb: 3}} />
       </Typography>
 
         <Card>
-          <UserListToolbar filterName={filterName} onFilterName={handleFilterByName} />
+          <ListToolBar 
+          filterName={filterName} 
+          onFilterName={handleFilterByName}
+          placeHolder={'Procurar por Código ou Nome'}
+          buttonText={'Adicionar  Cliente'}
+          toPage={"/cliente/cadastro"}
+          />
 
           <TableContainer>
             <Table>
-              <UserListHead
+              <ListHead
                 order={order}
                 orderBy={orderBy}
                 headLabel={TABLE_HEAD}
-                rowCount={USERLIST.length}
+                rowCount={LIST.length}
               />
               <TableBody>
-                {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
+                {filteredList.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
                   const { id, nome, telefone, cpf } = row;
 
                   return (
@@ -155,7 +161,7 @@ export default function UserPage() {
           <TablePagination
             rowsPerPageOptions={[10, 15, 25]}
             component="div"
-            count={USERLIST.length}
+            count={LIST.length}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}

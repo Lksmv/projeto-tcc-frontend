@@ -3,24 +3,32 @@ import { Navigate, useRoutes } from 'react-router-dom';
 import DashboardLayout from './layouts/dashboard';
 import SimpleLayout from './layouts/simple';
 //
-import UserPage from './pages/UserPage';
+import ClientPage from './pages/ClientPage';
 import LoginPage from './pages/LoginPage';
 import Page404 from './pages/Page404';
 import ProductsPage from './pages/ProductsPage';
 import DashboardAppPage from './pages/DashboardAppPage';
+import ClientCreatePage from './pages/ClientCreatePage';
 
 // ----------------------------------------------------------------------
 
 export default function Router() {
   const routes = useRoutes([
     {
-      path: '/dashboard',
+      path: '',
       element: <DashboardLayout />,
       children: [
-        { element: <Navigate to="/dashboard/app" />, index: true },
-        { path: 'app', element: <DashboardAppPage /> },
-        { path: 'cliente', element: <UserPage/> },
+        { element: <Navigate to="/dashboard" />, index: true },
+        { path: 'dashboard', element: <DashboardAppPage /> },
+        { path: 'cliente', element: <ClientPage/>},
+        { path: 'login', element: <LoginPage />},
         { path: 'products', element: <ProductsPage /> }
+      ],
+    },
+    {
+      element:<DashboardLayout />,
+      children: [
+        { path: 'cliente/cadastro', element: <ClientCreatePage/> }
       ],
     },
     {
@@ -36,7 +44,7 @@ export default function Router() {
       ],
     },
     {
-      path: '*',
+      path: 'gg',
       element: <Navigate to="/404" replace />,
     },
   ]);

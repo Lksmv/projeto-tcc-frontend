@@ -5,15 +5,15 @@ import { alpha } from '@mui/material/styles';
 // SETUP COLORS
 const GREY = {
   0: '#FFFFFF',
-  100: '#F9FAFB',
-  200: '#F4F6F8',
-  300: '#DFE3E8',
-  400: '#C4CDD5',
-  500: '#919EAB',
-  600: '#637381',
-  700: '#605b5b',
-  800: '#201c1c',
-  900: '#161C24',
+  100: '#fafafa',
+  200: '#f5f5f5',
+  300: '#f0f0f0',
+  400: '#dedede',
+  500: '#c2c2c2',
+  600: '#979797',
+  700: '#818181',
+  800: '#606060',
+  900: '#3c3c3c',
 };
 
 const PRIMARY = {
@@ -87,8 +87,8 @@ const palette = {
   },
   background: {
     paper: '#fff',
-    default: '#40121c',
-    neutral: GREY[600]
+    default: GREY[400],
+    neutral: GREY[300]
   },
   action: {
     active: GREY[600],
