@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Box, Drawer, Typography} from '@mui/material';
+import { Box, Drawer} from '@mui/material';
 import useResponsive from '../../../hooks/useResponsive';
 
 import Scrollbar from '../../../components/scrollbar';

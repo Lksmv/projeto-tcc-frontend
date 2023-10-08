@@ -1,8 +1,7 @@
 import PropTypes from 'prop-types';
 // @mui
 import { styled, alpha } from '@mui/material/styles';
-import { Toolbar, Tooltip, IconButton, Typography, OutlinedInput, InputAdornment, Button } from '@mui/material';
-// component
+import { Toolbar, OutlinedInput, InputAdornment, Button } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
 
@@ -35,26 +34,13 @@ const StyledSearch = styled(OutlinedInput)(({ theme }) => ({
 // ----------------------------------------------------------------------
 
 UserListToolbar.propTypes = {
-  numSelected: PropTypes.number,
   filterName: PropTypes.string,
   onFilterName: PropTypes.func,
 };
 
-export default function UserListToolbar({ numSelected, filterName, onFilterName }) {
+export default function UserListToolbar({filterName, onFilterName }) {
   return (
-    <StyledRoot
-      sx={{
-        ...(numSelected > 0 && {
-          color: 'primary.main',
-          bgcolor: 'primary.lighter',
-        }),
-      }}
-    >
-      {numSelected > 0 ? (
-        <Typography component="div" variant="subtitle1">
-          {numSelected} selected
-        </Typography>
-      ) : (
+    <StyledRoot    >
         <StyledSearch
           value={filterName}
           onChange={onFilterName}
@@ -65,7 +51,6 @@ export default function UserListToolbar({ numSelected, filterName, onFilterName 
             </InputAdornment>
           }
         />
-      )}
 
       <Button variant="contained" sx={{ backgroundColor: '#336DC3', color: '#fff', maxWidth: '190px', display:'flex' }} startIcon={<AddIcon/>}>
         Adicionar Cliente

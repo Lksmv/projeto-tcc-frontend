@@ -2,32 +2,20 @@ import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
 import { useState } from 'react';
 import Divider from '@mui/material/Divider';
-import { Grid } from '@mui/material';
-// @mui
 import {
   Card,
   Table,
   Stack,
   Paper,
-  Avatar,
-  Button,
-  Popover,
-  Checkbox,
   TableRow,
-  MenuItem,
   TableBody,
   TableCell,
   Container,
   Typography,
-  IconButton,
   TableContainer,
   TablePagination,
 } from '@mui/material';
-import Iconify from '../components/iconify';
-import Scrollbar from '../components/scrollbar';
-// sections
 import { UserListHead, UserListToolbar } from '../sections/@dashboard/user';
-// mock
 import USERLIST from '../__mock/user';
 
 // ----------------------------------------------------------------------
@@ -53,53 +41,18 @@ function applySortFilter(array, query) {
 }
 
 export default function UserPage() {
-  const [open, setOpen] = useState(null);
-
   const [page, setPage] = useState(0);
 
-  const [order, setOrder] = useState('asc');
+  const [order] = useState('asc');
 
-  const [selected, setSelected] = useState([]);
-
-  const [orderBy, setOrderBy] = useState('name');
+  const [orderBy] = useState('name');
 
   const [filterName, setFilterName] = useState('');
 
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
 
-
-  const handleRequestSort = (event, property) => {
-    const isAsc = orderBy === property && order === 'asc';
-    setOrder(isAsc ? 'desc' : 'asc');
-    setOrderBy(property);
-  };
-
-  const handleSelectAllClick = (event) => {
-    if (event.target.checked) {
-      const newSelecteds = USERLIST.map((n) => n.name);
-      setSelected(newSelecteds);
-      return;
-    }
-    setSelected([]);
-  };
-
-  const handleClick = (event, name) => {
-    const selectedIndex = selected.indexOf(name);
-    let newSelected = [];
-    if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, name);
-    } else if (selectedIndex === 0) {
-      newSelected = newSelected.concat(selected.slice(1));
-    } else if (selectedIndex === selected.length - 1) {
-      newSelected = newSelected.concat(selected.slice(0, -1));
-    } else if (selectedIndex > 0) {
-      newSelected = newSelected.concat(selected.slice(0, selectedIndex), selected.slice(selectedIndex + 1));
-    }
-    setSelected(newSelected);
-  };
-
-  const handleChangePage = (event, newPage) => {
+  const handleChangePage = (newPage) => {
     setPage(newPage);
   };
 
@@ -132,7 +85,7 @@ export default function UserPage() {
       </Typography>
 
         <Card>
-          <UserListToolbar numSelected={selected.length} filterName={filterName} onFilterName={handleFilterByName} />
+          <UserListToolbar filterName={filterName} onFilterName={handleFilterByName} />
 
           <TableContainer>
             <Table>
@@ -141,12 +94,10 @@ export default function UserPage() {
                 orderBy={orderBy}
                 headLabel={TABLE_HEAD}
                 rowCount={USERLIST.length}
-                onRequestSort={handleRequestSort}
               />
               <TableBody>
                 {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
                   const { id, nome, telefone, cpf } = row;
-                  const selectedUser = selected.indexOf(nome) !== -1;
 
                   return (
                     <TableRow hover key={id} tabIndex={-1}>
