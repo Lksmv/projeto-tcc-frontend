@@ -1,0 +1,67 @@
+import React, { useState } from 'react';
+import { Box, Divider, Typography, Stack, MenuItem, Avatar, IconButton, Popover } from '@mui/material';
+import account from '../../../__mock/account';
+
+const MENU_OPTIONS = [
+  {
+    label: 'Área administrador',
+  },
+];
+
+const AccountPopover = () => {
+  const [anchorEl, setAnchorEl] = useState(null);
+
+  const handleOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const openPopover = Boolean(anchorEl);
+
+  return (
+    <>
+      <IconButton onClick={handleOpen} sx={{ padding: 0 }}>
+        <Avatar alt="avatar" sx={{ bgcolor: '#FFF', color: '#454F5B' }} />
+      </IconButton>
+
+      <Popover
+        open={openPopover}
+        anchorEl={anchorEl}
+        onClose={handleClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+        slotProps={{ sx: { p: 0, mt: 1.5, ml: 0.75, width: 180} }}
+      >
+        <Box sx={{ my: 1.5, px: 2.5 }}>
+          <Typography variant="subtitle2" noWrap>
+            {account.displayName}
+          </Typography>
+          <Typography variant="body2" sx={{ color: 'text.secondary' }} noWrap>
+            {account.role}
+          </Typography>
+        </Box>
+
+        <Divider sx={{ borderStyle: 'dashed' }} />
+
+        <Stack sx={{ p: 1 }}>
+          {MENU_OPTIONS.map((option) => (
+            <MenuItem key={option.label} onClick={handleClose}>
+              {option.label}
+            </MenuItem>
+          ))}
+        </Stack>
+
+        <Divider sx={{ borderStyle: 'dashed' }} />
+
+        <MenuItem onClick={handleClose} sx={{ m: 1 }}>
+          Sair
+        </MenuItem>
+      </Popover>
+    </>
+  );
+};
+
+export default AccountPopover;
