@@ -2,6 +2,7 @@ import { Navigate, useRoutes } from 'react-router-dom';
 // layouts
 import DashboardLayout from './layouts/dashboard';
 import SimpleLayout from './layouts/simple';
+import CatalogoLayout from './layouts/catalogo';
 //
 import ClientPage from './pages/ClientPage';
 import LoginPage from './pages/LoginPage';
@@ -10,27 +11,31 @@ import ProductPage from './pages/ProductPage';
 import DashboardAppPage from './pages/DashboardAppPage';
 import ClientCreatePage from './pages/ClientCreatePage';
 import RentalPage from './pages/RentalPage';
+import HomePage from './pages/HomePage';
 
 // ----------------------------------------------------------------------
 
 export default function Router() {
   const routes = useRoutes([
     {
-      path: '',
       element: <DashboardLayout />,
       children: [
-        { element: <Navigate to="/dashboard" />, index: true },
-        { path: 'dashboard', element: <DashboardAppPage /> },
-        { path: 'cliente', element: <ClientPage/>},
-        { path: 'login', element: <LoginPage />},
+        { element: <Navigate to="/dashboard" /> },
+        { path: 'dashboard', element: <DashboardAppPage />, index: true },
+        { path: 'cliente', element: <ClientPage /> },
+        { path: 'cliente/cadastro', element: <ClientCreatePage /> },
         { path: 'produto', element: <ProductPage /> },
-        { path: 'aluguel', element: <RentalPage /> },
+        { path: 'aluguel', element: <RentalPage /> }
       ],
     },
     {
-      element:<DashboardLayout />,
+      path: '/',
+      element: <CatalogoLayout />,
       children: [
-        { path: 'cliente/cadastro', element: <ClientCreatePage/> }
+        {
+          index: true,
+          element: <HomePage/>,
+        },
       ],
     },
     {
@@ -40,15 +45,10 @@ export default function Router() {
     {
       element: <SimpleLayout />,
       children: [
-        { element: <Navigate to="/dashboard/app" />, index: true },
         { path: '404', element: <Page404 /> },
-        { path: '*', element: <Navigate to="/404" /> },
+        { path: '/*', element: <Navigate to="/404" /> },
       ],
-    },
-    {
-      path: 'gg',
-      element: <Navigate to="/404" replace />,
-    },
+    }
   ]);
 
   return routes;
