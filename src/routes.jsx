@@ -12,6 +12,7 @@ import DashboardAppPage from './pages/DashboardAppPage';
 import ClientCreatePage from './pages/ClientCreatePage';
 import RentalPage from './pages/RentalPage';
 import HomePage from './pages/HomePage';
+import CatalogPage from './pages/CatalogPage';
 
 // ----------------------------------------------------------------------
 
@@ -35,6 +36,10 @@ export default function Router() {
         {
           index: true,
           element: <HomePage/>,
+        },
+        {
+          path: '/catalogo',
+          element: <CatalogPage/>,
         },
       ],
     },
