@@ -22,16 +22,16 @@ const LeftSection = () => (
 );
 
 const MiddleSection = () => (
-  <Typography variant="h6" color={"#8F1B4D"}>
+  <Typography variant="h6" color={"#8F1B4D"} sx={{ fontFamily: 'Roboto, sans-serif', textAlign: "justify", textJustify: "auto"}}>
     Roberta aluguel de trajes® | CNPJ: 14.072.275/0001-45
 
-    <Typography variant="body1" color={"#dff5ed"} paddingTop={"5px"} paddingBottom={"5px"}>
+    <Typography variant="body1" color={"#dff5ed"} paddingTop={"5px"} paddingBottom={"5px"} sx={{ fontFamily: 'Roboto, sans-serif', textAlign: "justify", textJustify: "auto" }}>
       R. General Osório N 2065 - Blumenau - 89226-435
     </Typography>
 
     <Divider sx={{ backgroundColor: '#8F1B4D', mb: 2, mt: 2, width: '20px', height: '2px' }} />
 
-    <Typography variant='body1' color={"#dff5ed"}>
+    <Typography variant='body1' color={"#dff5ed"} sx={{ fontFamily: 'Roboto, sans-serif', textAlign: "justify", textJustify: "auto" }} >
       Roberta aluguel de trajes é uma loja de aluguel
       dedicada a tornar os seus momentos especiais verdadeiramente memoráveis.
       Com uma ampla seleção de trajes e acessórios elegantes, estamos comprometidos
