@@ -4,6 +4,8 @@ import { Typography, Divider } from '@mui/material';
 import Logo from '../assets/logo_roberta.png';
 import { LoginForm } from '../sections/auth/login';
 
+import { AuthProvider, useAuth } from '../components/context/authProvider';
+
 const StyledRoot = styled('div')(({ theme }) => ({
   display: 'flex',
   justifyContent: 'center',
@@ -62,7 +64,6 @@ export default function LoginPage() {
       <Helmet>
         <title>Login</title>
       </Helmet>
-
       <StyledRoot>
         <StyledContent>
           <ContentLeft>
@@ -70,10 +71,10 @@ export default function LoginPage() {
           </ContentLeft>
           <ContentRight>
             <LoginContainer>
-              <Typography variant="h3" style={{textAlign:'center'}} paragraph>
+              <Typography variant="h3" style={{ textAlign: 'center' }} paragraph>
                 Login
               </Typography>
-              <Divider sx={{ marginBottom:'2vh'}} />      
+              <Divider sx={{ marginBottom: '2vh' }} />
               <LoginForm />
             </LoginContainer>
           </ContentRight>

@@ -7,8 +7,8 @@ import Logo from '../../assets/logo.png';
 
 const StyledHeader = styled('header')(({ theme }) => ({
   ...bgGradient({
-    startColor: theme.palette.grey[800],
-    endColor: '#bbb',
+    startColor: '#FE6B8B',
+    endColor: '#FF8E53',
   }),
   top: 0,
   left: 0,
@@ -23,7 +23,7 @@ export default function SimpleLayout() {
   return (
     <>
       <StyledHeader>
-        <div style={{ display: 'flex', justifyContent: 'center', height: '100vh' , paddingTop:'30px'}}>
+        <div style={{ display: 'flex', justifyContent: 'center', height: '100vh', paddingTop: '30px' }}>
           <img src={Logo} alt="Logo" style={{ maxWidth: '180px', maxHeight: '90px' }} />
         </div>
       </StyledHeader>

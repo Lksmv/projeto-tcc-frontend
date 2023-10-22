@@ -2,6 +2,7 @@ import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
 import { useState } from 'react';
 import Divider from '@mui/material/Divider';
+import { AuthProvider, useAuth } from '../components/context/authProvider';
 import {
   Card,
   Table,
@@ -28,7 +29,7 @@ const TABLE_HEAD = [
   { id: 'saida', label: 'Saída', alignRight: false },
   { id: 'devolucao', label: 'Devolução', alignRight: false },
   { id: 'valor', label: 'Valor', alignRight: false },
-  { id: 'finalizado', label: 'Finalizado', alignRight: false},
+  { id: 'finalizado', label: 'Finalizado', alignRight: false },
 ];
 
 // ----------------------------------------------------------------------
@@ -37,8 +38,8 @@ function applySortFilter(array, query) {
   const stabilizedThis = array.map((el, index) => [el, index]);
   if (query) {
     return filter(array, (rental) =>
-    rental.cliente.toLowerCase().indexOf(query.toLowerCase()) !== -1 ||
-    rental.id.indexOf(query) !== -1
+      rental.cliente.toLowerCase().indexOf(query.toLowerCase()) !== -1 ||
+      rental.id.indexOf(query) !== -1
     );
   }
   return stabilizedThis.map((el) => el[0]);
@@ -81,107 +82,107 @@ export default function RentalPage() {
       <Helmet>
         <title> Aluguel</title>
       </Helmet>
+      <AuthProvider>
+        <Container maxWidth="xl">
+          <Typography variant="subtitle1" sx={{ mb: 2 }}>
+            {'>'} Aluguel
+            <Divider sx={{ backgroundColor: '#606060', mb: 3 }} />
+          </Typography>
 
-      <Container maxWidth="xl">
-      <Typography variant="subtitle1" sx={{ mb: 2}}>
-        {'>'} Aluguel
-        <Divider sx={{backgroundColor: '#606060', mb: 3}} />
-      </Typography>
+          <Card>
+            <ListToolBar
+              filterName={filterName}
+              onFilterName={handleFilterByName}
+              placeHolder={'Procurar por Código ou Nome'}
+              buttonText={'Adicionar Aluguel'}
+              toPage={"/aluguel/cadastro"}
+            />
 
-        <Card>
-          <ListToolBar 
-          filterName={filterName} 
-          onFilterName={handleFilterByName}
-          placeHolder={'Procurar por Código ou Nome'}
-          buttonText={'Adicionar Aluguel'}
-          toPage={"/aluguel/cadastro"}
-          />
-
-          <TableContainer>
-            <Table>
-              <ListHead
-                order={order}
-                orderBy={orderBy}
-                headLabel={TABLE_HEAD}
-                rowCount={LIST.length}
-              />
-              <TableBody>
-                {filteredList.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                  const { id, cliente, produto, qtdProdutos, saida, devolucao, valor, finalizado } = row;
-
-                  return (
-                    <TableRow hover key={id} tabIndex={-1}>
-
-                      <TableCell component="th" scope="row" padding="normal" >
-                        <Stack direction="row" alignItems="center" spacing={2}>
-                          <Typography variant="subtitle2" noWrap>
-                            {id}
-                          </Typography>
-                        </Stack>
-                      </TableCell>
-
-                      <TableCell align="left">{cliente}</TableCell>
-
-                      <TableCell align="left">{produto}</TableCell>
-
-                      <TableCell align="left">{qtdProdutos}</TableCell>
-
-                      <TableCell align="left">{saida}</TableCell>
-
-                      <TableCell align="left">{devolucao}</TableCell>
-
-                      <TableCell align="left">{valor}</TableCell>
-
-                      <TableCell align="left">{finalizado}</TableCell>
-
-                    </TableRow>
-                  );
-                })}
-                {emptyRows > 0 && (
-                  <TableRow style={{ height: 53 * emptyRows }}>
-                    <TableCell colSpan={6} />
-                  </TableRow>
-                )}
-              </TableBody>
-
-              {isNotFound && (
+            <TableContainer>
+              <Table>
+                <ListHead
+                  order={order}
+                  orderBy={orderBy}
+                  headLabel={TABLE_HEAD}
+                  rowCount={LIST.length}
+                />
                 <TableBody>
-                  <TableRow>
-                    <TableCell align="center" colSpan={6} sx={{ py: 3 }}>
-                      <Paper
-                        sx={{
-                          textAlign: 'center',
-                        }}
-                      >
-                        <Typography variant="h6" paragraph>
-                          Not found
-                        </Typography>
+                  {filteredList.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
+                    const { id, cliente, produto, qtdProdutos, saida, devolucao, valor, finalizado } = row;
 
-                        <Typography variant="body2">
-                          No results found for &nbsp;
-                          <strong>&quot;{filterName}&quot;</strong>.
-                          <br /> Try checking for typos or using complete words.
-                        </Typography>
-                      </Paper>
-                    </TableCell>
-                  </TableRow>
+                    return (
+                      <TableRow hover key={id} tabIndex={-1}>
+
+                        <TableCell component="th" scope="row" padding="normal" >
+                          <Stack direction="row" alignItems="center" spacing={2}>
+                            <Typography variant="subtitle2" noWrap>
+                              {id}
+                            </Typography>
+                          </Stack>
+                        </TableCell>
+
+                        <TableCell align="left">{cliente}</TableCell>
+
+                        <TableCell align="left">{produto}</TableCell>
+
+                        <TableCell align="left">{qtdProdutos}</TableCell>
+
+                        <TableCell align="left">{saida}</TableCell>
+
+                        <TableCell align="left">{devolucao}</TableCell>
+
+                        <TableCell align="left">{valor}</TableCell>
+
+                        <TableCell align="left">{finalizado}</TableCell>
+
+                      </TableRow>
+                    );
+                  })}
+                  {emptyRows > 0 && (
+                    <TableRow style={{ height: 53 * emptyRows }}>
+                      <TableCell colSpan={6} />
+                    </TableRow>
+                  )}
                 </TableBody>
-              )}
-            </Table>
-          </TableContainer>
 
-          <TablePagination
-            rowsPerPageOptions={[10, 15, 25]}
-            component="div"
-            count={LIST.length}
-            rowsPerPage={rowsPerPage}
-            page={page}
-            onPageChange={handleChangePage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-          />
-        </Card>
-      </Container>
+                {isNotFound && (
+                  <TableBody>
+                    <TableRow>
+                      <TableCell align="center" colSpan={6} sx={{ py: 3 }}>
+                        <Paper
+                          sx={{
+                            textAlign: 'center',
+                          }}
+                        >
+                          <Typography variant="h6" paragraph>
+                            Not found
+                          </Typography>
 
+                          <Typography variant="body2">
+                            No results found for &nbsp;
+                            <strong>&quot;{filterName}&quot;</strong>.
+                            <br /> Try checking for typos or using complete words.
+                          </Typography>
+                        </Paper>
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                )}
+              </Table>
+            </TableContainer>
+
+            <TablePagination
+              rowsPerPageOptions={[10, 15, 25]}
+              component="div"
+              count={LIST.length}
+              rowsPerPage={rowsPerPage}
+              page={page}
+              onPageChange={handleChangePage}
+              onRowsPerPageChange={handleChangeRowsPerPage}
+            />
+          </Card>
+        </Container>
+      </AuthProvider>
     </>
   );
 }

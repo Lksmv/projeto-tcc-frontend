@@ -1,147 +1,324 @@
 import { Helmet } from 'react-helmet-async';
-import { useState } from 'react';
-import Divider from '@mui/material/Divider';
+import React, { useState } from 'react';
 import {
-  Card,
-  Table,
-  Stack,
-  Paper,
-  TableRow,
-  TableBody,
-  TableCell,
   Container,
   Typography,
-  TableContainer,
-  TablePagination,
+  Grid,
+  TextField,
+  Button,
+  Breadcrumbs,
+  Link,
+  MenuItem,
+  Select,
 } from '@mui/material';
-
-import "./ClientCreatePage.css";
+import axios from 'axios';
+import NavigateNextIcon from '@mui/icons-material/NavigateNext';
+import InputMask from 'react-input-mask';
+import { BACKEND_URL } from '../utils/backEndUrl';
 
 export default function ClientCreatePage() {
+  const estiloCampo = {
+    margin: '8px',
+    borderRadius: '10px',
+    maxWidth: '50%'
+  };
 
-  const [codigo, setCodigo] = useState("");
-  const [nome, setNome] = useState("");
-  const [cpf, setCpf] = useState("");
-  const [dataNascimento, setDataNascimento] = useState("");
-  const [telefone, setTelefone] = useState("");
-  const [redeSocial, setRedeSocial] = useState("");
-  const [pessoasAutorizadas, setPessoasAutorizadas] = useState("");
-  const [obsersacoes, setObsersacoes] = useState("");
-  const [cep, setCep] = useState("");
-  const [uf, setUf] = useState("");
-  const [endereco, setEndereco] = useState("");
-  const [cidade, setCidade] = useState("");
-  const [bairro, setBairro] = useState("");
+  const estados = [
+    'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG',
+    'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
+  ];
+  const [formValues, setFormValues] = useState({
+    codigo: "",
+    nome: "",
+    cpf: "",
+    dataNascimento: "",
+    telefone: "",
+    redeSocial: "",
+    pessoasAutorizadas: "",
+    observacoes: "",
+    cep: "",
+    uf: "",
+    endereco: "",
+    bairro: "",
+  });
 
-  const handleSubmit = (e) => {
+  const formatInputDate = (rawDate) => {
+    const dateRegex = /^(\d{2})-(\d{2})-(\d{4})$/;
+    if (dateRegex.test(rawDate)) {
+      const parts = rawDate.split('-');
+      const formattedDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
+      return formattedDate;
+    } else {
+      return rawDate;
+    }
+  };
+
+  const handleFieldChange = (e) => {
+    const { name, value } = e.target;
+    setFormValues({ ...formValues, [name]: value });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log(codigo);
+    const codigoAsInteger = parseInt(formValues.codigo, 10);
+    const formatedData = formatInputDate(formValues.dataNascimento);
 
-    //validação
-    //envio
+    const requestData = {
+      ...formValues,
+      codigo: codigoAsInteger,
+      dataNascimento: formatedData,
+    };
 
-    // limpar o form
-    setCodigo("");
-    setNome("");
-    setCpf("");
-    setDataNascimento("");
-    setTelefone("");
-    setRedeSocial("");
-    setPessoasAutorizadas("");
-    setObsersacoes("");
-    setCep("");
-    setUf("");
-    setEndereco("");
-    setCidade("");
-    setBairro("");
+    try {
+      const response = await axios.post(BACKEND_URL + 'cliente', requestData);
+      console.log('Cliente salvo com sucesso:', response.data);
+      // Redirecione o usuário para a página de clientes (ou qualquer outra página desejada)
+    } catch (error) {
+      console.error('Erro ao salvar o cliente:', error);
+    }
   };
 
   return (
     <>
       <Helmet>
-        <title> Cliente / Cadastro</title>
+        <title>Cadastro de cliente</title>
       </Helmet>
+      <Container>
+        <Container maxWidth="lg" style={{ marginTop: '16px', paddingLeft: '20px', paddingRight: '20px' }}>
+          <Typography variant="h4" color="text.primary" sx={{ mb: 2 }}>
+            Cadastro de cliente
+          </Typography>
+          <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />} aria-label="breadcrumb" sx={{ mb: 2 }}>
+            <Link color="inherit" href="/dashboard">
+              Dashboard
+            </Link>
+            <Link color="inherit" href="/cliente">
+              Cliente
+            </Link>
+            <Typography variant="subtitle1" color="text.primary">Novo Cliente</Typography>
+          </Breadcrumbs>
+        </Container>
 
-      <Container maxWidth="xl">
-        <Typography variant="subtitle1" sx={{ mb: 2 }}>
-          {'>'} Cliente / Cadastro
-          <Divider sx={{ backgroundColor: '#606060', mb: 3 }} />
-        </Typography>
-        
-      </Container>
-
-      <body>
-        {/* <Container maxWidth="xl"> */}
         <form onSubmit={handleSubmit}>
-
-          <div id="campos">
-
-            <div id="dados-pessoais">
-              <div className="label-input">
-                <div className="label-campos">
-                  <ul>
-                    <li><p>Código</p></li>
-                    <li><p>Nome</p></li>
-                    <li><p>CPF</p></li>
-                    <li><p>Data de Nascimento</p></li>
-                    <li><p>Telefone</p></li>
-                    <li><p>Rede Social</p></li>
-                    <li><p>Pessoas Autorizadas</p></li>
-                    <li><p>Observações</p></li>
-                  </ul>
-                </div>
-
-                <div className="input-campos">
-                  <ul>
-                    <li><input id='codigo' type="text" name="codigo" onChange={(e) => setCodigo(e.target.value)} value={codigo || ""} /></li>
-                    <li><input id="nome" type="text" name="nome" onChange={(e) => setNome(e.target.value)} value={nome || ""} /></li>
-                    <li><input type="text" name="cpf" onChange={(e) => setCpf(e.target.value)} value={cpf || ""} /></li>
-                    <li><input type="text" name="dataNascimento" onChange={(e) => setDataNascimento(e.target.value)} value={dataNascimento || ""} /></li>
-                    <li><input type="text" name="telefone" onChange={(e) => setTelefone(e.target.value)} value={telefone || ""} /></li>
-                    <li><input type="text" name="redeSocial" onChange={(e) => setRedeSocial(e.target.value)} value={redeSocial || ""} /></li>
-                    <li><input id="pessoasAutorizadas" type="text" name="pessoasAutorizadas" onChange={(e) => setPessoasAutorizadas(e.target.value)} value={pessoasAutorizadas || ""} /></li>
-                    <li><textarea id="textarea-observacoes" name="obsersacoes" onChange={(e) => setObsersacoes(e.target.value)} value={obsersacoes || ""} /></li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-
-            <div id="dados-endereco">
-              <div className="label-input">
-                <div className="label-campos">
-                  <ul>
-                    <li><p>CEP</p></li>
-                    <li><p>UF</p></li>
-                    <li><p>Endereço</p></li>
-                    <li><p>Cidade</p></li>
-                    <li><p>Bairro</p></li>
-                  </ul>
-                </div>
-
-                <div id="input-campos">
-                  <ul>
-                    <li><input type="text" name="cep" onChange={(e) => setCep(e.target.value)} value={cep || ""} /></li>
-                    <li><input id="uf" type="text" name="uf" onChange={(e) => setUf(e.target.value)} value={uf || ""} /></li>
-                    <li><input type="text" name="endereco" onChange={(e) => setEndereco(e.target.value)} value={endereco || ""} /></li>
-                    <li><input type="text" name="cidade" onChange={(e) => setCidade(e.target.value)} value={cidade || ""} /></li>
-                    <li><input type="text" name="bairro" onChange={(e) => setBairro(e.target.value)} value={bairro || ""} /></li>
-                  </ul>
-                </div>
-              </div>
-            </div>
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={6} display="flex" flexDirection="column" alignItems='left'>
+              <TextField
+                name="codigo"
+                label="Código"
+                variant="outlined"
+                fullWidth
+                style={estiloCampo}
+                value={formValues.codigo}
+                onChange={handleFieldChange}
+                sx={{
+                  backgroundColor: '#aaa'
+                }}
+              />
+              <TextField
+                name="nome"
+                label="Nome"
+                variant="outlined"
+                fullWidth
+                style={estiloCampo}
+                value={formValues.nome}
+                onChange={handleFieldChange}
+                sx={{
+                  backgroundColor: '#fff'
+                }}
+              />
+              <InputMask
+                mask="999.999.999-99"
+                value={formValues.cpf}
+                onChange={handleFieldChange}
+              >
+                {() => (
+                  <TextField
+                    name="cpf"
+                    label="CPF"
+                    variant="outlined"
+                    fullWidth
+                    style={estiloCampo}
+                    sx={{
+                      backgroundColor: '#fff'
+                    }}
+                  />
+                )}
+              </InputMask>
+              <InputMask
+                mask="99-99-9999"
+                value={formValues.dataNascimento}
+                onChange={handleFieldChange}
+              >
+                {() => (
+                  <TextField
+                    name="dataNascimento"
+                    label="Data de Nascimento"
+                    variant="outlined"
+                    fullWidth
+                    style={estiloCampo}
+                    sx={{
+                      backgroundColor: '#fff'
+                    }}
+                  />
+                )}
+              </InputMask>
+              <InputMask
+                mask="(99)99999-9999"
+                value={formValues.telefone}
+                onChange={handleFieldChange}
+                maskChar="_"
+              >
+                {() => (
+                  <TextField
+                    name="telefone"
+                    label="Telefone"
+                    variant="outlined"
+                    fullWidth
+                    style={estiloCampo}
+                    sx={{
+                      backgroundColor: '#fff'
+                    }}
+                  />
+                )}
+              </InputMask>
+              <TextField
+                name="redeSocial"
+                label="Rede Social"
+                variant="outlined"
+                fullWidth
+                style={estiloCampo}
+                value={formValues.redeSocial}
+                onChange={handleFieldChange}
+                sx={{
+                  backgroundColor: '#fff'
+                }}
+              />
+              <TextField
+                name="pessoasAutorizadas"
+                label="Pessoas Autorizadas"
+                variant="outlined"
+                fullWidth
+                style={estiloCampo}
+                value={formValues.pessoasAutorizadas}
+                onChange={handleFieldChange}
+                sx={{
+                  backgroundColor: '#fff'
+                }}
+              />
+              <TextField
+                name="observacoes"
+                label="Observações"
+                variant="outlined"
+                multiline
+                rows={4}
+                fullWidth
+                style={estiloCampo}
+                value={formValues.observacoes}
+                onChange={handleFieldChange}
+                sx={{
+                  backgroundColor: '#fff'
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} display="flex" flexDirection="column" sx={{ alignItems: 'left' }}>
+              <InputMask
+                mask="99999-999"
+                value={formValues.cep}
+                onChange={handleFieldChange}
+              >
+                {() => (
+                  <TextField
+                    name="cep"
+                    label="CEP"
+                    variant="outlined"
+                    fullWidth
+                    style={estiloCampo}
+                    sx={{
+                      backgroundColor: '#fff'
+                    }}
+                  />
+                )}
+              </InputMask>
+              <Select
+                name="uf"
+                label="UF"
+                variant="outlined"
+                fullWidth
+                style={estiloCampo}
+                sx={{
+                  backgroundColor: '#fff'
+                }}
+                value={formValues.uf}
+                onChange={handleFieldChange}
+                MenuProps={{
+                  style: {
+                    maxHeight: 300,
+                  },
+                }}
+              >
+                {estados.map((estado) => (
+                  <MenuItem key={estado} value={estado}>
+                    {estado}
+                  </MenuItem>
+                ))}
+              </Select>
+              <TextField
+                name="endereco"
+                label="Endereço"
+                style={estiloCampo}
+                variant="outlined"
+                fullWidth
+                sx={{
+                  backgroundColor: '#fff'
+                }}
+                value={formValues.endereco}
+                onChange={handleFieldChange}
+              />
+              <TextField
+                name="bairro"
+                label="Bairro"
+                variant="outlined"
+                style={estiloCampo}
+                fullWidth
+                sx={{
+                  backgroundColor: '#fff'
+                }}
+                value={formValues.bairro}
+                onChange={handleFieldChange}
+              />
+            </Grid>
+          </Grid>
+          <div className="botoes-cadastro-cliente" style={{ display: 'flex', justifyContent: 'center', marginTop: '16px' }}>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              style={{
+                width: '90px',
+                height: '36px',
+                marginRight: '8px',
+                fontFamily: 'Rubik, sans-serif',
+                backgroundColor: '#336DC3',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '5px',
+                boxSizing: 'border-box',
+              }}
+            >
+              SALVAR
+            </Button>
+            <Button
+              type="reset"
+              variant="contained"
+              color="error"
+              style={{ width: '117px', height: '36px', marginLeft: '8px', fontFamily: 'Rubik, sans-serif', backgroundColor: '#B21447', color: '#fff', border: 'none', borderRadius: '5px', boxSizing: 'border-box' }}
+            >
+              CANCELAR
+            </Button>
           </div>
-
-          <div className="botoes-cadastro-cliente">
-            <input id="salvar" type="submit" value="SALVAR" />
-            <input id="cancelar" type="submit" value="CANCELAR" />
-          </div>
-
         </form>
-        {/* </Container> */}
-      </body>
-
-
+      </Container >
     </>
   );
-};
+}

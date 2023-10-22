@@ -1,11 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 // @mui
 import { styled } from '@mui/material/styles';
 //
 import Header from './header';
 import Nav from './nav';
-
 // ----------------------------------------------------------------------
 
 const APP_BAR_MOBILE = 64;
@@ -33,14 +32,27 @@ const Main = styled('div')(({ theme }) => ({
 
 export default function DashboardLayout() {
   const [open, setOpen] = useState(false);
+  const [userData, setUserData] = useState(null);
 
   const handleOpenNav = () => {
     setOpen(!open);
   };
 
+  useEffect(() => {
+    const storedUserData = JSON.parse(localStorage.getItem("userData"));
+    const userData = {
+      token: storedUserData.token,
+      usuario: storedUserData.usuario,
+      cargo: storedUserData.cargo,
+    };
+
+    setUserData(userData);
+  }, []);
+
+
   return (
     <StyledRoot>
-      <Header onOpenNav={handleOpenNav} />
+      <Header onOpenNav={handleOpenNav} userData={userData} />
       <Nav openNav={open} onCloseNav={() => setOpen(false)} />
       <Main>
         <Outlet />

@@ -1,11 +1,9 @@
 import PropTypes from 'prop-types';
 import { styled, alpha } from '@mui/material/styles';
-import { Toolbar, OutlinedInput, InputAdornment, Button } from '@mui/material';
+import { Toolbar, OutlinedInput, InputAdornment, Button, Box } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
 import { Link as RouterLink } from 'react-router-dom';
-
-// ----------------------------------------------------------------------
 
 const StyledRoot = styled(Toolbar)(({ theme }) => ({
   height: 90,
@@ -31,38 +29,43 @@ const StyledSearch = styled(OutlinedInput)(({ theme }) => ({
   },
 }));
 
-// ----------------------------------------------------------------------
-
 ListToolBar.propTypes = {
-  filterName: PropTypes.string,
-  onFilterName: PropTypes.func,
+  filtro: PropTypes.string,
+  onfiltro: PropTypes.func,
   placeHolder: PropTypes.string,
   buttonText: PropTypes.string,
   toPage: PropTypes.string,
 };
 
-export default function ListToolBar({filterName, onFilterName, placeHolder,buttonText,toPage }) {
+export default function ListToolBar({ filtro, onfiltro, placeHolder, buttonText, toPage }) {
   return (
-    <StyledRoot    >
-        <StyledSearch
-          value={filterName}
-          onChange={onFilterName}
-          placeholder ={placeHolder}
-          startAdornment={
-            <InputAdornment position="start">
-              <SearchIcon />
-            </InputAdornment>
-          }
-        />
+    <StyledRoot>
+      <StyledSearch
+        value={filtro}
+        onChange={onfiltro}
+        placeholder={placeHolder}
+        startAdornment={
+          <InputAdornment position="start">
+            <SearchIcon />
+          </InputAdornment>
+        }
+      />
 
-      <Button variant="contained" 
-       sx={{ backgroundColor: '#336DC3', color: '#fff', maxWidth: '190px', display:'flex' }}
-       startIcon={<AddIcon/>}
-       to={toPage}
-       component={RouterLink}
-       >
-        {buttonText}
-      </Button>
+      <Box sx={{ display: 'flex' }}>
+        <Button
+          variant="contained"
+          sx={{
+            backgroundColor: '#336DC3',
+            color: '#fff',
+            maxWidth: '190px',
+          }}
+          startIcon={<AddIcon />}
+          to={toPage}
+          component={RouterLink}
+        >
+          {buttonText}
+        </Button>
+      </Box>
     </StyledRoot>
   );
 }

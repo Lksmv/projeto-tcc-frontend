@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Box, Divider, Typography, Stack, MenuItem, Avatar, IconButton, Popover } from '@mui/material';
-import account from '../../../__mock/account';
+import { useNavigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from '../../../components/context/authProvider';
 
 const MENU_OPTIONS = [
   {
@@ -8,7 +9,14 @@ const MENU_OPTIONS = [
   },
 ];
 
-const AccountPopover = () => {
+const AccountPopover = ({ userData }) => {
+  const navigate = useNavigate();
+  const { authState, logout } = useAuth();
+  const token = userData?.token;
+  const usuario = userData?.usuario;
+  const cargo = userData?.cargo;
+
+  const cargoLimpo = cargo ? cargo.substring(5).charAt(0) + cargo.substring(5).slice(1).toLowerCase() : 'Usuário não autenticado';
   const [anchorEl, setAnchorEl] = useState(null);
 
   const handleOpen = (event) => {
@@ -17,6 +25,14 @@ const AccountPopover = () => {
 
   const handleClose = () => {
     setAnchorEl(null);
+  };
+
+  const handleLogout = () => {
+    if (token) {
+      logout(); // Deslogar apenas se o usuário estiver autenticado
+    }
+    navigate('/login');
+    handleClose();
   };
 
   const openPopover = Boolean(anchorEl);
@@ -33,14 +49,14 @@ const AccountPopover = () => {
         onClose={handleClose}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-        slotProps={{ sx: { p: 0, mt: 1.5, ml: 0.75, width: 180} }}
+        slotProps={{ sx: { p: 0, mt: 1.5, ml: 0.75, width: 180 } }}
       >
         <Box sx={{ my: 1.5, px: 2.5 }}>
           <Typography variant="subtitle2" noWrap>
-            {account.displayName}
+            {usuario}
           </Typography>
           <Typography variant="body2" sx={{ color: 'text.secondary' }} noWrap>
-            {account.role}
+            {cargoLimpo}
           </Typography>
         </Box>
 
@@ -56,7 +72,7 @@ const AccountPopover = () => {
 
         <Divider sx={{ borderStyle: 'dashed' }} />
 
-        <MenuItem onClick={handleClose} sx={{ m: 1 }}>
+        <MenuItem onClick={handleLogout} sx={{ m: 1 }}>
           Sair
         </MenuItem>
       </Popover>

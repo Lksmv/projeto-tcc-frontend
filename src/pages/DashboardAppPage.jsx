@@ -1,8 +1,11 @@
 import { Helmet } from 'react-helmet-async';
 // @mui
 import { useTheme } from '@mui/material/styles';
-import { Grid, Container, Typography} from '@mui/material';
-import Divider from '@mui/material/Divider';
+import {
+  Container,
+  Typography,
+  Grid
+} from '@mui/material';
 import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
 import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
 import AssignmentIcon from '@mui/icons-material/Assignment';
@@ -24,28 +27,34 @@ export default function DashboardAppPage() {
       <Helmet>
         <title> Dashboard </title>
       </Helmet>
-
       <Container maxWidth="xl">
-      <Typography variant="subtitle1" sx={{ mb: 2}}>
-        {'>'} Dashboard
-      <Divider sx={{backgroundColor: '#606060', mb: 3}} />
-      </Typography>
+        <Container maxWidth="100%" style={{ alignContent: 'left' }}>
+          <Typography variant="h4" color="text.primary" sx={{ mb: 5 }}>
+            Dashboard
+          </Typography>
+        </Container>
 
-        <Grid container spacing={3}>
+        <Grid container spacing={3} sx={{
+          border: '1px solid #ccc',
+          paddingRight: '20px',
+          paddingBottom: '20px',
+          borderRadius: '5px',
+          backgroundColor: '#aaa'
+        }}>
           <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="Aluguel semanal" total={714000} color="success" icon={<CurrencyExchangeIcon/>} />
+            <AppWidgetSummary title="Aluguel semanal" total={714000} color="success" icon={<CurrencyExchangeIcon />} />
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="Aguardando retirada" total={1352831} color="info" icon={<HourglassEmptyIcon/>} />
+            <AppWidgetSummary title="Aguardando retirada" total={1352831} color="info" icon={<HourglassEmptyIcon />} />
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="Item Orders" total={1723315} color="warning" icon={<AssignmentIcon/>} />
+            <AppWidgetSummary title="Item Orders" total={1723315} color="warning" icon={<AssignmentIcon />} />
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="Pedidos atrasados" total={234} color="error" icon={<AssignmentLateIcon/>} />
+            <AppWidgetSummary title="Pedidos atrasados" total={234} color="error" icon={<AssignmentLateIcon />} />
           </Grid>
 
           <Grid item xs={12} md={6} lg={8}>

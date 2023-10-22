@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
-import { Box, Stack, AppBar, Toolbar, IconButton,Grid} from '@mui/material';
+import { Box, Stack, AppBar, Toolbar, IconButton, Grid } from '@mui/material';
 import { bgGradient } from '../../../utils/cssStyles';
 import Imagem from '../../../assets/logo.png'
 import AccountPopover from './AccountPopover';
@@ -14,7 +14,7 @@ const HEADER_DESKTOP = 75;
 
 const StyledRoot = styled(AppBar)(({ theme }) => ({
   zIndex: theme.zIndex.drawer + 1,
-  background:'linear-gradient(180deg, #C61C4A 0%, #861C58 98%)',
+  background: 'linear-gradient(180deg, #C61C4A 0%, #861C58 98%)',
   boxShadow: '-5px 0px 10px #000;',
   [theme.breakpoints.up('lg')]: {
     width: `calc(100% - ${NAV_WIDTH + 1}px)`,
@@ -33,7 +33,7 @@ Header.propTypes = {
   onOpenNav: PropTypes.func,
 };
 
-export default function Header({ onOpenNav }) {
+export default function Header({ onOpenNav, userData}) {
   return (
     <StyledRoot>
       <StyledToolbar>
@@ -45,15 +45,15 @@ export default function Header({ onOpenNav }) {
             color: '#fff',
           }}
         >
-          <MenuIcon/>
+          <MenuIcon />
         </IconButton>
         <Grid container justifyContent="center" alignItems="center" sx={{ flexGrow: 1 }}>
-        <Box>
-          <img src={Imagem} alt="Logo" width="80%" height="80%"/>
-        </Box>
+          <Box>
+            <img src={Imagem} alt="Logo" width="80%" height="80%" />
+          </Box>
         </Grid>
         <Stack direction="row" alignItems="center" spacing={{ xs: 0.5, sm: 1 }}>
-          <AccountPopover />
+          <AccountPopover userData={userData} />
         </Stack>
       </StyledToolbar>
     </StyledRoot>

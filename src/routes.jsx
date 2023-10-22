@@ -1,9 +1,11 @@
 import { Navigate, useRoutes } from 'react-router-dom';
-// layouts
+import { useAuth } from './components/context/authProvider';
+
 import DashboardLayout from './layouts/dashboard';
 import SimpleLayout from './layouts/simple';
 import CatalogoLayout from './layouts/catalogo';
-//
+
+
 import ClientPage from './pages/ClientPage';
 import LoginPage from './pages/LoginPage';
 import Page404 from './pages/Page404';
@@ -13,47 +15,82 @@ import ClientCreatePage from './pages/ClientCreatePage';
 import RentalPage from './pages/RentalPage';
 import HomePage from './pages/HomePage';
 import CatalogPage from './pages/CatalogPage';
-
-// ----------------------------------------------------------------------
+import RentalCreatePage from './pages/RentalCreatePage';
 
 export default function Router() {
+  const { authState } = useAuth();
+  const isAuthenticated = authState.isLoggedIn;
+
   const routes = useRoutes([
     {
-      element: <DashboardLayout />,
+      element: isAuthenticated ? (
+        <DashboardLayout>
+          <DashboardAppPage />
+        </DashboardLayout>
+      ) : (
+        <Navigate to="/login" />
+      ),
       children: [
-        { element: <Navigate to="/dashboard" /> },
-        { path: 'dashboard', element: <DashboardAppPage />, index: true },
-        { path: 'cliente', element: <ClientPage /> },
-        { path: 'cliente/cadastro', element: <ClientCreatePage /> },
-        { path: 'produto', element: <ProductPage /> },
-        { path: 'aluguel', element: <RentalPage /> }
+        {
+          path: '/dashboard',
+          element: isAuthenticated ? <DashboardAppPage /> : <Navigate to="/login" />,
+          index: true,
+        },
+        {
+          path: '/cliente',
+          element: isAuthenticated ? <ClientPage /> : <Navigate to="/login" />,
+        },
+        {
+          path: '/cliente/cadastro',
+          element: isAuthenticated ? <ClientCreatePage /> : <Navigate to="/login" />,
+        },
+        {
+          path: '/produto',
+          element: isAuthenticated ? <ProductPage /> : <Navigate to="/login" />,
+        },
+        {
+          path: '/aluguel',
+          element: isAuthenticated ? <RentalPage /> : <Navigate to="/login" />,
+        },
+        {
+          path: '/aluguel/cadastro',
+          element: isAuthenticated ? <RentalCreatePage /> : <Navigate to="/login" />,
+        },
       ],
     },
     {
       path: '/',
-      element: <CatalogoLayout />,
+      element: (
+        <CatalogoLayout>
+        </CatalogoLayout>
+      ),
       children: [
         {
           index: true,
-          element: <HomePage/>,
+          element: <HomePage />
         },
         {
           path: '/catalogo',
-          element: <CatalogPage/>,
+          element: <CatalogPage />,
         },
       ],
     },
     {
-      path: 'login',
-      element: <LoginPage />,
+      path: '/login',
+      element: isAuthenticated ? <Navigate to="/dashboard" /> : <LoginPage />,
     },
     {
-      element: <SimpleLayout />,
+      element: (
+        <SimpleLayout>
+        </SimpleLayout>),
       children: [
-        { path: '404', element: <Page404 /> },
-        { path: '/*', element: <Navigate to="/404" /> },
-      ],
-    }
+        {
+          path: '/*',
+          index: true,
+          element: <Page404 />
+        },
+      ]
+    },
   ]);
 
   return routes;

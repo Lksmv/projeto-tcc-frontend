@@ -79,7 +79,6 @@ export default function DashboardAppPage() {
       <Helmet>
         <title>Roberta aluguel</title>
       </Helmet>
-
       <Container style={containerStyle} maxWidth="1080px">
         <img src={pageBackground} style={imageStyle} alt="Background" />
         <div
@@ -130,7 +129,7 @@ export default function DashboardAppPage() {
           items={CarouselImages.map((image, index) => (
             <img key={index} src={image.src} alt={image.alt} style={{
               width: '480px',
-              height: '300px', 
+              height: '300px',
               objectFit: 'cover',
             }} />
           ))}

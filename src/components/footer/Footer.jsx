@@ -1,18 +1,17 @@
 import { styled } from '@mui/material/styles';
-import { Box, Grid, Typography, Link, Divider, IconButton } from '@mui/material';
+import { Box, Grid, Typography, Link, Divider, IconButton, Container } from '@mui/material';
 import Imagem from '../../assets/logo.png';
 import FacebookIcon from '@mui/icons-material/Facebook';
 import InstagramIcon from '@mui/icons-material/Instagram';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import HomeIcon from '@mui/icons-material/Home';
 
-
-const StyledRoot = styled(Box)(({ theme}) => ({
+const StyledRoot = styled(Box)(({ theme }) => ({
   top: 'auto',
   bottom: 0,
   background: 'linear-gradient(180deg, #000 0%, #000 98%)',
   boxShadow: '5px 0px 10px #000',
-  display: 'flex'
+  display: 'flex',
 }));
 
 const LeftSection = () => (
@@ -22,16 +21,16 @@ const LeftSection = () => (
 );
 
 const MiddleSection = () => (
-  <Typography variant="h6" color={"#8F1B4D"} sx={{ fontFamily: 'Roboto, sans-serif', textAlign: "justify", textJustify: "auto"}}>
+  <Typography variant="h6" sx={{ fontFamily: 'Roboto, sans-serif', textAlign: "justify", textJustify: "auto", color: '#8F1B4D', width: '90%' }}>
     Roberta aluguel de trajes® | CNPJ: 14.072.275/0001-45
 
-    <Typography variant="body1" color={"#dff5ed"} paddingTop={"5px"} paddingBottom={"5px"} sx={{ fontFamily: 'Roboto, sans-serif', textAlign: "justify", textJustify: "auto" }}>
+    <Typography variant="body1" color="#dff5ed" sx={{ fontFamily: 'Roboto, sans-serif', textAlign: "justify", textJustify: "auto", width: '100%' }}>
       R. General Osório N 2065 - Blumenau - 89226-435
     </Typography>
 
-    <Divider sx={{ backgroundColor: '#8F1B4D', mb: 2, mt: 2, width: '20px', height: '2px' }} />
+    <Divider sx={{ backgroundColor: '#8F1B4D', mb: 2, mt: 2, width: '30px', height: '2px' }} />
 
-    <Typography variant='body1' color={"#dff5ed"} sx={{ fontFamily: 'Roboto, sans-serif', textAlign: "justify", textJustify: "auto" }} >
+    <Typography variant='body1' color="#dff5ed" sx={{ fontFamily: 'Roboto, sans-serif', textAlign: "justify", textJustify: "auto", width: '100%' }}>
       Roberta aluguel de trajes é uma loja de aluguel
       dedicada a tornar os seus momentos especiais verdadeiramente memoráveis.
       Com uma ampla seleção de trajes e acessórios elegantes, estamos comprometidos
@@ -40,48 +39,51 @@ const MiddleSection = () => (
       De casamentos a festas, estamos aqui para vestir os seus sonhos e
       fazer você se destacar em grande estilo.
     </Typography>
-
   </Typography>
 );
 
 const RightSection = () => (
-  <Box marginLeft={"20px"} marginRight={"20px"}>
-    <Typography variant="subtitle1">
-      Redes sociais:
-    </Typography>
-    <Link href="#">
-      <IconButton>
-        <FacebookIcon style={{ color: "#4267B2" }} />
-      </IconButton>
-    </Link>
-    <Link href="#">
-      <IconButton>
-        <InstagramIcon style={{ color: "#C13584" }} />
-      </IconButton>
-    </Link>
-    <Link href="#">
-      <IconButton>
-        <WhatsAppIcon style={{ color: "#25D366" }} />
-      </IconButton>
-    </Link>
+  <Box width="100%">
+    <Box marginLeft={"65px"} display={'flex'} alignItems={'center'}>
+      <Typography variant="h6">
+        Redes sociais:
+      </Typography>
+      <Link href="#">
+        <IconButton>
+          <FacebookIcon fontSize='large' sx={{ color: "#4267B2" }} />
+        </IconButton>
+      </Link>
+      <Link href="#" >
+        <IconButton>
+          <InstagramIcon fontSize='large' sx={{ color: "#C13584" }} />
+        </IconButton>
+      </Link>
+      <Link href="#" >
+        <IconButton>
+          <WhatsAppIcon fontSize='large' sx={{ color: "#25D366" }} />
+        </IconButton>
+      </Link>
+    </Box>
     <Box
       bgcolor="#8F1B4D" // Cor de fundo vermelho
       py={'10px'} // Espaçamento vertical
-      px={'20px'} // Espaçamento horizontal (aumentei para 2 para uma margem mais estreita)
+      px={'20px'} // Espaçamento horizontal
       borderRadius={1} // Borda arredondada
       color="#fff" // Cor do texto
       display="flex" // Usar flex para alinhar os itens horizontalmente
       alignItems="center" // Alinhar verticalmente os itens
+      margin="0 auto" // Centralizar horizontalmente
       marginTop={"20px"}
+      width={'80%'}
     >
       <IconButton>
-        <HomeIcon style={{ color: '#fff' }} />
+        <HomeIcon style={{ color: "#fff" }} />
       </IconButton>
-      <Typography variant='subtitle2'>
+      <Typography variant='subtitle2' sx={{ marginLeft: '10px', color: '#fff' }}>
         Loja física em Blumenau
       </Typography>
-      <Divider orientation="vertical" sx={{ backgroundColor: '#fff', width: '1px', height: '45px', marginLeft: '20px', marginRight: '20px' }} />
-      <Box flexGrow={1} />
+      <Divider orientation="vertical" sx={{ backgroundColor: '#fff', width: '2px', height: '60px', marginLeft: '20px', marginRight: '20px' }} />
+      <Box />
       <Typography variant='body1'>
         (47) 3037-7661
         <Typography variant='body2'>
@@ -95,20 +97,21 @@ const RightSection = () => (
   </Box>
 );
 
+
 export default function Footer() {
   return (
     <StyledRoot>
-        <Grid container justifyContent="center" alignItems="center" marginTop={"20px"} marginBottom={"20px"}>
-          <Grid item xs={3}>
-            <LeftSection />
-          </Grid>
-          <Grid item xs={5}>
-            <MiddleSection />
-          </Grid>
-          <Grid item xs={4} container justifyContent="center" alignItems="center">
-            <RightSection />
-          </Grid>
+      <Grid container justifyContent="center" alignItems="center" marginTop={"20px"} marginBottom={"20px"}>
+        <Grid item xs={3}>
+          <LeftSection />
         </Grid>
+        <Grid item xs={5}>
+          <MiddleSection />
+        </Grid>
+        <Grid item xs={4}>
+          <RightSection />
+        </Grid>
+      </Grid>
     </StyledRoot>
   );
 }
