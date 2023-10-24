@@ -16,6 +16,7 @@ import RentalPage from './pages/RentalPage';
 import HomePage from './pages/HomePage';
 import CatalogPage from './pages/CatalogPage';
 import RentalCreatePage from './pages/RentalCreatePage';
+import ProductCreatePage from './pages/ProductCreatePage';
 
 export default function Router() {
   const { authState } = useAuth();
@@ -47,6 +48,10 @@ export default function Router() {
         {
           path: '/produto',
           element: isAuthenticated ? <ProductPage /> : <Navigate to="/login" />,
+        },
+        {
+          path: '/produto/cadastro',
+          element: isAuthenticated ? <ProductCreatePage /> : <Navigate to="/login" />,
         },
         {
           path: '/aluguel',

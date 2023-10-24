@@ -8,48 +8,52 @@ import {
   Button,
   Breadcrumbs,
   Link,
-  MenuItem
+  MenuItem,
+  ImageList,
+  ImageListItem
 } from '@mui/material';
 import axios from 'axios';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
-import InputMask from 'react-input-mask';
 import { BACKEND_URL } from '../utils/backEndUrl';
+import Dropzone from 'react-dropzone';
+import { NumericFormat } from 'react-number-format';
 
-export default function ClientCreatePage() {
+export default function ProductCreatePage() {
   const estiloCampo = {
     margin: '8px',
     borderRadius: '10px',
     maxWidth: '50%'
   };
 
-  const estados = [
-    'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG',
-    'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
+  const categorias = [
+    'Nenhum', 'Terno', 'Vestido', 'Bolsa', 'Acessórios', 'Sapato'
   ];
+
+  const tamanhos = [
+    'Nenhum', 'PP', 'P', 'M', 'G', 'GG'
+  ];
+
+  const generos = [
+    'Nenhum', 'Feminino', 'Masculino'
+  ];
+
   const [formValues, setFormValues] = useState({
     codigo: "",
     nome: "",
-    cpf: "",
-    dataNascimento: "",
-    telefone: "",
-    redeSocial: "",
-    pessoasAutorizadas: "",
+    categoria: "",
+    marca: "",
+    tamanho: "",
+    cor: "",
+    genero: "",
+    imagens: [], // Armazenará as imagens após o upload
+    valor: "",
     observacoes: "",
-    cep: "",
-    uf: "",
-    endereco: "",
-    bairro: "",
   });
 
-  const formatInputDate = (rawDate) => {
-    const dateRegex = /^(\d{2})-(\d{2})-(\d{4})$/;
-    if (dateRegex.test(rawDate)) {
-      const parts = rawDate.split('-');
-      const formattedDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
-      return formattedDate;
-    } else {
-      return rawDate;
-    }
+  const handleImageUpload = (acceptedFiles) => {
+    // Aqui você pode processar os arquivos de imagem, fazer o upload para o servidor, etc.
+    // Em seguida, atualize o estado do formulário com as informações das imagens.
+    setFormValues({ ...formValues, imagens: acceptedFiles });
   };
 
   const handleFieldChange = (e) => {
@@ -61,12 +65,10 @@ export default function ClientCreatePage() {
     e.preventDefault();
 
     const codigoAsInteger = parseInt(formValues.codigo, 10);
-    const formatedData = formatInputDate(formValues.dataNascimento);
 
     const requestData = {
       ...formValues,
       codigo: codigoAsInteger,
-      dataNascimento: formatedData,
     };
 
     try {
@@ -81,21 +83,21 @@ export default function ClientCreatePage() {
   return (
     <>
       <Helmet>
-        <title>Cadastro de cliente</title>
+        <title>Cadastro de produto</title>
       </Helmet>
       <Container>
         <Container maxWidth="lg" style={{ paddingLeft: '20px', paddingRight: '20px' }}>
           <Typography variant="h4" color="text.primary" sx={{ mb: 1 }}>
-            Cadastro de cliente
+            Cadastro de produto
           </Typography>
           <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />} aria-label="breadcrumb" sx={{ mb: 2 }}>
             <Link color="inherit" href="/dashboard">
               Dashboard
             </Link>
-            <Link color="inherit" href="/cliente">
-              Cliente
+            <Link color="inherit" href="/produto">
+              Produto
             </Link>
-            <Typography variant="subtitle1" color="text.primary">Novo Cliente</Typography>
+            <Typography variant="subtitle1" color="text.primary">Novo Produto</Typography>
           </Breadcrumbs>
         </Container>
 
@@ -126,81 +128,142 @@ export default function ClientCreatePage() {
                   backgroundColor: '#fff'
                 }}
               />
-              <InputMask
-                mask="999.999.999-99"
-                value={formValues.cpf}
-                onChange={handleFieldChange}
-              >
-                {() => (
-                  <TextField
-                    name="cpf"
-                    label="CPF"
-                    variant="outlined"
-                    fullWidth
-                    style={estiloCampo}
-                    sx={{
-                      backgroundColor: '#fff'
-                    }}
-                  />
-                )}
-              </InputMask>
-              <InputMask
-                mask="99-99-9999"
-                value={formValues.dataNascimento}
-                onChange={handleFieldChange}
-              >
-                {() => (
-                  <TextField
-                    name="dataNascimento"
-                    label="Data de Nascimento"
-                    variant="outlined"
-                    fullWidth
-                    style={estiloCampo}
-                    sx={{
-                      backgroundColor: '#fff'
-                    }}
-                  />
-                )}
-              </InputMask>
-              <InputMask
-                mask="(99)99999-9999"
-                value={formValues.telefone}
-                onChange={handleFieldChange}
-                maskChar="_"
-              >
-                {() => (
-                  <TextField
-                    name="telefone"
-                    label="Telefone"
-                    variant="outlined"
-                    fullWidth
-                    style={estiloCampo}
-                    sx={{
-                      backgroundColor: '#fff'
-                    }}
-                  />
-                )}
-              </InputMask>
               <TextField
-                name="redeSocial"
-                label="Rede Social"
+                name="categoria"
+                variant="outlined"
+                select
+                label="Categoria"
+                fullWidth
+                style={estiloCampo}
+                sx={{
+                  backgroundColor: '#fff',
+                }}
+                value={formValues.categoria}
+                onChange={handleFieldChange}
+                SelectProps={{
+                  MenuProps: {
+                    style: {
+                      maxHeight: 300,
+                    },
+                  }
+                }}
+              >
+                {categorias.map((categoria) => (
+                  <MenuItem key={categoria} value={categoria}>
+                    {categoria}
+                  </MenuItem>
+                ))}
+              </TextField>
+              <TextField
+                name="marca"
+                label="Marca"
                 variant="outlined"
                 fullWidth
                 style={estiloCampo}
-                value={formValues.redeSocial}
+                value={formValues.marca}
                 onChange={handleFieldChange}
                 sx={{
                   backgroundColor: '#fff'
                 }}
               />
               <TextField
-                name="pessoasAutorizadas"
-                label="Pessoas Autorizadas"
+                name="tamanho"
+                variant="outlined"
+                select
+                label="Tamanho"
+                fullWidth
+                style={estiloCampo}
+                sx={{
+                  backgroundColor: '#fff',
+                }}
+                value={formValues.tamanho}
+                onChange={handleFieldChange}
+                SelectProps={{
+                  MenuProps: {
+                    style: {
+                      maxHeight: 300,
+                    },
+                  }
+                }}
+              >
+                {tamanhos.map((tamanho) => (
+                  <MenuItem key={tamanho} value={tamanho}>
+                    {tamanho}
+                  </MenuItem>
+                ))}
+              </TextField>
+              <TextField
+                name="cor"
+                label="Cor"
                 variant="outlined"
                 fullWidth
                 style={estiloCampo}
-                value={formValues.pessoasAutorizadas}
+                value={formValues.cor}
                 onChange={handleFieldChange}
+                sx={{
+                  backgroundColor: '#fff'
+                }}
+              />
+              <TextField
+                name="genero"
+                variant="outlined"
+                select
+                label="Gênero"
+                fullWidth
+                style={estiloCampo}
+                sx={{
+                  backgroundColor: '#fff',
+                }}
+                value={formValues.genero}
+                onChange={handleFieldChange}
+                SelectProps={{
+                  MenuProps: {
+                    style: {
+                      maxHeight: 300,
+                    },
+                  }
+                }}
+              >
+                {generos.map((genero) => (
+                  <MenuItem key={genero} value={genero}>
+                    {genero}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Grid>
+            <Grid item xs={12} sm={6} display="flex" flexDirection="column" sx={{ alignItems: 'left' }}>
+              {/* Upload Imagem */}
+              <Dropzone onDrop={(acceptedFiles) => handleImageUpload(acceptedFiles)}>
+                {({ getRootProps, getInputProps }) => (
+                  <div {...getRootProps()} style={{ cursor: 'pointer', backgroundColor: '#fff', borderRadius: '10px', padding: '16px', textAlign: 'center' }}>
+                    <input {...getInputProps()} />
+                    <p>Arraste e solte as imagens ou clique para fazer upload</p>
+                  </div>
+                )}
+              </Dropzone>
+              {/* Exibir prévia das imagens após o upload */}
+              {formValues.imagens.length > 0 && (
+                <ImageList cols={3} rowHeight={160}>
+                  {formValues.imagens.map((imagem, index) => (
+                    <ImageListItem key={index}>
+                      <img src={URL.createObjectURL(imagem)} alt={`Imagem ${index}`} />
+                    </ImageListItem>
+                  ))}
+                </ImageList>
+              )}
+              <NumericFormat
+                name="valor"
+                customInput={TextField}
+                thousandSeparator="."
+                decimalSeparator=","
+                prefix="R$ "
+                label="Valor"
+                allowNegative={false}
+                decimalScale={2}
+                fixedDecimalScale={true}
+                style={estiloCampo}
+                value={formValues.valor}
+                onValueChange={handleFieldChange}
                 sx={{
                   backgroundColor: '#fff'
                 }}
@@ -220,78 +283,8 @@ export default function ClientCreatePage() {
                 }}
               />
             </Grid>
-            <Grid item xs={12} sm={6} display="flex" flexDirection="column" sx={{ alignItems: 'left' }}>
-              <InputMask
-                mask="99999-999"
-                value={formValues.cep}
-                onChange={handleFieldChange}
-              >
-                {() => (
-                  <TextField
-                    name="cep"
-                    label="CEP"
-                    variant="outlined"
-                    fullWidth
-                    style={estiloCampo}
-                    sx={{
-                      backgroundColor: '#fff'
-                    }}
-                  />
-                )}
-              </InputMask>
-              <TextField
-                name="uf"
-                variant="outlined"
-                select
-                label="Estado"
-                fullWidth
-                style={estiloCampo}
-                sx={{
-                  backgroundColor: '#fff',
-                }}
-                value={formValues.uf}
-                onChange={handleFieldChange}
-                SelectProps={{
-                  MenuProps: {
-                    style: {
-                      maxHeight: 300,
-                    },
-                  }
-                }}
-              >
-                {estados.map((estado) => (
-                  <MenuItem key={estado} value={estado}>
-                    {estado}
-                  </MenuItem>
-                ))}
-              </TextField>
-              <TextField
-                name="endereco"
-                label="Endereço"
-                style={estiloCampo}
-                variant="outlined"
-                fullWidth
-                sx={{
-                  backgroundColor: '#fff'
-                }}
-                value={formValues.endereco}
-                onChange={handleFieldChange}
-              />
-              <TextField
-                name="bairro"
-                label="Bairro"
-                variant="outlined"
-                style={estiloCampo}
-                fullWidth
-                sx={{
-                  backgroundColor: '#fff'
-                }}
-                value={formValues.bairro}
-                onChange={handleFieldChange}
-              />
-            </Grid>
           </Grid>
-          <div className="botoes-cadastro-cliente" style={{ display: 'flex', justifyContent: 'center', marginTop: '16px', marginBottom: '16px' }}>
+          <div className="botoes-cadastro-produto" style={{ display: 'flex', justifyContent: 'center', marginTop: '16px', marginBottom: '16px' }}>
             <Button
               type="submit"
               variant="contained"
