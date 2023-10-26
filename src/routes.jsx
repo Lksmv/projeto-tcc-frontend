@@ -17,6 +17,7 @@ import HomePage from './pages/HomePage';
 import CatalogPage from './pages/CatalogPage';
 import RentalCreatePage from './pages/RentalCreatePage';
 import ProductCreatePage from './pages/ProductCreatePage';
+import ClientInfoPage from './pages/ClientInfoPage';
 
 export default function Router() {
   const { authState } = useAuth();
@@ -44,6 +45,9 @@ export default function Router() {
         {
           path: '/cliente/cadastro',
           element: isAuthenticated ? <ClientCreatePage /> : <Navigate to="/login" />,
+        }, {
+          path: '/cliente/detalhes/:clientId',
+          element: isAuthenticated ? <ClientInfoPage /> : <Navigate to="/login" />,
         },
         {
           path: '/produto',

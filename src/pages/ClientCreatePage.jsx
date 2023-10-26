@@ -1,5 +1,6 @@
 import { Helmet } from 'react-helmet-async';
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Container,
   Typography,
@@ -19,8 +20,35 @@ export default function ClientCreatePage() {
   const estiloCampo = {
     margin: '8px',
     borderRadius: '10px',
-    maxWidth: '50%'
+    width: '90%'
   };
+
+  const buttonStyle = {
+    fontFamily: 'Roboto, sans-serif',
+    borderRadius: '4px',
+    boxSizing: 'border-box',
+    textTransform: 'none',
+  };
+
+  const salvarButtonStyle = {
+    ...buttonStyle,
+    backgroundColor: '#1976D2',
+    color: '#fff',
+    width: '90px',
+    height: '36px',
+    marginRight: '8px',
+  };
+
+  const cancelarButtonStyle = {
+    ...buttonStyle,
+    backgroundColor: '#E91E63', // Cor de erro do Material Design
+    color: '#fff',
+    width: '117px',
+    height: '36px',
+    marginLeft: '8px',
+  };
+
+
 
   const estados = [
     'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG',
@@ -52,6 +80,8 @@ export default function ClientCreatePage() {
     }
   };
 
+  const navigate = useNavigate()
+
   const handleFieldChange = (e) => {
     const { name, value } = e.target;
     setFormValues({ ...formValues, [name]: value });
@@ -71,8 +101,8 @@ export default function ClientCreatePage() {
 
     try {
       const response = await axios.post(BACKEND_URL + 'cliente', requestData);
-      console.log('Cliente salvo com sucesso:', response.data);
-      // Redirecione o usuário para a página de clientes (ou qualquer outra página desejada)
+      const clientId = response.data.idCliente
+      navigate(`/cliente/detalhes/${clientId}`);
     } catch (error) {
       console.error('Erro ao salvar o cliente:', error);
     }
@@ -98,228 +128,229 @@ export default function ClientCreatePage() {
             <Typography variant="subtitle1" color="text.primary">Novo Cliente</Typography>
           </Breadcrumbs>
         </Container>
+        <Container style={{
+          backgroundColor: '#c4c4c4',
+          transition: 'box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms',
+          overflow: 'hidden',
+          position: 'relative',
+          boxShadow: 'rgba(0, 0, 0, 0.2) 0px 0px 2px 0px, rgba(0, 0, 0, 0.12) 0px 12px 24px -4px',
+          borderRadius: '16px',
+          padding: '24px',
+          marginBottom: '20px'
+        }}>
 
-        <form onSubmit={handleSubmit}>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={6} display="flex" flexDirection="column" alignItems='left'>
-              <TextField
-                name="codigo"
-                label="Código"
-                variant="outlined"
-                fullWidth
-                style={estiloCampo}
-                value={formValues.codigo}
-                onChange={handleFieldChange}
-                sx={{
-                  backgroundColor: '#aaa'
+          <form onSubmit={handleSubmit}>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6} display="flex" flexDirection="column" alignItems='center'>
+                <TextField
+                  name="codigo"
+                  label="Código"
+                  variant="outlined"
+                  fullWidth
+                  style={estiloCampo}
+                  value={formValues.codigo}
+                  onChange={handleFieldChange}
+                  disabled={true}
+                  sx={{
+                    backgroundColor: '#e9e9e9'
+                  }}
+                  InputLabelProps={{
+                    style: { color: '#9d9d9d' } 
                 }}
-              />
-              <TextField
-                name="nome"
-                label="Nome"
-                variant="outlined"
-                fullWidth
-                style={estiloCampo}
-                value={formValues.nome}
-                onChange={handleFieldChange}
-                sx={{
-                  backgroundColor: '#fff'
-                }}
-              />
-              <InputMask
-                mask="999.999.999-99"
-                value={formValues.cpf}
-                onChange={handleFieldChange}
-              >
-                {() => (
-                  <TextField
-                    name="cpf"
-                    label="CPF"
-                    variant="outlined"
-                    fullWidth
-                    style={estiloCampo}
-                    sx={{
-                      backgroundColor: '#fff'
-                    }}
-                  />
-                )}
-              </InputMask>
-              <InputMask
-                mask="99-99-9999"
-                value={formValues.dataNascimento}
-                onChange={handleFieldChange}
-              >
-                {() => (
-                  <TextField
-                    name="dataNascimento"
-                    label="Data de Nascimento"
-                    variant="outlined"
-                    fullWidth
-                    style={estiloCampo}
-                    sx={{
-                      backgroundColor: '#fff'
-                    }}
-                  />
-                )}
-              </InputMask>
-              <InputMask
-                mask="(99)99999-9999"
-                value={formValues.telefone}
-                onChange={handleFieldChange}
-                maskChar="_"
-              >
-                {() => (
-                  <TextField
-                    name="telefone"
-                    label="Telefone"
-                    variant="outlined"
-                    fullWidth
-                    style={estiloCampo}
-                    sx={{
-                      backgroundColor: '#fff'
-                    }}
-                  />
-                )}
-              </InputMask>
-              <TextField
-                name="redeSocial"
-                label="Rede Social"
-                variant="outlined"
-                fullWidth
-                style={estiloCampo}
-                value={formValues.redeSocial}
-                onChange={handleFieldChange}
-                sx={{
-                  backgroundColor: '#fff'
-                }}
-              />
-              <TextField
-                name="pessoasAutorizadas"
-                label="Pessoas Autorizadas"
-                variant="outlined"
-                fullWidth
-                style={estiloCampo}
-                value={formValues.pessoasAutorizadas}
-                onChange={handleFieldChange}
-                sx={{
-                  backgroundColor: '#fff'
-                }}
-              />
-              <TextField
-                name="observacoes"
-                label="Observações"
-                variant="outlined"
-                multiline
-                rows={4}
-                fullWidth
-                style={estiloCampo}
-                value={formValues.observacoes}
-                onChange={handleFieldChange}
-                sx={{
-                  backgroundColor: '#fff'
-                }}
-              />
+                />
+                <TextField
+                  name="nome"
+                  label="Nome"
+                  variant="outlined"
+                  fullWidth
+                  style={estiloCampo}
+                  value={formValues.nome}
+                  onChange={handleFieldChange}
+                  sx={{
+                    backgroundColor: '#fff'
+                  }}
+                  required
+                />
+                <InputMask
+                  mask="999.999.999-99"
+                  value={formValues.cpf}
+                  onChange={handleFieldChange}
+                >
+                  {() => (
+                    <TextField
+                      name="cpf"
+                      label="CPF"
+                      variant="outlined"
+                      fullWidth
+                      style={estiloCampo}
+                      sx={{
+                        backgroundColor: '#fff'
+                      }}
+                      required
+                    />
+                  )}
+                </InputMask>
+                <InputMask
+                  mask="99-99-9999"
+                  value={formValues.dataNascimento}
+                  onChange={handleFieldChange}
+                >
+                  {() => (
+                    <TextField
+                      name="dataNascimento"
+                      label="Data de Nascimento"
+                      variant="outlined"
+                      fullWidth
+                      style={estiloCampo}
+                      sx={{
+                        backgroundColor: '#fff'
+                      }}
+                      required
+                    />
+                  )}
+                </InputMask>
+                <InputMask
+                  mask="(99)99999-9999"
+                  value={formValues.telefone}
+                  onChange={handleFieldChange}
+                  maskChar="_"
+                >
+                  {() => (
+                    <TextField
+                      name="telefone"
+                      label="Telefone"
+                      variant="outlined"
+                      fullWidth
+                      style={estiloCampo}
+                      sx={{
+                        backgroundColor: '#fff'
+                      }}
+                      required
+                    />
+                  )}
+                </InputMask>
+                <TextField
+                  name="redeSocial"
+                  label="Rede Social"
+                  variant="outlined"
+                  fullWidth
+                  style={estiloCampo}
+                  value={formValues.redeSocial}
+                  onChange={handleFieldChange}
+                  sx={{
+                    backgroundColor: '#fff'
+                  }}
+                />
+                <TextField
+                  name="pessoasAutorizadas"
+                  label="Pessoas Autorizadas"
+                  variant="outlined"
+                  fullWidth
+                  style={estiloCampo}
+                  value={formValues.pessoasAutorizadas}
+                  onChange={handleFieldChange}
+                  sx={{
+                    backgroundColor: '#fff'
+                  }}
+                />
+                <TextField
+                  name="observacoes"
+                  label="Observações"
+                  variant="outlined"
+                  multiline
+                  rows={4}
+                  fullWidth
+                  style={estiloCampo}
+                  value={formValues.observacoes}
+                  onChange={handleFieldChange}
+                  sx={{
+                    backgroundColor: '#fff'
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} display="flex" flexDirection="column" sx={{ alignItems: 'center' }}>
+                <InputMask
+                  mask="99999-999"
+                  value={formValues.cep}
+                  onChange={handleFieldChange}
+                >
+                  {() => (
+                    <TextField
+                      name="cep"
+                      label="CEP"
+                      variant="outlined"
+                      fullWidth
+                      style={estiloCampo}
+                      sx={{
+                        backgroundColor: '#fff'
+                      }}
+                    />
+                  )}
+                </InputMask>
+                <TextField
+                  name="uf"
+                  variant="outlined"
+                  select
+                  label="Estado"
+                  fullWidth
+                  required
+                  style={estiloCampo}
+                  sx={{
+                    backgroundColor: '#fff',
+                  }}
+                  value={formValues.uf}
+                  onChange={handleFieldChange}
+                  SelectProps={{
+                    MenuProps: {
+                      style: {
+                        maxHeight: 300,
+                      },
+                    }
+                  }}
+                >
+                  {estados.map((estado) => (
+                    <MenuItem key={estado} value={estado}>
+                      {estado}
+                    </MenuItem>
+                  ))}
+                </TextField>
+                <TextField
+                  name="endereco"
+                  label="Endereço"
+                  style={estiloCampo}
+                  variant="outlined"
+                  fullWidth
+                  sx={{
+                    backgroundColor: '#fff'
+                  }}
+                  value={formValues.endereco}
+                  onChange={handleFieldChange}
+                />
+                <TextField
+                  name="bairro"
+                  label="Bairro"
+                  variant="outlined"
+                  style={estiloCampo}
+                  fullWidth
+                  sx={{
+                    backgroundColor: '#fff'
+                  }}
+                  value={formValues.bairro}
+                  onChange={handleFieldChange}
+                />
+              </Grid>
             </Grid>
-            <Grid item xs={12} sm={6} display="flex" flexDirection="column" sx={{ alignItems: 'left' }}>
-              <InputMask
-                mask="99999-999"
-                value={formValues.cep}
-                onChange={handleFieldChange}
-              >
-                {() => (
-                  <TextField
-                    name="cep"
-                    label="CEP"
-                    variant="outlined"
-                    fullWidth
-                    style={estiloCampo}
-                    sx={{
-                      backgroundColor: '#fff'
-                    }}
-                  />
-                )}
-              </InputMask>
-              <TextField
-                name="uf"
-                variant="outlined"
-                select
-                label="Estado"
-                fullWidth
-                style={estiloCampo}
-                sx={{
-                  backgroundColor: '#fff',
-                }}
-                value={formValues.uf}
-                onChange={handleFieldChange}
-                SelectProps={{
-                  MenuProps: {
-                    style: {
-                      maxHeight: 300,
-                    },
-                  }
-                }}
-              >
-                {estados.map((estado) => (
-                  <MenuItem key={estado} value={estado}>
-                    {estado}
-                  </MenuItem>
-                ))}
-              </TextField>
-              <TextField
-                name="endereco"
-                label="Endereço"
-                style={estiloCampo}
-                variant="outlined"
-                fullWidth
-                sx={{
-                  backgroundColor: '#fff'
-                }}
-                value={formValues.endereco}
-                onChange={handleFieldChange}
-              />
-              <TextField
-                name="bairro"
-                label="Bairro"
-                variant="outlined"
-                style={estiloCampo}
-                fullWidth
-                sx={{
-                  backgroundColor: '#fff'
-                }}
-                value={formValues.bairro}
-                onChange={handleFieldChange}
-              />
+            <Grid className="botoes-cadastro-cliente" item xs={12} sm={6} style={{ display: 'flex', justifyContent: 'end' }}>
+              <Button type="submit" variant="contained" style={salvarButtonStyle}>
+                SALVAR
+              </Button>
+
+              <Button type="reset" variant="contained" style={cancelarButtonStyle}>
+                CANCELAR
+              </Button>
             </Grid>
-          </Grid>
-          <div className="botoes-cadastro-cliente" style={{ display: 'flex', justifyContent: 'center', marginTop: '16px', marginBottom: '16px' }}>
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              style={{
-                width: '90px',
-                height: '36px',
-                marginRight: '8px',
-                fontFamily: 'Rubik, sans-serif',
-                backgroundColor: '#336DC3',
-                color: '#fff',
-                border: 'none',
-                borderRadius: '5px',
-                boxSizing: 'border-box',
-              }}
-            >
-              SALVAR
-            </Button>
-            <Button
-              type="reset"
-              variant="contained"
-              color="error"
-              style={{ width: '117px', height: '36px', marginLeft: '8px', fontFamily: 'Rubik, sans-serif', backgroundColor: '#B21447', color: '#fff', border: 'none', borderRadius: '5px', boxSizing: 'border-box' }}
-            >
-              CANCELAR
-            </Button>
-          </div>
-        </form>
+          </form>
+        </Container>
       </Container >
     </>
   );
