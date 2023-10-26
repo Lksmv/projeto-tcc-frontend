@@ -1,5 +1,5 @@
 import { Helmet } from 'react-helmet-async';
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   Container,
   Typography,
@@ -10,13 +10,16 @@ import {
   Link,
   MenuItem,
   ImageList,
-  ImageListItem
+  ImageListItem,
+  IconButton
 } from '@mui/material';
 import axios from 'axios';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import { BACKEND_URL } from '../utils/backEndUrl';
-import Dropzone from 'react-dropzone';
+import Dropzone, { useDropzone } from 'react-dropzone';
 import { NumericFormat } from 'react-number-format';
+import ImageIcon from '@mui/icons-material/Image';
+import CloseIcon from '@mui/icons-material/Close';
 
 export default function ProductCreatePage() {
   const estiloCampo = {
@@ -50,10 +53,26 @@ export default function ProductCreatePage() {
     observacoes: "",
   });
 
-  const handleImageUpload = (acceptedFiles) => {
-    // Aqui você pode processar os arquivos de imagem, fazer o upload para o servidor, etc.
-    // Em seguida, atualize o estado do formulário com as informações das imagens.
-    setFormValues({ ...formValues, imagens: acceptedFiles });
+  const [imagens, setImagens] = useState([]);
+
+  const onDrop = useCallback(acceptedFiles => {
+
+    if (acceptedFiles?.length) {
+      setImagens(previousFiles => [
+        ...previousFiles,
+        ...acceptedFiles.map(imagem =>
+          Object.assign(imagem, { preview: URL.createObjectURL(imagem) })
+        )
+      ])
+    }
+  }, []);
+
+  const { getRootProps, getInputProps } = useDropzone({ onDrop });
+
+  const removeImage = (index) => {
+    const updatedFiles = [...imagens];
+    updatedFiles.splice(index, 1);
+    setImagens(updatedFiles);
   };
 
   const handleFieldChange = (e) => {
@@ -232,25 +251,6 @@ export default function ProductCreatePage() {
               </TextField>
             </Grid>
             <Grid item xs={12} sm={6} display="flex" flexDirection="column" sx={{ alignItems: 'left' }}>
-              {/* Upload Imagem */}
-              <Dropzone onDrop={(acceptedFiles) => handleImageUpload(acceptedFiles)}>
-                {({ getRootProps, getInputProps }) => (
-                  <div {...getRootProps()} style={{ cursor: 'pointer', backgroundColor: '#fff', borderRadius: '10px', padding: '16px', textAlign: 'center' }}>
-                    <input {...getInputProps()} />
-                    <p>Arraste e solte as imagens ou clique para fazer upload</p>
-                  </div>
-                )}
-              </Dropzone>
-              {/* Exibir prévia das imagens após o upload */}
-              {formValues.imagens.length > 0 && (
-                <ImageList cols={3} rowHeight={160}>
-                  {formValues.imagens.map((imagem, index) => (
-                    <ImageListItem key={index}>
-                      <img src={URL.createObjectURL(imagem)} alt={`Imagem ${index}`} />
-                    </ImageListItem>
-                  ))}
-                </ImageList>
-              )}
               <NumericFormat
                 name="valor"
                 customInput={TextField}
@@ -282,6 +282,46 @@ export default function ProductCreatePage() {
                   backgroundColor: '#fff'
                 }}
               />
+              {/* Upload Imagem */}
+              <div {...getRootProps()} style={{ cursor: 'pointer', backgroundColor: '#fff', borderRadius: '10px', margin: '8px', maxWidth: '50%' }}>
+                <input {...getInputProps()} placeholder='Selecione' />
+                <IconButton color="#8E8E8E" textAlign='center' fontSize='13px'>
+                  <ImageIcon />
+                  <p style={{ paddingLeft: '8px', textAlign: 'center', fontSize: '15px' }} >Arraste e solte os arquivos ou clique para selecionar...</p>
+                </IconButton>
+              </div>
+              {/* Preview Imagem */}
+              <div style={{ maxHeight: '200px', overflow: 'auto', margin: '8px' }}>
+                <ImageList cols={3} rowHeight={160}>
+                  {imagens.map((imagem, index) => (
+                    <ImageListItem key={index} sx={{ width: '100%', height: 'auto' }}>
+                      <img
+                        src={URL.createObjectURL(imagem)}
+                        alt={`Imagem ${index}`}
+                        style={{ objectFit: 'cover', width: '100%', height: '100%' }}
+                      />
+                      <IconButton
+                        onClick={() => removeImage(index)}
+                        sx={{
+                          position: 'absolute',
+                          top: 8,
+                          right: 8,
+                          backgroundColor: '#8E8E8E',
+                          borderRadius: '50%',
+                          fontSize: '2px',
+                          width: '15px',
+                          height: '15px',
+                          '&:hover': {
+                            backgroundColor: '#B21447',
+                          },
+                        }}
+                      >
+                        <CloseIcon sx={{ color: '#fff', fontSize: '15px' }} />
+                      </IconButton>
+                    </ImageListItem>
+                  ))}
+                </ImageList>
+              </div>
             </Grid>
           </Grid>
           <div className="botoes-cadastro-produto" style={{ display: 'flex', justifyContent: 'center', marginTop: '16px', marginBottom: '16px' }}>
