@@ -6,6 +6,8 @@ import { AuthProvider, useAuth } from '../../../components/context/authProvider'
 const MENU_OPTIONS = [
   {
     label: 'Área administrador',
+    route: '/usuario',
+    requiresAdmin: true,
   },
 ];
 
@@ -32,6 +34,18 @@ const AccountPopover = ({ userData }) => {
       logout(); // Deslogar apenas se o usuário estiver autenticado
     }
     navigate('/login');
+    handleClose();
+  };
+
+  const handleOptionClick = (option) => {
+
+    if (option.requiresAdmin) {
+      if (cargo === "ROLE_ADMIN")
+        navigate(option.route);
+    } else {
+      navigate(option.route);
+    }
+
     handleClose();
   };
 
@@ -64,7 +78,11 @@ const AccountPopover = ({ userData }) => {
 
         <Stack sx={{ p: 1 }}>
           {MENU_OPTIONS.map((option) => (
-            <MenuItem key={option.label} onClick={handleClose}>
+            <MenuItem
+              key={option.label}
+              onClick={() => handleOptionClick(option)}
+              disabled={option.requiresAdmin && cargo == "ROLE_FUNCIONARIO"}
+            >
               {option.label}
             </MenuItem>
           ))}

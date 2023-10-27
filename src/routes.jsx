@@ -18,6 +18,7 @@ import CatalogPage from './pages/CatalogPage';
 import RentalCreatePage from './pages/RentalCreatePage';
 import ProductCreatePage from './pages/ProductCreatePage';
 import ClientInfoPage from './pages/ClientInfoPage';
+import UserPage from './pages/UserPage';
 
 export default function Router() {
   const { authState } = useAuth();
@@ -64,6 +65,10 @@ export default function Router() {
         {
           path: '/aluguel/cadastro',
           element: isAuthenticated ? <RentalCreatePage /> : <Navigate to="/login" />,
+        },
+        {
+          path: '/usuario',
+          element: isAuthenticated ? <UserPage /> : <Navigate to="/login" />,
         },
       ],
     },
