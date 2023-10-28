@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Helmet } from 'react-helmet-async';
+import { Link as RouterLink } from 'react-router-dom';
 import {
   Card,
   Table,
@@ -75,7 +76,7 @@ export default function ClientPage() {
         <title>Cliente</title>
       </Helmet>
       <Container maxWidth="xl" sx={{ marginBottom: "30px" }}>
-        <Container maxWidth="100%" style={{ marginTop: '16px', alignContent: 'left' }}>
+        <Container maxWidth="100%" style={{ alignContent: 'left' }}>
           <Typography variant="h4" color="text.primary" sx={{ mb: 1 }}>
             Cliente
           </Typography>
@@ -103,27 +104,30 @@ export default function ClientPage() {
                 {clientList.map((row) => {
                   const { idCliente, nome, telefone, cpf } = row;
 
+                  const cellStyles = {
+                    textDecoration: 'none', 
+                  };
+
                   return (
-                    <TableRow key={idCliente} hover tabIndex={-1}>
+                    <TableRow
+                      key={idCliente}
+                      component={RouterLink}
+                      style={cellStyles}
+                      to={`/cliente/detalhes/${idCliente}`}
+                    >
                       <TableCell component="th" scope="row" padding="normal">
                         <Stack direction="row" alignItems="center" spacing={2}>
-                          <Typography variant="subtitle2" noWrap>
+                          <Typography variant="subtitle2"  noWrap>
                             {idCliente}
                           </Typography>
                         </Stack>
                       </TableCell>
-                      <TableCell align="left">{nome}</TableCell>
-                      <TableCell align="left">{telefone}</TableCell>
-                      <TableCell align="left">{cpf}</TableCell>
+                      <TableCell align="left" >{nome}</TableCell>
+                      <TableCell align="left" >{telefone}</TableCell>
+                      <TableCell align="left" >{cpf}</TableCell>
                     </TableRow>
                   );
                 })}
-
-                {emptyRows > 0 && (
-                  <TableRow style={{ height: 53 * emptyRows }}>
-                    <TableCell colSpan={6} />
-                  </TableRow>
-                )}
               </TableBody>
             </Table>
           </TableContainer>

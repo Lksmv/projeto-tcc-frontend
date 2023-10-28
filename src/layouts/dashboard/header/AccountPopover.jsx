@@ -1,19 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Divider, Typography, Stack, MenuItem, Avatar, IconButton, Popover } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from '../../../components/context/authProvider';
+import { useAuth } from '../../../components/context/authProvider';
 
 const MENU_OPTIONS = [
   {
-    label: 'Área administrador',
+    id: 1,
+    label: 'Área usuário',
     route: '/usuario',
+    requiresAdmin: true,
+  },
+  {
+    id: 2,
+    label: 'Área funcionários',
+    route: '/funcionario',
     requiresAdmin: true,
   },
 ];
 
-const AccountPopover = ({ userData }) => {
+const AccountPopover = () => {
   const navigate = useNavigate();
   const { authState, logout } = useAuth();
+  const [userData, setUserData] = useState(null);
+
+  useEffect(() => {
+    const storedUserData = JSON.parse(localStorage.getItem("userData"));
+    setUserData(storedUserData);
+  }, []);
+
   const token = userData?.token;
   const usuario = userData?.usuario;
   const cargo = userData?.cargo;
@@ -38,10 +52,10 @@ const AccountPopover = ({ userData }) => {
   };
 
   const handleOptionClick = (option) => {
-
     if (option.requiresAdmin) {
-      if (cargo === "ROLE_ADMIN")
+      if (cargo === "ROLE_ADMIN") {
         navigate(option.route);
+      }
     } else {
       navigate(option.route);
     }
@@ -79,9 +93,9 @@ const AccountPopover = ({ userData }) => {
         <Stack sx={{ p: 1 }}>
           {MENU_OPTIONS.map((option) => (
             <MenuItem
-              key={option.label}
+              key={option.id}
               onClick={() => handleOptionClick(option)}
-              disabled={option.requiresAdmin && cargo == "ROLE_FUNCIONARIO"}
+              disabled={option.requiresAdmin && cargo === "ROLE_FUNCIONARIO"}
             >
               {option.label}
             </MenuItem>

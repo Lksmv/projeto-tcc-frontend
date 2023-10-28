@@ -15,12 +15,13 @@ import axios from 'axios';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import InputMask from 'react-input-mask';
 import { BACKEND_URL } from '../utils/backEndUrl';
+import { formatOutputDate, formatInputDate } from '../utils/formatTime';
 
 export default function ClientCreatePage() {
   const estiloCampo = {
     margin: '8px',
-    borderRadius: '10px',
-    width: '90%'
+    borderRadius: '5px 5px 0 0',
+    width: '90%',
   };
 
   const buttonStyle = {
@@ -37,25 +38,34 @@ export default function ClientCreatePage() {
     width: '90px',
     height: '36px',
     marginRight: '8px',
+    transition: 'background-color 0.3s',
+    '&:hover': {
+      backgroundColor: '#1565C0',
+    },
+    '&:active': {
+      backgroundColor: '#0D47A1',
+    },
   };
 
   const cancelarButtonStyle = {
     ...buttonStyle,
-    backgroundColor: '#E91E63', // Cor de erro do Material Design
+    backgroundColor: '#E91E63',
     color: '#fff',
     width: '117px',
     height: '36px',
     marginLeft: '8px',
+    transition: 'background-color 0.3s',
+    '&:hover': {
+      backgroundColor: '#D81B60',
+    },
   };
-
-
 
   const estados = [
     'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG',
     'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
   ];
   const [formValues, setFormValues] = useState({
-    codigo: "",
+    codigo: 0,
     nome: "",
     cpf: "",
     dataNascimento: "",
@@ -69,22 +79,15 @@ export default function ClientCreatePage() {
     bairro: "",
   });
 
-  const formatInputDate = (rawDate) => {
-    const dateRegex = /^(\d{2})-(\d{2})-(\d{4})$/;
-    if (dateRegex.test(rawDate)) {
-      const parts = rawDate.split('-');
-      const formattedDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
-      return formattedDate;
-    } else {
-      return rawDate;
-    }
-  };
-
   const navigate = useNavigate()
 
   const handleFieldChange = (e) => {
     const { name, value } = e.target;
     setFormValues({ ...formValues, [name]: value });
+  };
+
+  const handleCancel = () => {
+    navigate('/cliente');
   };
 
   const handleSubmit = async (e) => {
@@ -143,33 +146,32 @@ export default function ClientCreatePage() {
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6} display="flex" flexDirection="column" alignItems='center'>
                 <TextField
-                  name="codigo"
+                  name="idCliente"
                   label="Código"
-                  variant="outlined"
+                  variant="filled"
                   fullWidth
                   style={estiloCampo}
-                  value={formValues.codigo}
-                  onChange={handleFieldChange}
-                  disabled={true}
-                  sx={{
-                    backgroundColor: '#e9e9e9'
-                  }}
-                  InputLabelProps={{
-                    style: { color: '#9d9d9d' } 
-                }}
-                />
-                <TextField
-                  name="nome"
-                  label="Nome"
-                  variant="outlined"
-                  fullWidth
-                  style={estiloCampo}
-                  value={formValues.nome}
+                  value={formValues.idCliente}
                   onChange={handleFieldChange}
                   sx={{
                     backgroundColor: '#fff'
                   }}
+                  inputProps={{
+                    readOnly: true,
+                  }}
+                />
+                <TextField
+                  name="nome"
+                  label="Nome"
+                  variant="filled"
+                  fullWidth
+                  style={estiloCampo}
+                  value={formValues.nome}
+                  onChange={handleFieldChange}
                   required
+                  sx={{
+                    backgroundColor: '#fff'
+                  }}
                 />
                 <InputMask
                   mask="999.999.999-99"
@@ -180,7 +182,7 @@ export default function ClientCreatePage() {
                     <TextField
                       name="cpf"
                       label="CPF"
-                      variant="outlined"
+                      variant="filled"
                       fullWidth
                       style={estiloCampo}
                       sx={{
@@ -199,7 +201,7 @@ export default function ClientCreatePage() {
                     <TextField
                       name="dataNascimento"
                       label="Data de Nascimento"
-                      variant="outlined"
+                      variant="filled"
                       fullWidth
                       style={estiloCampo}
                       sx={{
@@ -219,7 +221,7 @@ export default function ClientCreatePage() {
                     <TextField
                       name="telefone"
                       label="Telefone"
-                      variant="outlined"
+                      variant="filled"
                       fullWidth
                       style={estiloCampo}
                       sx={{
@@ -232,7 +234,7 @@ export default function ClientCreatePage() {
                 <TextField
                   name="redeSocial"
                   label="Rede Social"
-                  variant="outlined"
+                  variant="filled"
                   fullWidth
                   style={estiloCampo}
                   value={formValues.redeSocial}
@@ -244,7 +246,7 @@ export default function ClientCreatePage() {
                 <TextField
                   name="pessoasAutorizadas"
                   label="Pessoas Autorizadas"
-                  variant="outlined"
+                  variant="filled"
                   fullWidth
                   style={estiloCampo}
                   value={formValues.pessoasAutorizadas}
@@ -256,7 +258,7 @@ export default function ClientCreatePage() {
                 <TextField
                   name="observacoes"
                   label="Observações"
-                  variant="outlined"
+                  variant="filled"
                   multiline
                   rows={4}
                   fullWidth
@@ -278,7 +280,7 @@ export default function ClientCreatePage() {
                     <TextField
                       name="cep"
                       label="CEP"
-                      variant="outlined"
+                      variant="filled"
                       fullWidth
                       style={estiloCampo}
                       sx={{
@@ -289,7 +291,7 @@ export default function ClientCreatePage() {
                 </InputMask>
                 <TextField
                   name="uf"
-                  variant="outlined"
+                  variant="filled"
                   select
                   label="Estado"
                   fullWidth
@@ -318,7 +320,7 @@ export default function ClientCreatePage() {
                   name="endereco"
                   label="Endereço"
                   style={estiloCampo}
-                  variant="outlined"
+                  variant="filled"
                   fullWidth
                   sx={{
                     backgroundColor: '#fff'
@@ -329,7 +331,7 @@ export default function ClientCreatePage() {
                 <TextField
                   name="bairro"
                   label="Bairro"
-                  variant="outlined"
+                  variant="filled"
                   style={estiloCampo}
                   fullWidth
                   sx={{
@@ -341,11 +343,20 @@ export default function ClientCreatePage() {
               </Grid>
             </Grid>
             <Grid className="botoes-cadastro-cliente" item xs={12} sm={6} style={{ display: 'flex', justifyContent: 'end' }}>
-              <Button type="submit" variant="contained" style={salvarButtonStyle}>
+              <Button
+                type="submit"
+                variant="contained"
+                style={salvarButtonStyle}
+              >
                 SALVAR
               </Button>
 
-              <Button type="reset" variant="contained" style={cancelarButtonStyle}>
+              <Button
+                type="reset"
+                variant="contained"
+                style={cancelarButtonStyle}
+                onClick={handleCancel}
+              >
                 CANCELAR
               </Button>
             </Grid>

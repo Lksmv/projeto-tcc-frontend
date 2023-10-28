@@ -1,7 +1,6 @@
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import { Box, Stack, AppBar, Toolbar, IconButton, Grid } from '@mui/material';
-import { bgGradient } from '../../../utils/cssStyles';
 import Imagem from '../../../assets/logo.png'
 import AccountPopover from './AccountPopover';
 import MenuIcon from '@mui/icons-material/Menu';
@@ -33,7 +32,7 @@ Header.propTypes = {
   onOpenNav: PropTypes.func,
 };
 
-export default function Header({ onOpenNav, userData}) {
+export default function Header({ onOpenNav}) {
   return (
     <StyledRoot>
       <StyledToolbar>
@@ -53,7 +52,7 @@ export default function Header({ onOpenNav, userData}) {
           </Box>
         </Grid>
         <Stack direction="row" alignItems="center" spacing={{ xs: 0.5, sm: 1 }}>
-          <AccountPopover userData={userData} />
+          <AccountPopover/>
         </Stack>
       </StyledToolbar>
     </StyledRoot>

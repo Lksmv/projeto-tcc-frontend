@@ -517,9 +517,6 @@ export default function ClienInfoPage() {
                                                     </InputAdornment>
                                                 ),
                                             }}
-                                            thousandSeparator="."
-                                            decimalSeparator=","
-                                            decimalScale={2}
                                         />
 
                                         <TextField
