@@ -36,7 +36,7 @@ ListToolBar.propTypes = {
   toPage: PropTypes.string,
 };
 
-export default function ListToolBar({ filtro, onfiltro, placeHolder, buttonText, toPage }) {
+export default function ListToolBar({ filtro, onfiltro, placeHolder, buttonText, toPage, popup }) {
   return (
     <StyledRoot>
       <StyledSearch
@@ -50,23 +50,22 @@ export default function ListToolBar({ filtro, onfiltro, placeHolder, buttonText,
         }
       />
 
-      {buttonText && toPage && (
-        <Box sx={{ display: 'flex' }}>
-          <Button
-            variant="contained"
-            sx={{
-              backgroundColor: '#336DC3',
-              color: '#fff',
-              maxWidth: '190px',
-            }}
-            startIcon={<AddIcon />}
-            to={toPage}
-            component={RouterLink}
-          >
-            {buttonText}
-          </Button>
-        </Box>
-      )}
+      <Box sx={{ display: 'flex' }}>
+        <Button
+          variant="contained"
+          sx={{
+            backgroundColor: '#336DC3',
+            color: '#fff',
+            maxWidth: '190px',
+          }}
+          startIcon={<AddIcon />}
+          to={toPage}
+          component={RouterLink}
+          onClick={popup}
+        >
+          {buttonText}
+        </Button>
+      </Box>
     </StyledRoot>
   );
 }

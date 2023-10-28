@@ -20,6 +20,8 @@ import ProductCreatePage from './pages/ProductCreatePage';
 import ProductInfoPage from './pages/ProductInfoPage';
 import ClientInfoPage from './pages/ClientInfoPage';
 import UserPage from './pages/UserPage';
+import PaymentPage from './pages/PaymentPage';
+import CategoryPage from './pages/CategoryPage';
 
 export default function Router() {
   const { authState } = useAuth();
@@ -119,6 +121,36 @@ export default function Router() {
           path: '/cliente/detalhes/:clientId',
           element: <ClientInfoPage />
         },
+      ]
+    },
+    {
+      path: '/formaPagamento',
+      element: isAuthenticated ? (
+        <DashboardLayout>
+        </DashboardLayout>
+      ) : (
+        <Navigate to="/login" />
+      ),
+      children: [
+        {
+          index: true,
+          element: <PaymentPage />
+        }
+      ]
+    },
+    {
+      path: '/categoria',
+      element: isAuthenticated ? (
+        <DashboardLayout>
+        </DashboardLayout>
+      ) : (
+        <Navigate to="/login" />
+      ),
+      children: [
+        {
+          index: true,
+          element: <CategoryPage />
+        }
       ]
     },
     {

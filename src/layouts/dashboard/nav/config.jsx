@@ -3,9 +3,11 @@ import CheckroomIcon from '@mui/icons-material/Checkroom';
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
 import SummarizeIcon from '@mui/icons-material/Summarize';
-import {Typography} from '@mui/material';
+import { Typography } from '@mui/material';
+import PaymentIcon from '@mui/icons-material/Payment';
+import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 
-const navConfig = [
+export const navConfig = [
   {
     title: (
       <Typography variant="body1" sx={{ color: '#FFF' }}>
@@ -13,7 +15,7 @@ const navConfig = [
       </Typography>
     ),
     path: '/dashboard',
-    icon: <HomeIcon sx={{color:'#fff'}}/>,
+    icon: <HomeIcon sx={{ color: '#fff' }} />,
   },
   {
     title: (
@@ -22,7 +24,7 @@ const navConfig = [
       </Typography>
     ),
     path: '/cliente',
-    icon: <PeopleAltIcon sx={{color:'#fff'}}/>,
+    icon: <PeopleAltIcon sx={{ color: '#fff' }} />,
   },
   {
     title: (
@@ -31,16 +33,16 @@ const navConfig = [
       </Typography>
     ),
     path: '/produto',
-    icon: <CheckroomIcon sx={{color:'#fff'}}/>,
+    icon: <CheckroomIcon sx={{ color: '#fff' }} />,
   },
   {
     title: (
       <Typography variant="body1" sx={{ color: '#FFF' }}>
-        Movimentação
+        Aluguel
       </Typography>
     ),
     path: '/aluguel',
-    icon: <CurrencyExchangeIcon sx={{color:'#fff'}}/>,
+    icon: <CurrencyExchangeIcon sx={{ color: '#fff' }} />,
   },
   {
     title: (
@@ -49,8 +51,30 @@ const navConfig = [
       </Typography>
     ),
     path: '/relatorio',
-    icon: <SummarizeIcon sx={{color:'#fff'}}/>,
+    icon: <SummarizeIcon sx={{ color: '#fff' }} />,
   }
 ];
 
-export default navConfig;
+export const navConfigAdmin = [
+
+  ...navConfig, 
+  {
+    title: (
+      <Typography variant="body1" sx={{ color: '#FFF' }}>
+        Forma de Pagamento
+      </Typography>
+    ),
+    path: '/formaPagamento',
+    icon: <PaymentIcon sx={{ color: '#fff' }} />,
+  },
+  {
+    title: (
+      <Typography variant="body1" sx={{ color: '#FFF' }}>
+        Categoria
+      </Typography>
+    ),
+    path: '/categoria',
+    icon: <LocalOfferIcon sx={{ color: '#fff' }} />,
+  }
+
+];

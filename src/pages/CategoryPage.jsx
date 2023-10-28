@@ -26,51 +26,13 @@ import { ListHead, ListToolBar } from '../sections/@dashboard/list';
 const TABLE_HEAD = [
   { id: 'codigo', label: 'Código', alignRight: false },
   { id: 'nome', label: 'Nome', alignRight: false },
-  { id: 'login', label: 'Login', alignRight: false },
-  { id: 'cargo', label: 'Cargo', alignRight: false },
 ];
 
 export default function UserPage() {
   const estiloCampo = {
     margin: '8px',
     borderRadius: '5px 5px 0 0',
-    maxWidth: '90%'
-  };
-
-  const buttonStyle = {
-    fontFamily: 'Roboto, sans-serif',
-    borderRadius: '4px',
-    boxSizing: 'border-box',
-    textTransform: 'none',
-  };
-
-  const salvarButtonStyle = {
-    ...buttonStyle,
-    backgroundColor: '#1976D2',
-    color: '#fff',
-    width: '90px',
-    height: '36px',
-    marginRight: '8px',
-    transition: 'background-color 0.3s',
-    '&:hover': {
-      backgroundColor: '#1565C0',
-    },
-    '&:active': {
-      backgroundColor: '#0D47A1',
-    },
-  };
-
-  const cancelarButtonStyle = {
-    ...buttonStyle,
-    backgroundColor: '#E91E63',
-    color: '#fff',
-    width: '117px',
-    height: '36px',
-    marginLeft: '8px',
-    transition: 'background-color 0.3s',
-    '&:hover': {
-      backgroundColor: '#D81B60',
-    },
+    maxWidth: '50%'
   };
 
   const [page, setPage] = useState(0);
@@ -97,7 +59,7 @@ export default function UserPage() {
         params: {
           page: page,
           size: rowsPerPage,
-          filtro: filtro, //fazer o filtro no backend
+          filtro: filtro,
         },
       });
       setUserList(response.data.content);
@@ -180,7 +142,7 @@ export default function UserPage() {
               <ListHead headLabel={TABLE_HEAD} rowCount={totalItems} />
               <TableBody>
                 {userList.map((row) => {
-                  const { codigo, nome, login, cargo } = row;
+                  const { codigo, nome} = row;
 
                   return (
                     <TableRow key={codigo} hover tabIndex={-1}>
@@ -192,8 +154,6 @@ export default function UserPage() {
                         </Stack>
                       </TableCell>
                       <TableCell align="left">{nome}</TableCell>
-                      <TableCell align="left">{login}</TableCell>
-                      <TableCell align="left">{cargo}</TableCell>
                     </TableRow>
                   );
                 })}
@@ -218,16 +178,7 @@ export default function UserPage() {
           />
         </Card>
 
-        <Container style={{
-          backgroundColor: '#c4c4c4',
-          transition: 'box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms',
-          overflow: 'hidden',
-          position: 'relative',
-          boxShadow: 'rgba(0, 0, 0, 0.2) 0px 0px 2px 0px, rgba(0, 0, 0, 0.12) 0px 12px 24px -4px',
-          borderRadius: '16px',
-          margin: '24px 0',
-          align: 'center',
-        }}>
+        <Container>
           <form onSubmit={handleSubmit}>
             <Grid container spacing={2} margin={2}>
               <Grid item xs={12} sm={6} display="flex" flexDirection="column" alignItems='left'>
@@ -314,14 +265,26 @@ export default function UserPage() {
               <Button
                 type="submit"
                 variant="contained"
-                style={salvarButtonStyle}
+                color="primary"
+                style={{
+                  width: '90px',
+                  height: '36px',
+                  marginRight: '8px',
+                  fontFamily: 'Rubik, sans-serif',
+                  backgroundColor: '#336DC3',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '5px',
+                  boxSizing: 'border-box',
+                }}
               >
                 SALVAR
               </Button>
               <Button
                 type="reset"
                 variant="contained"
-                style={cancelarButtonStyle}
+                color="error"
+                style={{ width: '117px', height: '36px', marginLeft: '8px', fontFamily: 'Rubik, sans-serif', backgroundColor: '#B21447', color: '#fff', border: 'none', borderRadius: '5px', boxSizing: 'border-box' }}
               >
                 CANCELAR
               </Button>

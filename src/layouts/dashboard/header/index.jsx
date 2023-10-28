@@ -9,7 +9,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 
 const NAV_WIDTH = -1;
 const HEADER_MOBILE = 54;
-const HEADER_DESKTOP = 75;
+const HEADER_DESKTOP = 70;
 
 const StyledRoot = styled(AppBar)(({ theme }) => ({
   zIndex: theme.zIndex.drawer + 1,

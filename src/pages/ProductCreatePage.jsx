@@ -351,7 +351,7 @@ export default function ProductCreatePage() {
                 {/* Upload Imagem */}
                 <div {...getRootProps()} style={{ cursor: 'pointer', backgroundColor: '#fff', borderRadius: '10px', margin: '8px', maxWidth: '90%' }}>
                   <input {...getInputProps()} placeholder='Selecione' />
-                  <IconButton color="#8E8E8E" textAlign='center' fontSize='13px'>
+                  <IconButton color="#8E8E8E" textalign='center' fontSize='13px'>
                     <ImageIcon />
                     <p style={{ paddingLeft: '8px', textAlign: 'center', fontSize: '15px' }} >Arraste e solte os arquivos ou clique para selecionar...</p>
                   </IconButton>
@@ -390,7 +390,7 @@ export default function ProductCreatePage() {
                 </div>
               </Grid>
             </Grid>
-            <div className="botoes-cadastro-produto" item xs={12} sm={6} style={{ display: 'flex', justifyContent: 'end' }}>
+            <div className="botoes-cadastro-produto" xs={12} sm={6} style={{ display: 'flex', justifyContent: 'end' }}>
               <Button
                 type="submit"
                 variant="contained"                
