@@ -27,56 +27,99 @@ export default function Router() {
 
   const routes = useRoutes([
     {
+      path: '/dashboard',
       element: isAuthenticated ? (
         <DashboardLayout>
-          <DashboardAppPage />
         </DashboardLayout>
       ) : (
         <Navigate to="/login" />
       ),
       children: [
         {
-          path: '/dashboard',
-          element: isAuthenticated ? <DashboardAppPage /> : <Navigate to="/login" />,
           index: true,
-        },
+          element: <DashboardAppPage />
+        }
+      ]
+    },
+    {
+      path: '/usuario',
+      element: isAuthenticated ? (
+        <DashboardLayout>
+        </DashboardLayout>
+      ) : (
+        <Navigate to="/login" />
+      ),
+      children: [
         {
-          path: '/cliente',
-          element: isAuthenticated ? <ClientPage /> : <Navigate to="/login" />,
-        },
+          index: true,
+          element: <UserPage />
+        }
+      ]
+    },
+    {
+      path: '/aluguel',
+      element: isAuthenticated ? (
+        <DashboardLayout>
+        </DashboardLayout>
+      ) : (
+        <Navigate to="/login" />
+      ),
+      children: [
         {
-          path: '/cliente/cadastro',
-          element: isAuthenticated ? <ClientCreatePage /> : <Navigate to="/login" />,
-        }, 
-        {
-          path: '/cliente/detalhes/:clientId',
-          element: isAuthenticated ? <ClientInfoPage /> : <Navigate to="/login" />,
-        },
-        {
-          path: '/produto',
-          element: isAuthenticated ? <ProductPage /> : <Navigate to="/login" />,
-        },
-        {
-          path: '/produto/cadastro',
-          element: isAuthenticated ? <ProductCreatePage /> : <Navigate to="/login" />,
-        },
-        {
-          path: '/produto/detalhes/:productId',
-          element: isAuthenticated ? <ProductInfoPage /> : <Navigate to="/login" />,
-        },
-        {
-          path: '/aluguel',
-          element: isAuthenticated ? <RentalPage /> : <Navigate to="/login" />,
+          index: true,
+          element: <RentalPage />
         },
         {
           path: '/aluguel/cadastro',
-          element: isAuthenticated ? <RentalCreatePage /> : <Navigate to="/login" />,
+          element: <RentalCreatePage />
+        }
+      ]
+    },
+    {
+      path: '/produto',
+      element: isAuthenticated ? (
+        <DashboardLayout>
+        </DashboardLayout>
+      ) : (
+        <Navigate to="/login" />
+      ),
+      children: [
+        {
+          index: true,
+          element: <ProductPage />
         },
         {
-          path: '/usuario',
-          element: isAuthenticated ? <UserPage /> : <Navigate to="/login" />,
+          path: '/produto/cadastro',
+          element: <ProductCreatePage />
         },
-      ],
+        {
+          path: '/produto/detalhes/:productId',
+          element: <ProductInfoPage />
+        },
+      ]
+    },
+    {
+      path: '/cliente',
+      element: isAuthenticated ? (
+        <DashboardLayout>
+        </DashboardLayout>
+      ) : (
+        <Navigate to="/login" />
+      ),
+      children: [
+        {
+          index: true,
+          element: <ClientPage />
+        },
+        {
+          path: '/cliente/cadastro',
+          element: <ClientCreatePage />
+        },
+        {
+          path: '/cliente/detalhes/:clientId',
+          element: <ClientInfoPage />
+        },
+      ]
     },
     {
       path: '/',
@@ -88,12 +131,20 @@ export default function Router() {
         {
           index: true,
           element: <HomePage />
-        },
-        {
-          path: '/catalogo',
-          element: <CatalogPage />,
-        },
+        }
       ],
+    },
+    {
+      path: '/catalogo',
+      element: (
+        <CatalogoLayout>
+        </CatalogoLayout>),
+      children: [
+        {
+          index: true,
+          element: <CatalogPage />
+        },
+      ]
     },
     {
       path: '/login',

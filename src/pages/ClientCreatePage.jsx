@@ -79,6 +79,8 @@ export default function ClientCreatePage() {
     bairro: "",
   });
 
+  const cpfRef = React.createRef();
+  
   const navigate = useNavigate()
 
   const handleFieldChange = (e) => {
@@ -189,6 +191,7 @@ export default function ClientCreatePage() {
                         backgroundColor: '#fff'
                       }}
                       required
+                      inputRef={cpfRef}
                     />
                   )}
                 </InputMask>

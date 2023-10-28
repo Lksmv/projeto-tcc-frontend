@@ -251,7 +251,7 @@ export default function ClienInfoPage() {
             <Container>
                 <Container maxWidth="lg" style={{ paddingLeft: '20px', paddingRight: '20px' }}>
                     <Typography variant="h4" color="text.primary" sx={{ mb: 1 }}>
-                    Informações de cliente
+                        Informações de cliente
                     </Typography>
                     <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />} aria-label="breadcrumb" sx={{ mb: 2 }}>
                         <Link color="inherit" href="/dashboard">
@@ -521,15 +521,15 @@ export default function ClienInfoPage() {
 
                                         <TextField
                                             name="creditos"
-                                            label="Créditos"
                                             variant="filled"
                                             multiline
                                             fullWidth
-                                            style={estiloCampo}
+                                            style={{ ...estiloCampo, paddingTop: 0 }}
                                             value={formValues.observacoesCredito}
                                             onChange={handleFieldChange}
                                             sx={{
-                                                backgroundColor: '#fff'
+                                                backgroundColor: '#fff',
+                                                pt: 0,
                                             }}
                                             inputProps={{
                                                 readOnly: true, // Campo somente leitura
