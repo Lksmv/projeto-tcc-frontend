@@ -26,9 +26,8 @@ import { BACKEND_URL } from '../utils/backEndUrl';
 import { NumericFormat } from 'react-number-format';
 import { formatOutputDate, formatInputDate } from '../utils/formatTime';
 
-export default function ClientEditPage() {
+export default function ClienInfoPage() {
     const { clientId } = useParams();
-
 
     const [formValues, setFormValues] = useState({
         idCliente: clientId,
@@ -54,7 +53,6 @@ export default function ClientEditPage() {
         valor: 0,
         observacoes: ""
     });
-
 
     const calculateCreditAndObservations = () => {
         const creditos = formValues.creditos;
@@ -191,7 +189,6 @@ export default function ClientEditPage() {
         setAddCreditDialogOpen(false);
     };
 
-
     useEffect(() => {
         const clientIdToEdit = clientId;
         axios.get(BACKEND_URL + `cliente/${clientIdToEdit}`)
@@ -249,12 +246,12 @@ export default function ClientEditPage() {
     return (
         <>
             <Helmet>
-                <title>Edição de cliente</title>
+                <title>Informações de cliente</title>
             </Helmet>
             <Container>
                 <Container maxWidth="lg" style={{ paddingLeft: '20px', paddingRight: '20px' }}>
                     <Typography variant="h4" color="text.primary" sx={{ mb: 1 }}>
-                        Edição de cliente
+                    Informações de cliente
                     </Typography>
                     <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />} aria-label="breadcrumb" sx={{ mb: 2 }}>
                         <Link color="inherit" href="/dashboard">
@@ -263,7 +260,7 @@ export default function ClientEditPage() {
                         <Link color="inherit" href="/cliente">
                             Cliente
                         </Link>
-                        <Typography variant="subtitle1" color="text.primary">Editar Cliente</Typography>
+                        <Typography variant="subtitle1" color="text.primary">Informações</Typography>
                     </Breadcrumbs>
                 </Container>
                 <Container style={{

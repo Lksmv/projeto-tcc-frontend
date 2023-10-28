@@ -17,6 +17,7 @@ import HomePage from './pages/HomePage';
 import CatalogPage from './pages/CatalogPage';
 import RentalCreatePage from './pages/RentalCreatePage';
 import ProductCreatePage from './pages/ProductCreatePage';
+import ProductInfoPage from './pages/ProductInfoPage';
 import ClientInfoPage from './pages/ClientInfoPage';
 import UserPage from './pages/UserPage';
 
@@ -46,7 +47,8 @@ export default function Router() {
         {
           path: '/cliente/cadastro',
           element: isAuthenticated ? <ClientCreatePage /> : <Navigate to="/login" />,
-        }, {
+        }, 
+        {
           path: '/cliente/detalhes/:clientId',
           element: isAuthenticated ? <ClientInfoPage /> : <Navigate to="/login" />,
         },
@@ -57,6 +59,10 @@ export default function Router() {
         {
           path: '/produto/cadastro',
           element: isAuthenticated ? <ProductCreatePage /> : <Navigate to="/login" />,
+        },
+        {
+          path: '/produto/detalhes/:productId',
+          element: isAuthenticated ? <ProductInfoPage /> : <Navigate to="/login" />,
         },
         {
           path: '/aluguel',

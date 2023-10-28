@@ -1,5 +1,6 @@
 import { Helmet } from 'react-helmet-async';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import {
   Container,
   Typography,
@@ -78,8 +79,10 @@ export default function ProductCreatePage() {
     'Nenhum', 'Feminino', 'Masculino'
   ];
 
+  const { productId } = useParams();
+
   const [formValues, setFormValues] = useState({
-    codigo: "",
+    codigo: productId,
     nome: "",
     categoria: "",
     marca: "",
@@ -88,40 +91,73 @@ export default function ProductCreatePage() {
     genero: "",
     valor: "",
     observacoes: "",
+    imagens: []
   });
 
-  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
-  const [imagens, setImagens] = useState([]);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [originalProductDetails, setOriginalProductDetails] = useState({ ...formValues });
 
   const onDrop = useCallback(acceptedFiles => {
-
     if (acceptedFiles?.length) {
-      setImagens(previousFiles => [
-        ...previousFiles,
-        ...acceptedFiles.map(imagem =>
-          Object.assign(imagem, { preview: URL.createObjectURL(imagem) })
-        )
-      ])
+      setFormValues({
+        ...formValues, imagens: (previousFiles => [
+          ...previousFiles,
+          ...acceptedFiles.map(imagem =>
+            Object.assign(imagem, { preview: URL.createObjectURL(imagem) })
+          )
+        ])
+      });
     }
   }, []);
 
   const { getRootProps, getInputProps } = useDropzone({ onDrop });
 
   const removeImage = (index) => {
-    const updatedFiles = [...imagens];
+    const updatedFiles = [...formValues.imagens];
     updatedFiles.splice(index, 1);
-    setImagens(updatedFiles);
+    setFormValues({ ...formValues, imagens: updatedFiles });
   };
+
+  const [hasChanges, setHasChanges] = useState(false);
 
   const handleFieldChange = (e) => {
     const { name, value } = e.target;
     setFormValues({ ...formValues, [name]: value });
+    setHasChanges(true);
   };
 
   const handleSnackbarClose = () => {
     setOpenSnackbar(false);
   };
+
+  const handleCancel = () => {
+    setFormValues({ ...originalProductDetails });
+    setHasChanges(false);
+  };
+
+  // useEffect(() => {
+  //   const productIdToEdit = productId;
+  //   axios.get(BACKEND_URL + `produto/${productIdToEdit}`)
+  //     .then((response) => {
+  //       const productDetails = response.data;
+  //       setFormValues({
+  //         ...productDetails,
+  //         imagens: productDetails.ImageList || [], //ver a lista certa de imagens
+  //       });
+  //       setOriginalProductDetails({
+  //         ...productDetails,
+  //         imagens: productDetails.ImageList || [], //ver a lista certa de imagens
+  //       });
+  //       setLoading(false);
+  //     })
+  //     .catch((error) => {
+  //       setError(error);
+  //       setLoading(false);
+  //     });
+  // }, [productId]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -139,6 +175,7 @@ export default function ProductCreatePage() {
       // Redirecione o usuário para a página de clientes (ou qualquer outra página desejada)
       setSuccess(true);
       setOpenSnackbar(true);
+      setHasChanges(false);
     } catch (error) {
       console.error('Erro ao salvar o cliente:', error);
     }
@@ -147,12 +184,12 @@ export default function ProductCreatePage() {
   return (
     <>
       <Helmet>
-        <title>Cadastro de produto</title>
+        <title>Informações de produto</title>
       </Helmet>
       <Container>
         <Container maxWidth="lg" style={{ paddingLeft: '20px', paddingRight: '20px' }}>
           <Typography variant="h4" color="text.primary" sx={{ mb: 1 }}>
-            Cadastro de produto
+            Informações de produto
           </Typography>
           <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />} aria-label="breadcrumb" sx={{ mb: 2 }}>
             <Link color="inherit" href="/dashboard">
@@ -161,7 +198,7 @@ export default function ProductCreatePage() {
             <Link color="inherit" href="/produto">
               Produto
             </Link>
-            <Typography variant="subtitle1" color="text.primary">Novo Produto</Typography>
+            <Typography variant="subtitle1" color="text.primary">Informações</Typography>
           </Breadcrumbs>
         </Container>
 
@@ -359,7 +396,7 @@ export default function ProductCreatePage() {
                 {/* Preview Imagem */}
                 <div style={{ maxHeight: '200px', overflow: 'auto', margin: '8px' }}>
                   <ImageList cols={3} rowHeight={160}>
-                    {imagens.map((imagem, index) => (
+                    {formValues.imagens.map((imagem, index) => (
                       <ImageListItem key={index} sx={{ width: '100%', height: 'auto' }}>
                         <img
                           src={URL.createObjectURL(imagem)}
@@ -393,14 +430,15 @@ export default function ProductCreatePage() {
             <div className="botoes-cadastro-produto" item xs={12} sm={6} style={{ display: 'flex', justifyContent: 'end' }}>
               <Button
                 type="submit"
-                variant="contained"                
+                variant="contained"
                 style={salvarButtonStyle}
               >
                 SALVAR
               </Button>
               <Button
                 type="reset"
-                variant="contained"                
+                variant="contained"
+                onClick={handleCancel}
                 style={cancelarButtonStyle}
               >
                 CANCELAR
