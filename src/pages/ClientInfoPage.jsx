@@ -23,6 +23,8 @@ import MuiAlert from '@mui/material/Alert';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import InputMask from 'react-input-mask';
 import { BACKEND_URL } from '../utils/backEndUrl';
+import { NumericFormat } from 'react-number-format';
+import { formatOutputDate, formatInputDate } from '../utils/formatTime';
 
 export default function ClientEditPage() {
     const { clientId } = useParams();
@@ -41,18 +43,42 @@ export default function ClientEditPage() {
         uf: "",
         endereco: "",
         bairro: "",
+        creditoSoma: "",
+        observacoesCredito: "",
         creditos: []
     });
 
+    const [creditoValues, setCreditoValues] = useState({
+        idCliente: "",
+        data: "",
+        valor: 0,
+        observacoes: ""
+    });
+
+
     const calculateCreditAndObservations = () => {
         const creditos = formValues.creditos;
-        const totalCredito = creditos.reduce((total, credito) => total + parseFloat(credito.valor), 0);
-        const todasObservacoes = creditos.map(credito => credito.observacoes).join('\n');
-        setFormValues({
-            ...formValues,
-            credito: totalCredito,
-            observacoesCredito: todasObservacoes,
-        });
+
+        if (creditos && creditos.length > 0) {
+            const observacoesCredito = creditos.reduce((observacoes, credito) => {
+                observacoes += `R$ ${credito.valor}  ${credito.observacoes} \n`;
+                return observacoes;
+            }, []);
+            const totalCredito = creditos.reduce((total, credito) => {
+                return total + parseFloat(credito.valor);
+            }, 0);
+
+            setFormValues((prevFormValues) => ({
+                ...prevFormValues,
+                observacoesCredito: observacoesCredito,
+                creditoSoma: totalCredito,
+            }));
+        } else {
+            setFormValues((prevFormValues) => ({
+                ...prevFormValues,
+                creditoSoma: 0,
+            }));
+        }
     };
 
     useEffect(() => {
@@ -60,30 +86,41 @@ export default function ClientEditPage() {
     }, [formValues.creditos]);
 
 
-    const handleAddCredit = async () => {
-        const novoCredito = {
-            idCliente: "",
-            data: "",
-            valor: "",
-            observacoes: ""
-        };
+    const convertCurrencyToNumber = (currencyString) => {
+        const numericString = currencyString.replace('R$', '').replace('.', '').replace(',', '.');
+        const numericValue = parseFloat(numericString);
+        return isNaN(numericValue) ? 0 : numericValue;
+    };
 
+    const addCredit = async () => {
         try {
-            const response = await axios.post(BACKEND_URL + 'credito', novoCredito);
-            const novaListaDeCreditos = [...formValues.creditos, novoCredito];
+            const valorConvertido = convertCurrencyToNumber(creditoValues.valor);
+            creditoValues.valor = valorConvertido;
+            const response = await axios.post(BACKEND_URL + 'credito', creditoValues);
+            const novaListaDeCreditos = [...formValues.creditos, response.data];
 
-            setFormValues({
-                ...formValues,
+            setFormValues((prevFormValues) => ({
+                ...prevFormValues,
                 creditos: novaListaDeCreditos,
-                credito: '',
+            }));
+
+            setCreditoValues({
+                ...creditoValues,
+                valor: 0,
+                observacoes: '',
             });
+
+            setHasChanges(true);
+
+            calculateCreditAndObservations();
         } catch (error) {
             console.error('Erro ao adicionar crédito:', error);
         }
     };
+
     const estiloCampo = {
         margin: '8px',
-        borderRadius: '10px',
+        borderRadius: '5px 5px 0 0',
         width: '90%',
     };
 
@@ -138,20 +175,39 @@ export default function ClientEditPage() {
 
     const handleOpenAddCreditDialog = () => {
         setAddCreditDialogOpen(true);
+        setCreditoValues({
+            ...creditoValues,
+            idCliente: formValues.idCliente, // Set the idCliente
+            data: new Date().toISOString(),
+        });
+    };
+
+    const handleCreditFieldChange = (e) => {
+        const { name, value } = e.target;
+        setCreditoValues({ ...creditoValues, [name]: value });
     };
 
     const handleCloseAddCreditDialog = () => {
         setAddCreditDialogOpen(false);
     };
 
+
     useEffect(() => {
         const clientIdToEdit = clientId;
         axios.get(BACKEND_URL + `cliente/${clientIdToEdit}`)
             .then((response) => {
                 const clientDetails = response.data;
-                setFormValues(clientDetails);
-                setOriginalClientDetails(clientDetails); // Salvar as informações originais
+                setFormValues({
+                    ...clientDetails,
+                    creditos: clientDetails.listaCreditos || [],
+                });
+                setOriginalClientDetails({
+                    ...clientDetails,
+                    creditos: clientDetails.listaCreditos || [],
+                });
                 setLoading(false);
+
+                calculateCreditAndObservations();
             })
             .catch((error) => {
                 setError(error);
@@ -180,6 +236,7 @@ export default function ClientEditPage() {
         e.preventDefault();
 
         try {
+            formValues.dataNascimento = formatInputDate(formValues.dataNascimento)
             await axios.put(BACKEND_URL + `cliente/${formValues.idCliente}`, formValues);
             setSuccess(true);
             setOpenSnackbar(true);
@@ -231,32 +288,30 @@ export default function ClientEditPage() {
                                     <TextField
                                         name="idCliente"
                                         label="Código"
-                                        variant="outlined"
+                                        variant="filled"
                                         fullWidth
                                         style={estiloCampo}
                                         value={formValues.idCliente}
                                         onChange={handleFieldChange}
-                                        disabled={true}
                                         sx={{
-                                            backgroundColor: '#e9e9e9'
+                                            backgroundColor: '#fff'
                                         }}
-                                        InputLabelProps={{
-                                            style: { color: '#9d9d9d' }
+                                        inputProps={{
+                                            readOnly: true,
                                         }}
-
                                     />
                                     <TextField
                                         name="nome"
                                         label="Nome"
-                                        variant="outlined"
+                                        variant="filled"
                                         fullWidth
                                         style={estiloCampo}
                                         value={formValues.nome}
                                         onChange={handleFieldChange}
+                                        required
                                         sx={{
                                             backgroundColor: '#fff'
                                         }}
-                                        required
                                     />
                                     <InputMask
                                         mask="999.999.999-99"
@@ -267,7 +322,7 @@ export default function ClientEditPage() {
                                             <TextField
                                                 name="cpf"
                                                 label="CPF"
-                                                variant="outlined"
+                                                variant="filled"
                                                 fullWidth
                                                 style={estiloCampo}
                                                 sx={{
@@ -279,14 +334,14 @@ export default function ClientEditPage() {
                                     </InputMask>
                                     <InputMask
                                         mask="99-99-9999"
-                                        value={formValues.dataNascimento}
+                                        value={formatOutputDate(formValues.dataNascimento)}
                                         onChange={handleFieldChange}
                                     >
                                         {() => (
                                             <TextField
                                                 name="dataNascimento"
                                                 label="Data de Nascimento"
-                                                variant="outlined"
+                                                variant="filled"
                                                 fullWidth
                                                 style={estiloCampo}
                                                 sx={{
@@ -306,7 +361,7 @@ export default function ClientEditPage() {
                                             <TextField
                                                 name="telefone"
                                                 label="Telefone"
-                                                variant="outlined"
+                                                variant="filled"
                                                 fullWidth
                                                 style={estiloCampo}
                                                 sx={{
@@ -319,7 +374,7 @@ export default function ClientEditPage() {
                                     <TextField
                                         name="redeSocial"
                                         label="Rede Social"
-                                        variant="outlined"
+                                        variant="filled"
                                         fullWidth
                                         style={estiloCampo}
                                         value={formValues.redeSocial}
@@ -331,7 +386,7 @@ export default function ClientEditPage() {
                                     <TextField
                                         name="pessoasAutorizadas"
                                         label="Pessoas Autorizadas"
-                                        variant="outlined"
+                                        variant="filled"
                                         fullWidth
                                         style={estiloCampo}
                                         value={formValues.pessoasAutorizadas}
@@ -343,7 +398,7 @@ export default function ClientEditPage() {
                                     <TextField
                                         name="observacoes"
                                         label="Observações"
-                                        variant="outlined"
+                                        variant="filled"
                                         multiline
                                         rows={4}
                                         fullWidth
@@ -365,7 +420,7 @@ export default function ClientEditPage() {
                                             <TextField
                                                 name="cep"
                                                 label="CEP"
-                                                variant="outlined"
+                                                variant="filled"
                                                 fullWidth
                                                 style={estiloCampo}
                                                 sx={{
@@ -376,7 +431,7 @@ export default function ClientEditPage() {
                                     </InputMask>
                                     <TextField
                                         name="uf"
-                                        variant="outlined"
+                                        variant="filled"
                                         select
                                         label="Estado"
                                         fullWidth
@@ -405,7 +460,7 @@ export default function ClientEditPage() {
                                         name="endereco"
                                         label="Endereço"
                                         style={estiloCampo}
-                                        variant="outlined"
+                                        variant="filled"
                                         fullWidth
                                         sx={{
                                             backgroundColor: '#fff'
@@ -416,7 +471,7 @@ export default function ClientEditPage() {
                                     <TextField
                                         name="bairro"
                                         label="Bairro"
-                                        variant="outlined"
+                                        variant="filled"
                                         style={estiloCampo}
                                         fullWidth
                                         sx={{
@@ -438,23 +493,23 @@ export default function ClientEditPage() {
                                         marginBottom: '20px',
                                         marginTop: '20px'
                                     }}>
-                                        <Typography variant="subtitle1" color="text.primary" sx={{ mb: 1, mt: 1 }}>
+                                        <Typography variant="subtitle1" color="text.primary" sx={{ mb: 1 }}>
                                             Créditos
                                         </Typography>
                                         <TextField
-                                            name="credito"
+                                            name="creditoSoma"
                                             label="Crédito"
-                                            variant="outlined"
+                                            variant="filled"
                                             fullWidth
                                             style={estiloCampo}
-                                            value={formValues.credito}
+                                            value={`R$ ${formValues.creditoSoma}`} // Update this line
                                             onChange={handleFieldChange}
                                             sx={{
                                                 backgroundColor: '#fff',
                                             }}
-                                            type="number"
                                             inputProps={{
                                                 min: "0",
+                                                readOnly: true, // Campo somente leitura
                                             }}
                                             InputProps={{
                                                 endAdornment: (
@@ -465,42 +520,65 @@ export default function ClientEditPage() {
                                                     </InputAdornment>
                                                 ),
                                             }}
-                                            disabled
+                                            thousandSeparator="."
+                                            decimalSeparator=","
+                                            decimalScale={2}
                                         />
+
                                         <TextField
-                                            name="observacoesCredito"
-                                            label="Observações"
-                                            variant="outlined"
+                                            name="creditos"
+                                            label="Créditos"
+                                            variant="filled"
                                             multiline
-                                            rows={4}
                                             fullWidth
                                             style={estiloCampo}
                                             value={formValues.observacoesCredito}
                                             onChange={handleFieldChange}
                                             sx={{
-                                                backgroundColor: '#fff',
+                                                backgroundColor: '#fff'
+                                            }}
+                                            inputProps={{
+                                                readOnly: true, // Campo somente leitura
                                             }}
                                         />
                                     </Grid>
                                     <Dialog open={isAddCreditDialogOpen} onClose={handleCloseAddCreditDialog}>
                                         <DialogTitle>Adicionar Crédito</DialogTitle>
                                         <DialogContent>
-                                            <TextField
+                                            <NumericFormat
                                                 label="Crédito"
-                                                variant="outlined"
+                                                variant="filled"
                                                 fullWidth
-                                                type="number"
                                                 inputProps={{ min: "0" }}
                                                 style={{ marginBottom: '15px', marginTop: '7px' }}
+                                                value={creditoValues.valor}
+                                                name="valor"
+                                                customInput={TextField}
+                                                thousandSeparator="."
+                                                decimalSeparator=","
+                                                prefix="R$ "
+                                                allowNegative={false}
+                                                decimalScale={2}
+                                                fixedDecimalScale={true}
+                                                onChange={handleCreditFieldChange}
+                                                sx={{
+                                                    backgroundColor: '#fff'
+                                                }}
                                             />
                                             <TextField
                                                 label="Observações de Crédito"
-                                                variant="outlined"
+                                                variant="filled"
                                                 multiline
                                                 rows={4}
                                                 fullWidth
+                                                value={creditoValues.observacoes}
+                                                name="observacoes"
+                                                onChange={handleCreditFieldChange}
                                             />
-                                            <Button onClick={handleCloseAddCreditDialog} style={{
+                                            <Button onClick={() => {
+                                                addCredit();
+                                                handleCloseAddCreditDialog();
+                                            }} style={{
                                                 marginTop: '10px',
                                                 backgroundColor: '#1976D2',
                                                 color: '#fff',
@@ -517,7 +595,6 @@ export default function ClientEditPage() {
                                             }}> Adicionar</Button>
                                         </DialogContent>
                                     </Dialog>
-
                                 </Grid>
                             </Grid>
                             <Grid className="botoes-cadastro-cliente" item xs={12} sm={6} style={{ display: 'flex', justifyContent: 'end' }}>
