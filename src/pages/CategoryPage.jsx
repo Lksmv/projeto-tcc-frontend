@@ -14,10 +14,11 @@ import {
   TablePagination,
   Breadcrumbs,
   Link,
-  Grid,
   TextField,
-  MenuItem,
-  Button
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent
 } from '@mui/material';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import { BACKEND_URL } from '../utils/backEndUrl';
@@ -28,7 +29,7 @@ const TABLE_HEAD = [
   { id: 'nome', label: 'Nome', alignRight: false },
 ];
 
-export default function UserPage() {
+export default function CategoryPage() {
   const estiloCampo = {
     margin: '8px',
     borderRadius: '5px 5px 0 0',
@@ -38,39 +39,46 @@ export default function UserPage() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [filtro, setFiltro] = useState('');
-  const [userList, setUserList] = useState([]);
+  const [categoryList, setCategoryList] = useState([]);
   const [totalItems, setTotalItems] = useState(0);
+  const [isAddCategoryDialogOpen, setAddCategoryDialogOpen] = useState(false);
 
-  const cargos = [
-    'Nenhum', 'Administrador', 'Funcionário'
-  ];
-
-  const [formValues, setFormValues] = useState({
-    codigo: "",
+  const [categoryValues, setCategoryValues] = useState({
+    idCategoria: "",
     nome: "",
-    cargo: "",
-    login: "",
-    senha: "",
   });
 
-  const fetchUserList = async () => {
+  const handleOpenAddCategoryDialog = () => {
+    setAddCategoryDialogOpen(true);
+    setCategoryValues({
+      ...categoryValues,
+      // idCliente: CategoryValues.idCliente, // Set the idProduct?
+      data: new Date().toISOString(),
+    });
+  };
+
+  const handleCloseAddCategoryDialog = () => {
+    setAddCategoryDialogOpen(false);
+  };
+
+  const fetchCategoryList = async () => {
     try {
-      const response = await axios.get(BACKEND_URL + 'usuario', {
+      const response = await axios.get(BACKEND_URL + 'categoria', {
         params: {
           page: page,
           size: rowsPerPage,
           filtro: filtro,
         },
       });
-      setUserList(response.data.content);
+      setCategoryList(response.data.content);
       setTotalItems(response.data.totalElements);
     } catch (error) {
-      console.error('Erro ao buscar a lista de usuários:', error);
+      console.error('Erro ao buscar a lista de categorias:', error);
     }
   };
 
   useEffect(() => {
-    fetchUserList();
+    fetchCategoryList();
   }, [page, rowsPerPage, filtro]);
 
   const handleChangePage = (event, newPage) => {
@@ -89,24 +97,24 @@ export default function UserPage() {
 
   const handleFieldChange = (e) => {
     const { name, value } = e.target;
-    setFormValues({ ...formValues, [name]: value });
+    setCategoryValues({ ...categoryValues, [name]: value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const codigoAsInteger = parseInt(formValues.codigo, 10);
+    const codigoAsInteger = parseInt(categoryValues.idCategoria, 10);
 
     const requestData = {
-      ...formValues,
-      codigo: codigoAsInteger,
+      ...categoryValues,
+      idCategoria: codigoAsInteger,
     };
 
     try {
-      const response = await axios.post(BACKEND_URL + 'usuario', requestData);
-      console.log('Usuário salvo com sucesso:', response.data);
+      const response = await axios.post(BACKEND_URL + 'categoria', requestData);
+      console.log('Categoria salva com sucesso:', response.data);
     } catch (error) {
-      console.error('Erro ao salvar o usuário:', error);
+      console.error('Erro ao salvar a categoria:', error);
     }
   };
 
@@ -115,18 +123,18 @@ export default function UserPage() {
   return (
     <>
       <Helmet>
-        <title>Usuário</title>
+        <title>Categoria</title>
       </Helmet>
       <Container maxWidth="xl" sx={{ marginBottom: "30px" }}>
         <Container maxWidth="100%" style={{ marginTop: '16px', alignContent: 'left' }}>
           <Typography variant="h4" color="text.primary" sx={{ mb: 1 }}>
-            Usuário
+            Categoria
           </Typography>
           <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />} aria-label="breadcrumb" sx={{ mb: 2 }}>
             <Link color="inherit" href="/dashboard">
               Dashboard
             </Link>
-            <Typography variant="subtitle1" color="text.primary">Usuário</Typography>
+            <Typography variant="subtitle1" color="text.primary">Categoria</Typography>
           </Breadcrumbs>
         </Container>
 
@@ -135,25 +143,25 @@ export default function UserPage() {
             filtro={filtro}
             onfiltro={handleFilterByName}
             placeHolder={'Procurar por Código ou Nome'}
+            buttonText={'Adicionar'}
+            popup={handleOpenAddCategoryDialog}
           />
 
           <TableContainer>
             <Table>
               <ListHead headLabel={TABLE_HEAD} rowCount={totalItems} />
               <TableBody>
-                {userList.map((row) => {
-                  const { codigo, nome} = row;
-
+                {categoryList.map((row) => {
                   return (
-                    <TableRow key={codigo} hover tabIndex={-1}>
+                    <TableRow key={row.idCategoria} hover tabIndex={-1}>
                       <TableCell component="th" scope="row" padding="normal">
                         <Stack direction="row" alignItems="center" spacing={2}>
                           <Typography variant="subtitle2" noWrap>
-                            {codigo}
+                            {row.idCategoria}
                           </Typography>
                         </Stack>
                       </TableCell>
-                      <TableCell align="left">{nome}</TableCell>
+                      <TableCell align="left">{row.nome}</TableCell>
                     </TableRow>
                   );
                 })}
@@ -178,121 +186,67 @@ export default function UserPage() {
           />
         </Card>
 
-        <Container>
-          <form onSubmit={handleSubmit}>
-            <Grid container spacing={2} margin={2}>
-              <Grid item xs={12} sm={6} display="flex" flexDirection="column" alignItems='left'>
-                <TextField
-                  name="codigo"
-                  label="Código"
-                  variant="filled"
-                  fullWidth
-                  style={estiloCampo}
-                  value={formValues.codigo}
-                  onChange={handleFieldChange}
-                  sx={{
-                    backgroundColor: '#fff',
-                  }}
-                />
-                <TextField
-                  name="nome"
-                  label="Nome"
-                  variant="filled"
-                  fullWidth
-                  style={estiloCampo}
-                  value={formValues.nome}
-                  onChange={handleFieldChange}
-                  sx={{
-                    backgroundColor: '#fff',
-                  }}
-                />
-                <TextField
-                  name="cargo"
-                  variant="filled"
-                  select
-                  label="Cargo"
-                  fullWidth
-                  style={estiloCampo}
-                  sx={{
-                    backgroundColor: '#fff',
-                  }}
-                  value={formValues.cargo}
-                  onChange={handleFieldChange}
-                  SelectProps={{
-                    MenuProps: {
-                      style: {
-                        maxHeight: 300,
-                      },
-                    }
-                  }}
-                >
-                  {cargos.map((cargo) => (
-                    <MenuItem key={cargo} value={cargo}>
-                      {cargo}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
-              <Grid item xs={12} sm={6} display="flex" flexDirection="column" sx={{ alignItems: 'left' }}>
-                <TextField
-                  name="login"
-                  label="Login"
-                  variant="filled"
-                  fullWidth
-                  style={estiloCampo}
-                  value={formValues.login}
-                  onChange={handleFieldChange}
-                  sx={{
-                    backgroundColor: '#fff'
-                  }}
-                />
-                <TextField
-                  name="senha"
-                  label="Senha"
-                  variant="filled"
-                  fullWidth
-                  style={estiloCampo}
-                  value={formValues.senha}
-                  onChange={handleFieldChange}
-                  sx={{
-                    backgroundColor: '#fff'
-                  }}
-                />
-              </Grid>
-            </Grid>
+        <Dialog open={isAddCategoryDialogOpen} onClose={handleCloseAddCategoryDialog}>
+          <DialogTitle>Adicionar Categoria</DialogTitle>
+          <DialogContent>
 
-            <div className="botoes-cadastro-produto" style={{ display: 'flex', justifyContent: 'center', marginTop: '16px', marginBottom: '16px' }}>
-              <Button
-                type="submit"
-                variant="contained"
-                color="primary"
-                style={{
-                  width: '90px',
-                  height: '36px',
-                  marginRight: '8px',
-                  fontFamily: 'Rubik, sans-serif',
-                  backgroundColor: '#336DC3',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: '5px',
-                  boxSizing: 'border-box',
-                }}
-              >
-                SALVAR
-              </Button>
-              <Button
-                type="reset"
-                variant="contained"
-                color="error"
-                style={{ width: '117px', height: '36px', marginLeft: '8px', fontFamily: 'Rubik, sans-serif', backgroundColor: '#B21447', color: '#fff', border: 'none', borderRadius: '5px', boxSizing: 'border-box' }}
-              >
-                CANCELAR
-              </Button>
-            </div>
-          </form>
-        </Container>
+              <form onSubmit={handleSubmit} style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                }}>
+                  {/* acresecentar os campos que vão aqui */}
+                  <TextField
+                    name="codigo"
+                    label="Código"
+                    variant="filled"
+                    fullWidth
+                    style={estiloCampo}
+                    value={categoryValues.idCategoria}
+                    onChange={handleFieldChange}
+                    sx={{
+                      backgroundColor: '#fff',
+                    }}
+                  />
+                  <TextField
+                    name="nome"
+                    label="Nome"
+                    variant="filled"
+                    fullWidth
+                    style={estiloCampo}
+                    value={categoryValues.nome}
+                    onChange={handleFieldChange}
+                    sx={{
+                      backgroundColor: '#fff',
+                    }}
+                  />                
+              </form>
+              <div style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                }}>
+                  <Button onClick={() => {
+                    addCategory();
+                    handleCloseAddCategoryDialog();
+                  }} style={{
+                    margin: '10px',
+                    backgroundColor: '#1976D2',
+                    color: '#fff',
+                    width: '90px',
+                    height: '36px',
+                    marginRight: '8px',
+                    transition: 'background-color 0.3s',
+                    '&:hover': {
+                      backgroundColor: '#1565C0',
+                    },
+                    '&:active': {
+                      backgroundColor: '#0D47A1',
+                    },
+                  }}> Adicionar</Button>
+                </div>
+          </DialogContent>
+        </Dialog>
 
-      </Container>
+      </Container >
     </>
   );
 }

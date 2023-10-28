@@ -14,11 +14,9 @@ import {
   TablePagination,
   Breadcrumbs,
   Link,
-  Grid,
   TextField,
-  MenuItem,
   Button,
-  Dialog,  
+  Dialog,
   DialogTitle,
   DialogContent
 } from '@mui/material';
@@ -43,7 +41,7 @@ export default function PaymentPage() {
   const [filtro, setFiltro] = useState('');
   const [paymentList, setPaymentList] = useState([]);
   const [totalItems, setTotalItems] = useState(0);
-  const [isAddPaymentoDialogOpen, setAddPaymentoDialogOpen] = useState(false);
+  const [isAddPaymentDialogOpen, setAddPaymentDialogOpen] = useState(false);
 
   const [paymentValues, setPaymentValues] = useState({
     codigo: "",
@@ -51,7 +49,7 @@ export default function PaymentPage() {
   });
 
   const handleOpenAddPaymentDialog = () => {
-    setAddPaymentoDialogOpen(true);
+    setAddPaymentDialogOpen(true);
     setPaymentValues({
       ...paymentValues,
       // idCliente: paymentValues.idCliente, // Set the idAluguel?
@@ -60,23 +58,25 @@ export default function PaymentPage() {
   };
 
   const handleCloseAddPaymentDialog = () => {
-    setAddPaymentoDialogOpen(false);
+    setAddPaymentDialogOpen(false);
   };
 
   const fetchPaymentList = async () => {
-    try {
-      const response = await axios.get(BACKEND_URL + 'formaPagamento', {
-        params: {
-          page: page,
-          size: rowsPerPage,
-          filtro: filtro,
-        },
-      });
-      setPaymentList(response.data.content);
-      setTotalItems(response.data.totalElements);
-    } catch (error) {
-      console.error('Erro ao buscar a lista de formas de pagamento:', error);
-    }
+    
+    // erros da tela são daqui, porque n existe forma de pagamento do backend ainda
+    // try {
+    //   const response = await axios.get(BACKEND_URL + 'formaPagamento', {
+    //     params: {
+    //       page: page,
+    //       size: rowsPerPage,
+    //       filtro: filtro,
+    //     },
+    //   });
+    //   setPaymentList(response.data.content);
+    //   setTotalItems(response.data.totalElements);
+    // } catch (error) {
+    //   console.error('Erro ao buscar a lista de formas de pagamento:', error);
+    // }
   };
 
   useEffect(() => {
@@ -102,23 +102,23 @@ export default function PaymentPage() {
     setPaymentValues({ ...paymentValues, [name]: value });
   };
 
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  //   const codigoAsInteger = parseInt(paymentValues.codigo, 10);
+    const codigoAsInteger = parseInt(paymentValues.codigo, 10);
 
-  //   const requestData = {
-  //     ...paymentValues,
-  //     codigo: codigoAsInteger,
-  //   };
+    const requestData = {
+      ...paymentValues,
+      codigo: codigoAsInteger,
+    };
 
-  //   try {
-  //     const response = await axios.post(BACKEND_URL + 'formaPagamento', requestData);
-  //     console.log('Forma de pagamento salvo com sucesso:', response.data);
-  //   } catch (error) {
-  //     console.error('Erro ao salvar a forma de pagamento:', error);
-  //   }
-  // };
+    try {
+      const response = await axios.post(BACKEND_URL + 'formaPagamento', requestData);
+      console.log('Forma de pagamento salva com sucesso:', response.data);
+    } catch (error) {
+      console.error('Erro ao salvar a forma de pagamento:', error);
+    }
+  };
 
   const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - totalItems) : 0;
 
@@ -146,7 +146,7 @@ export default function PaymentPage() {
             onfiltro={handleFilterByName}
             placeHolder={'Procurar por Código ou Nome'}
             buttonText={'Adicionar'}
-            popup={handleOpenAddPaymentDialog}       
+            popup={handleOpenAddPaymentDialog}
           />
 
           <TableContainer>
@@ -190,36 +190,44 @@ export default function PaymentPage() {
           />
         </Card>
 
-        <Dialog open={isAddPaymentoDialogOpen} onClose={handleCloseAddPaymentDialog}>
+        <Dialog open={isAddPaymentDialogOpen} onClose={handleCloseAddPaymentDialog}>
           <DialogTitle>Adicionar Forma de Pagamento</DialogTitle>
           <DialogContent>
 
-            {/* acresecentar os campos que vão aqui */}
-            <TextField
-              name="codigo"
-              label="Código"
-              variant="filled"
-              fullWidth
-              style={estiloCampo}
-              value={paymentValues.codigo}
-              onChange={handleFieldChange}
-              sx={{
-                backgroundColor: '#fff',
-              }}
-            />
-            <TextField
-              name="nome"
-              label="Nome"
-              variant="filled"
-              fullWidth
-              style={estiloCampo}
-              value={paymentValues.nome}
-              onChange={handleFieldChange}
-              sx={{
-                backgroundColor: '#fff',
-              }}
-            />
-
+            <form onSubmit={handleSubmit} style={{
+              display: 'flex',
+              justifyContent: 'center',
+            }}>
+              {/* acresecentar os campos que vão aqui */}
+              <TextField
+                name="codigo"
+                label="Código"
+                variant="filled"
+                fullWidth
+                style={estiloCampo}
+                value={paymentValues.codigo}
+                onChange={handleFieldChange}
+                sx={{
+                  backgroundColor: '#fff',
+                }}
+              />
+              <TextField
+                name="nome"
+                label="Nome"
+                variant="filled"
+                fullWidth
+                style={estiloCampo}
+                value={paymentValues.nome}
+                onChange={handleFieldChange}
+                sx={{
+                  backgroundColor: '#fff',
+                }}
+              />
+            </form>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'center',
+            }}>
             <Button onClick={() => {
               addPayment();
               handleCloseAddPaymentDialog();
@@ -238,10 +246,11 @@ export default function PaymentPage() {
                 backgroundColor: '#0D47A1',
               },
             }}> Adicionar</Button>
-          </DialogContent>
-        </Dialog>
+          </div>
+        </DialogContent>
+      </Dialog>
 
-      </Container>
+    </Container >
     </>
   );
 }

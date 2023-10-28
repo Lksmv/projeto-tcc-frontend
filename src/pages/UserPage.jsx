@@ -17,7 +17,10 @@ import {
   Grid,
   TextField,
   MenuItem,
-  Button
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent
 } from '@mui/material';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import { BACKEND_URL } from '../utils/backEndUrl';
@@ -78,18 +81,32 @@ export default function UserPage() {
   const [filtro, setFiltro] = useState('');
   const [userList, setUserList] = useState([]);
   const [totalItems, setTotalItems] = useState(0);
+  const [isAddUserDialogOpen, setAddUserDialogOpen] = useState(false);
 
   const cargos = [
     'Nenhum', 'Administrador', 'Funcionário'
   ];
 
-  const [formValues, setFormValues] = useState({
+  const [userValues, setUserValues] = useState({
     codigo: "",
     nome: "",
     cargo: "",
     login: "",
     senha: "",
   });
+
+  const handleOpenAddUserDialog = () => {
+    setAddUserDialogOpen(true);
+    setUserValues({
+      ...userValues,
+      // idCliente: paymentValues.idCliente, // Set the idAluguel?
+      data: new Date().toISOString(),
+    });
+  };
+
+  const handleCloseAddUserDialog = () => {
+    setAddUserDialogOpen(false);
+  };
 
   const fetchUserList = async () => {
     try {
@@ -127,16 +144,16 @@ export default function UserPage() {
 
   const handleFieldChange = (e) => {
     const { name, value } = e.target;
-    setFormValues({ ...formValues, [name]: value });
+    setUserValues({ ...userValues, [name]: value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const codigoAsInteger = parseInt(formValues.codigo, 10);
+    const codigoAsInteger = parseInt(userValues.codigo, 10);
 
     const requestData = {
-      ...formValues,
+      ...userValues,
       codigo: codigoAsInteger,
     };
 
@@ -173,6 +190,8 @@ export default function UserPage() {
             filtro={filtro}
             onfiltro={handleFilterByName}
             placeHolder={'Procurar por Código ou Nome'}
+            buttonText={'Adicionar'}
+            popup={handleOpenAddUserDialog}
           />
 
           <TableContainer>
@@ -218,118 +237,123 @@ export default function UserPage() {
           />
         </Card>
 
-        <Container style={{
-          backgroundColor: '#c4c4c4',
-          transition: 'box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms',
-          overflow: 'hidden',
-          position: 'relative',
-          boxShadow: 'rgba(0, 0, 0, 0.2) 0px 0px 2px 0px, rgba(0, 0, 0, 0.12) 0px 12px 24px -4px',
-          borderRadius: '16px',
-          margin: '24px 0',
-          align: 'center',
-        }}>
-          <form onSubmit={handleSubmit}>
-            <Grid container spacing={2} margin={2}>
-              <Grid item xs={12} sm={6} display="flex" flexDirection="column" alignItems='left'>
-                <TextField
-                  name="codigo"
-                  label="Código"
-                  variant="filled"
-                  fullWidth
-                  style={estiloCampo}
-                  value={formValues.codigo}
-                  onChange={handleFieldChange}
-                  sx={{
-                    backgroundColor: '#fff',
-                  }}
-                />
-                <TextField
-                  name="nome"
-                  label="Nome"
-                  variant="filled"
-                  fullWidth
-                  style={estiloCampo}
-                  value={formValues.nome}
-                  onChange={handleFieldChange}
-                  sx={{
-                    backgroundColor: '#fff',
-                  }}
-                />
-                <TextField
-                  name="cargo"
-                  variant="filled"
-                  select
-                  label="Cargo"
-                  fullWidth
-                  style={estiloCampo}
-                  sx={{
-                    backgroundColor: '#fff',
-                  }}
-                  value={formValues.cargo}
-                  onChange={handleFieldChange}
-                  SelectProps={{
-                    MenuProps: {
-                      style: {
-                        maxHeight: 300,
-                      },
-                    }
-                  }}
-                >
-                  {cargos.map((cargo) => (
-                    <MenuItem key={cargo} value={cargo}>
-                      {cargo}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
-              <Grid item xs={12} sm={6} display="flex" flexDirection="column" sx={{ alignItems: 'left' }}>
-                <TextField
-                  name="login"
-                  label="Login"
-                  variant="filled"
-                  fullWidth
-                  style={estiloCampo}
-                  value={formValues.login}
-                  onChange={handleFieldChange}
-                  sx={{
-                    backgroundColor: '#fff'
-                  }}
-                />
-                <TextField
-                  name="senha"
-                  label="Senha"
-                  variant="filled"
-                  fullWidth
-                  style={estiloCampo}
-                  value={formValues.senha}
-                  onChange={handleFieldChange}
-                  sx={{
-                    backgroundColor: '#fff'
-                  }}
-                />
-              </Grid>
-            </Grid>
+        <Dialog open={isAddUserDialogOpen} onClose={handleCloseAddUserDialog}>
+          <DialogTitle>Adicionar Usuário</DialogTitle>
+          <DialogContent>
 
-            <div className="botoes-cadastro-produto" style={{ display: 'flex', justifyContent: 'center', marginTop: '16px', marginBottom: '16px' }}>
-              <Button
-                type="submit"
-                variant="contained"
-                style={salvarButtonStyle}
-              >
-                SALVAR
-              </Button>
-              <Button
-                type="reset"
-                variant="contained"
-                style={cancelarButtonStyle}
-              >
-                CANCELAR
-              </Button>
+            <form onSubmit={handleSubmit} style={{
+              display: 'flex',
+              justifyContent: 'center',
+            }}>
+              <Grid container spacing={2} padding={1}>
+                <Grid item xs={12} sm={6} display="flex" flexDirection="column" alignItems='center'>
+                  <TextField
+                    name="codigo"
+                    label="Código"
+                    variant="filled"
+                    fullWidth
+                    style={estiloCampo}
+                    value={userValues.codigo}
+                    onChange={handleFieldChange}
+                    sx={{
+                      backgroundColor: '#fff',
+                    }}
+                  />
+                  <TextField
+                    name="nome"
+                    label="Nome"
+                    variant="filled"
+                    fullWidth
+                    style={estiloCampo}
+                    value={userValues.nome}
+                    onChange={handleFieldChange}
+                    sx={{
+                      backgroundColor: '#fff',
+                    }}
+                  />
+                  <TextField
+                    name="cargo"
+                    variant="filled"
+                    select
+                    label="Cargo"
+                    fullWidth
+                    style={estiloCampo}
+                    sx={{
+                      backgroundColor: '#fff',
+                    }}
+                    value={userValues.cargo}
+                    onChange={handleFieldChange}
+                    SelectProps={{
+                      MenuProps: {
+                        style: {
+                          maxHeight: 300,
+                        },
+                      }
+                    }}
+                  >
+                    {cargos.map((cargo) => (
+                      <MenuItem key={cargo} value={cargo}>
+                        {cargo}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+                <Grid item xs={12} sm={6} display="flex" flexDirection="column" sx={{ alignItems: 'center' }}>
+                  <TextField
+                    name="login"
+                    label="Login"
+                    variant="filled"
+                    fullWidth
+                    style={estiloCampo}
+                    value={userValues.login}
+                    onChange={handleFieldChange}
+                    sx={{
+                      backgroundColor: '#fff'
+                    }}
+                  />
+                  <TextField
+                    name="senha"
+                    label="Senha"
+                    variant="filled"
+                    fullWidth
+                    style={estiloCampo}
+                    value={userValues.senha}
+                    onChange={handleFieldChange}
+                    sx={{
+                      backgroundColor: '#fff'
+                    }}
+                  />
+                </Grid>
+              </Grid>
+            </form>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'center',
+            }}>
+              <Button onClick={() => {
+                addPayment();
+                handleCloseAddPaymentDialog();
+              }} style={{
+                margin: '10px',
+                backgroundColor: '#1976D2',
+                color: '#fff',
+                width: '90px',
+                height: '36px',
+                marginRight: '8px',
+                transition: 'background-color 0.3s',
+                '&:hover': {
+                  backgroundColor: '#1565C0',
+                },
+                '&:active': {
+                  backgroundColor: '#0D47A1',
+                },
+              }}> Adicionar</Button>
             </div>
-          </form>
-        </Container>
 
-      </Container>
+          </DialogContent>
+        </Dialog>
+
+      </Container >
     </>
   );
 }
