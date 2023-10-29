@@ -22,6 +22,7 @@ import ClientInfoPage from './pages/ClientInfoPage';
 import UserPage from './pages/UserPage';
 import PaymentPage from './pages/PaymentPage';
 import CategoryPage from './pages/CategoryPage';
+import ReportPage from './pages/ReportPage';
 
 export default function Router() {
   const { authState } = useAuth();
@@ -121,6 +122,21 @@ export default function Router() {
           path: '/cliente/detalhes/:clientId',
           element: <ClientInfoPage />
         },
+      ]
+    },
+    {
+      path: '/relatorio',
+      element: isAuthenticated ? (
+        <DashboardLayout>
+        </DashboardLayout>
+      ) : (
+        <Navigate to="/login" />
+      ),
+      children: [
+        {
+          index: true,
+          element: <ReportPage />
+        }
       ]
     },
     {
