@@ -96,7 +96,7 @@ export default function Router() {
           element: <ProductCreatePage />
         },
         {
-          path: '/produto/detalhes/:productId',
+          path: '/produto/detalhes/:codigo',
           element: <ProductInfoPage />
         },
       ]
@@ -119,7 +119,7 @@ export default function Router() {
           element: <ClientCreatePage />
         },
         {
-          path: '/cliente/detalhes/:clientId',
+          path: '/cliente/detalhes/:codigo',
           element: <ClientInfoPage />
         },
       ]

@@ -1,4 +1,3 @@
-import { Helmet } from 'react-helmet-async';
 import React, { useCallback, useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import {
@@ -13,7 +12,7 @@ import {
   ImageList,
   ImageListItem,
   IconButton,
-  Snackbar
+  Snackbar,
 } from '@mui/material';
 import axios from 'axios';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
@@ -24,11 +23,14 @@ import ImageIcon from '@mui/icons-material/Image';
 import CloseIcon from '@mui/icons-material/Close';
 import MuiAlert from '@mui/material/Alert';
 
-export default function ProductCreatePage() {
+import { Helmet } from 'react-helmet-async';
+
+export default function ProductInfoPage() {
   const estiloCampo = {
     margin: '8px',
     borderRadius: '5px 5px 0 0',
-    maxWidth: '90%'
+    maxWidth: '90%',
+    backgroundColor: '#fff',
   };
 
   const buttonStyle = {
@@ -67,49 +69,47 @@ export default function ProductCreatePage() {
     },
   };
 
-  const categorias = [
-    'Nenhum', 'Terno', 'Vestido', 'Bolsa', 'Acessórios', 'Sapato'
-  ];
-
-  const tamanhos = [
-    'Nenhum', 'PP', 'P', 'M', 'G', 'GG'
-  ];
+  const tamanhos = ['Nenhum', 'PP', 'P', 'M', 'G', 'GG'];
 
   const generos = [
-    'Nenhum', 'Feminino', 'Masculino'
+    { char: 'N', nome: 'Nenhum' },
+    { char: 'M', nome: 'Masculino' },
+    { char: 'F', nome: 'Feminino' },
   ];
 
-  const { productId } = useParams();
+  const { codigo } = useParams();
 
   const [formValues, setFormValues] = useState({
-    codigo: productId,
-    nome: "",
-    categoria: "",
-    marca: "",
-    tamanho: "",
-    cor: "",
-    genero: "",
-    valor: "",
-    observacoes: "",
-    imagens: []
+    codigo: parseInt(codigo, 10),
+    nome: '',
+    codigoCategoria: 1,
+    marca: '',
+    tamanho: '',
+    cor: '',
+    genero: '',
+    valor: '',
+    observacoes: '',
+    imagens: [],
   });
 
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [originalProductDetails, setOriginalProductDetails] = useState({ ...formValues });
+  const [categorias, setCategorias] = useState([]);
 
-  const onDrop = useCallback(acceptedFiles => {
+  const onDrop = useCallback((acceptedFiles) => {
     if (acceptedFiles?.length) {
-      setFormValues({
-        ...formValues, imagens: (previousFiles => [
-          ...previousFiles,
-          ...acceptedFiles.map(imagem =>
-            Object.assign(imagem, { preview: URL.createObjectURL(imagem) })
-          )
-        ])
-      });
+      setFormValues((prevValues) => ({
+        ...prevValues,
+        imagens: [
+          ...prevValues.imagens,
+          ...acceptedFiles.map((imagem) => ({
+            ...imagem,
+            preview: URL.createObjectURL(imagem),
+          })),
+        ],
+      }));
     }
   }, []);
 
@@ -138,26 +138,84 @@ export default function ProductCreatePage() {
     setHasChanges(false);
   };
 
-  // useEffect(() => {
-  //   const productIdToEdit = productId;
-  //   axios.get(BACKEND_URL + `produto/${productIdToEdit}`)
-  //     .then((response) => {
-  //       const productDetails = response.data;
-  //       setFormValues({
-  //         ...productDetails,
-  //         imagens: productDetails.ImageList || [], //ver a lista certa de imagens
-  //       });
-  //       setOriginalProductDetails({
-  //         ...productDetails,
-  //         imagens: productDetails.ImageList || [], //ver a lista certa de imagens
-  //       });
-  //       setLoading(false);
-  //     })
-  //     .catch((error) => {
-  //       setError(error);
-  //       setLoading(false);
-  //     });
-  // }, [productId]);
+  useEffect(() => {
+    const codigoProduct = codigo;
+    axios
+      .get(BACKEND_URL + `produto/${codigoProduct}`)
+      .then((response) => {
+        const productDetails = response.data;
+
+        setFormValues({
+          ...productDetails,
+          imagens: productDetails.imagens || [],
+          codigoCategoria: productDetails.categoria.codigo,
+        });
+        setOriginalProductDetails({
+          ...productDetails,
+          imagens: productDetails.imagens || [],
+          codigoCategoria: productDetails.categoria.codigo,
+        });
+
+        const fetchProductImages = async () => {
+          if (productDetails.imagensIds) {
+            const imagePromises = productDetails.imagensIds.map(async (imageId) => {
+              try {
+                const response = await axios.get(BACKEND_URL + `imagens/${imageId}`, {
+                  responseType: 'arraybuffer',
+                });
+                if (response.data) {
+                  const blob = new Blob([response.data], { type: response.headers['content-type'] });
+                  const imageUrl = URL.createObjectURL(blob);
+                  return imageUrl;
+                } else {
+                  console.error(`Imagem com ID ${imageId} não encontrada.`);
+                  return null;
+                }
+              } catch (error) {
+                console.error(`Erro ao buscar imagem com ID ${imageId}:`, error);
+                return null;
+              }
+            });
+
+            const imagesData = await Promise.all(imagePromises);
+            const filteredImagesData = imagesData.filter((imageData) => imageData !== null);
+
+            setFormValues({
+              ...productDetails,
+              imagens: filteredImagesData || [],
+              codigoCategoria: productDetails.categoria.codigo,
+            });
+            setOriginalProductDetails({
+              ...productDetails,
+              imagens: filteredImagesData || [],
+              codigoCategoria: productDetails.categoria.codigo,
+            });
+          }
+        };
+
+        fetchProductImages();
+      })
+      .catch((error) => {
+        setError(error);
+      });
+
+    const fetchCategorias = async () => {
+      try {
+        const response = await axios.get(BACKEND_URL + 'categoria', {
+          params: {
+            page: 0,
+            size: 100,
+            filtro: '',
+          },
+        });
+        setCategorias(response.data.content);
+      } catch (error) {
+        console.error('Erro ao buscar categorias:', error);
+      }
+    };
+
+    fetchCategorias();
+  }, [codigo]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -172,12 +230,13 @@ export default function ProductCreatePage() {
     try {
       const response = await axios.post(BACKEND_URL + 'produto', requestData);
       console.log('Produto salvo com sucesso:', response.data);
-      // Redirecione o usuário para a página de clientes (ou qualquer outra página desejada)
       setSuccess(true);
       setOpenSnackbar(true);
       setHasChanges(false);
     } catch (error) {
-      console.error('Erro ao salvar o cliente:', error);
+      console.error('Erro ao salvar o produto:', error);
+      setSuccess(false);
+      setOpenSnackbar(true);
     }
   };
 
@@ -187,40 +246,47 @@ export default function ProductCreatePage() {
         <title>Informações de produto</title>
       </Helmet>
       <Container>
-        <Container maxWidth="lg" style={{ paddingLeft: '20px', paddingRight: '20px' }}>
+        <Container
+          maxWidth="lg"
+          style={{ paddingLeft: '20px', paddingRight: '20px' }}
+        >
           <Typography variant="h4" color="text.primary" sx={{ mb: 1 }}>
             Informações de produto
           </Typography>
-          <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />} aria-label="breadcrumb" sx={{ mb: 2 }}>
+          <Breadcrumbs
+            separator={<NavigateNextIcon fontSize="small" />}
+            aria-label="breadcrumb"
+            sx={{ mb: 2 }}
+          >
             <Link color="inherit" href="/dashboard">
               Dashboard
             </Link>
             <Link color="inherit" href="/produto">
               Produto
             </Link>
-            <Typography variant="subtitle1" color="text.primary">Informações</Typography>
+            <Typography variant="subtitle1" color="text.primary">
+              Informações
+            </Typography>
           </Breadcrumbs>
         </Container>
 
-        <Container style={{
-          backgroundColor: '#c4c4c4',
-          transition: 'box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms',
-          overflow: 'hidden',
-          position: 'relative',
-          boxShadow: 'rgba(0, 0, 0, 0.2) 0px 0px 2px 0px, rgba(0, 0, 0, 0.12) 0px 12px 24px -4px',
-          borderRadius: '16px',
-          padding: '24px',
-          marginBottom: '20px'
-        }}>
-
-          {/* {loading ? (
-            <Typography variant="body2">Carregando cadastro do produtos...</Typography>
-          ) : error ? (
-            <Typography variant="body2" color="error">Erro ao carregar o cadastro de produtos.</Typography>
-          ) : ( */}
+        <Container
+          style={{
+            backgroundColor: '#c4c4c4',
+            transition:
+              'box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms',
+            overflow: 'hidden',
+            position: 'relative',
+            boxShadow:
+              'rgba(0, 0, 0, 0.2) 0px 0px 2px 0px, rgba(0, 0, 0, 0.12) 0px 12px 24px -4px',
+            borderRadius: '16px',
+            padding: '24px',
+            marginBottom: '20px',
+          }}
+        >
           <form onSubmit={handleSubmit}>
             <Grid container spacing={2}>
-              <Grid item xs={12} sm={6} display="flex" flexDirection="column" alignItems='center'>
+              <Grid item xs={12} sm={6} display="flex" flexDirection="column" alignItems="center">
                 <TextField
                   name="codigo"
                   label="Código"
@@ -228,11 +294,7 @@ export default function ProductCreatePage() {
                   fullWidth
                   style={estiloCampo}
                   value={formValues.codigo}
-                  onChange={handleFieldChange}
-                  sx={{
-                    backgroundColor: '#fff'
-                  }}
-                  inputProps={{
+                  InputProps={{
                     readOnly: true,
                   }}
                 />
@@ -244,12 +306,9 @@ export default function ProductCreatePage() {
                   style={estiloCampo}
                   value={formValues.nome}
                   onChange={handleFieldChange}
-                  sx={{
-                    backgroundColor: '#fff'
-                  }}
                 />
                 <TextField
-                  name="categoria"
+                  name="codigoCategoria"
                   variant="filled"
                   select
                   label="Categoria"
@@ -258,19 +317,21 @@ export default function ProductCreatePage() {
                   sx={{
                     backgroundColor: '#fff',
                   }}
-                  value={formValues.categoria}
-                  onChange={handleFieldChange}
+                  value={formValues.codigoCategoria}
+                  onChange={(e) => {
+                    setFormValues({ ...formValues });
+                  }}
                   SelectProps={{
                     MenuProps: {
                       style: {
                         maxHeight: 300,
                       },
-                    }
+                    },
                   }}
                 >
                   {categorias.map((categoria) => (
-                    <MenuItem key={categoria} value={categoria}>
-                      {categoria}
+                    <MenuItem key={categoria.codigo} value={categoria.codigo}>
+                      {categoria.nome}
                     </MenuItem>
                   ))}
                 </TextField>
@@ -282,9 +343,6 @@ export default function ProductCreatePage() {
                   style={estiloCampo}
                   value={formValues.marca}
                   onChange={handleFieldChange}
-                  sx={{
-                    backgroundColor: '#fff'
-                  }}
                 />
                 <TextField
                   name="tamanho"
@@ -293,9 +351,6 @@ export default function ProductCreatePage() {
                   label="Tamanho"
                   fullWidth
                   style={estiloCampo}
-                  sx={{
-                    backgroundColor: '#fff',
-                  }}
                   value={formValues.tamanho}
                   onChange={handleFieldChange}
                   SelectProps={{
@@ -303,7 +358,7 @@ export default function ProductCreatePage() {
                       style: {
                         maxHeight: 300,
                       },
-                    }
+                    },
                   }}
                 >
                   {tamanhos.map((tamanho) => (
@@ -320,9 +375,6 @@ export default function ProductCreatePage() {
                   style={estiloCampo}
                   value={formValues.cor}
                   onChange={handleFieldChange}
-                  sx={{
-                    backgroundColor: '#fff'
-                  }}
                 />
                 <TextField
                   name="genero"
@@ -331,9 +383,6 @@ export default function ProductCreatePage() {
                   label="Gênero"
                   fullWidth
                   style={estiloCampo}
-                  sx={{
-                    backgroundColor: '#fff',
-                  }}
                   value={formValues.genero}
                   onChange={handleFieldChange}
                   SelectProps={{
@@ -341,12 +390,12 @@ export default function ProductCreatePage() {
                       style: {
                         maxHeight: 300,
                       },
-                    }
+                    },
                   }}
                 >
                   {generos.map((genero) => (
-                    <MenuItem key={genero} value={genero}>
-                      {genero}
+                    <MenuItem key={genero.char} value={genero.char}>
+                      {genero.nome}
                     </MenuItem>
                   ))}
                 </TextField>
@@ -354,7 +403,7 @@ export default function ProductCreatePage() {
               <Grid item xs={12} sm={6} display="flex" flexDirection="column" sx={{ alignItems: 'center' }}>
                 <NumericFormat
                   name="valor"
-                  variant='filled'
+                  variant="filled"
                   customInput={TextField}
                   thousandSeparator="."
                   decimalSeparator=","
@@ -366,9 +415,8 @@ export default function ProductCreatePage() {
                   fullWidth
                   style={estiloCampo}
                   value={formValues.valor}
-                  onValueChange={handleFieldChange}
-                  sx={{
-                    backgroundColor: '#fff'
+                  onValueChange={(values) => {
+                    handleFieldChange({ target: { name: 'valor', value: values.floatValue } });
                   }}
                 />
                 <TextField
@@ -381,16 +429,13 @@ export default function ProductCreatePage() {
                   style={estiloCampo}
                   value={formValues.observacoes}
                   onChange={handleFieldChange}
-                  sx={{
-                    backgroundColor: '#fff'
-                  }}
                 />
                 {/* Upload Imagem */}
                 <div {...getRootProps()} style={{ cursor: 'pointer', backgroundColor: '#fff', borderRadius: '10px', margin: '8px', maxWidth: '90%' }}>
-                  <input {...getInputProps()} placeholder='Selecione' />
-                  <IconButton color="#8E8E8E" textalign='center' fontSize='13px'>
+                  <input {...getInputProps()} placeholder="Selecione" />
+                  <IconButton color="#8E8E8E" textAlign="center" fontSize="13px">
                     <ImageIcon />
-                    <p style={{ paddingLeft: '8px', textAlign: 'center', fontSize: '15px' }} >Arraste e solte os arquivos ou clique para selecionar...</p>
+                    <p style={{ paddingLeft: '8px', textAlign: 'center', fontSize: '15px' }}>Arraste e solte os arquivos ou clique para selecionar...</p>
                   </IconButton>
                 </div>
                 {/* Preview Imagem */}
@@ -399,7 +444,7 @@ export default function ProductCreatePage() {
                     {formValues.imagens.map((imagem, index) => (
                       <ImageListItem key={index} sx={{ width: '100%', height: 'auto' }}>
                         <img
-                          src={URL.createObjectURL(imagem)}
+                          src={imagem}
                           alt={`Imagem ${index}`}
                           style={{ objectFit: 'cover', width: '100%', height: '100%' }}
                         />
@@ -411,7 +456,7 @@ export default function ProductCreatePage() {
                             right: 8,
                             backgroundColor: '#8E8E8E',
                             borderRadius: '50%',
-                            fontSize: '2px',
+                            fontSize: '15px',
                             width: '15px',
                             height: '15px',
                             '&:hover': {
@@ -445,7 +490,6 @@ export default function ProductCreatePage() {
               </Button>
             </div>
           </form>
-          {/* )} */}
         </Container>
       </Container >
       <Snackbar
@@ -459,9 +503,10 @@ export default function ProductCreatePage() {
           severity={success ? 'success' : 'error'}
           onClose={handleSnackbarClose}
         >
-          {success ? 'Produto adicionado com sucesso' : 'Erro ao adicionar produto'}
+          {success ? 'Produto atualizado com sucesso' : 'Erro ao atualizar o produto'}
         </MuiAlert>
       </Snackbar>
     </>
   );
 }
+

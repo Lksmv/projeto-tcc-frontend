@@ -9,15 +9,21 @@ import {
   Button,
   Breadcrumbs,
   Link,
-  MenuItem
+  MenuItem,
+  Snackbar
 } from '@mui/material';
 import axios from 'axios';
+import MuiAlert from '@mui/material/Alert';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import InputMask from 'react-input-mask';
 import { BACKEND_URL } from '../utils/backEndUrl';
 import { formatOutputDate, formatInputDate } from '../utils/formatTime';
 
 export default function ClientCreatePage() {
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('error');
+
   const estiloCampo = {
     margin: '8px',
     borderRadius: '5px 5px 0 0',
@@ -73,6 +79,7 @@ export default function ClientCreatePage() {
     redeSocial: "",
     pessoasAutorizadas: "",
     observacoes: "",
+    cidade: "",
     cep: "",
     uf: "",
     endereco: "",
@@ -80,7 +87,7 @@ export default function ClientCreatePage() {
   });
 
   const cpfRef = React.createRef();
-  
+
   const navigate = useNavigate()
 
   const handleFieldChange = (e) => {
@@ -103,14 +110,30 @@ export default function ClientCreatePage() {
       codigo: codigoAsInteger,
       dataNascimento: formatedData,
     };
-
+    let response;
     try {
-      const response = await axios.post(BACKEND_URL + 'cliente', requestData);
-      const clientId = response.data.idCliente
-      navigate(`/cliente/detalhes/${clientId}`);
+      response = await axios.post(BACKEND_URL + 'cliente', requestData);
+      const codigo = response.data.codigo;
+      navigate(`/cliente/detalhes/${codigo}`);
     } catch (error) {
-      console.error('Erro ao salvar o cliente:', error);
+      if (error.response) {
+        setSnackbarMessage(error.response.data.errors[0]);
+      } else if (error.request) {
+        setSnackbarMessage('Erro de requisição: ' + error.request);
+      } else {
+        setSnackbarMessage('Erro ao salvar o cliente: ' + error.message);
+      }
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
     }
+  };
+
+  const handleSnackbarClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    setSnackbarOpen(false);
   };
 
   return (
@@ -148,19 +171,17 @@ export default function ClientCreatePage() {
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6} display="flex" flexDirection="column" alignItems='center'>
                 <TextField
-                  name="idCliente"
+                  name="codigo"
                   label="Código"
                   variant="filled"
                   fullWidth
                   style={estiloCampo}
-                  value={formValues.idCliente}
+                  value={formValues.codigo}
                   onChange={handleFieldChange}
                   sx={{
                     backgroundColor: '#fff'
                   }}
-                  inputProps={{
-                    readOnly: true,
-                  }}
+                  helperText="Deixe 0 para preencher automaticamente ou insira um valor personalizado."
                 />
                 <TextField
                   name="nome"
@@ -289,9 +310,23 @@ export default function ClientCreatePage() {
                       sx={{
                         backgroundColor: '#fff'
                       }}
+                      required
                     />
                   )}
                 </InputMask>
+                <TextField
+                  name="cidade"
+                  label="Cidade"
+                  style={estiloCampo}
+                  variant="filled"
+                  fullWidth
+                  required
+                  sx={{
+                    backgroundColor: '#fff'
+                  }}
+                  value={formValues.cidade}
+                  onChange={handleFieldChange}
+                />
                 <TextField
                   name="uf"
                   variant="filled"
@@ -325,6 +360,7 @@ export default function ClientCreatePage() {
                   style={estiloCampo}
                   variant="filled"
                   fullWidth
+                  required
                   sx={{
                     backgroundColor: '#fff'
                   }}
@@ -336,6 +372,7 @@ export default function ClientCreatePage() {
                   label="Bairro"
                   variant="filled"
                   style={estiloCampo}
+                  required
                   fullWidth
                   sx={{
                     backgroundColor: '#fff'
@@ -366,6 +403,20 @@ export default function ClientCreatePage() {
           </form>
         </Container>
       </Container >
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+      >
+        <MuiAlert
+          elevation={6}
+          variant="filled"
+          severity={snackbarSeverity}
+          onClose={handleSnackbarClose}
+        >
+          {snackbarMessage}
+        </MuiAlert>
+      </Snackbar>
     </>
   );
 }

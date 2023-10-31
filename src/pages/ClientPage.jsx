@@ -20,7 +20,7 @@ import { BACKEND_URL } from '../utils/backEndUrl';
 import { ListHead, ListToolBar } from '../sections/@dashboard/list';
 
 const TABLE_HEAD = [
-  { id: 'idCliente', label: 'Código', alignRight: false },
+  { id: 'codigo', label: 'Código', alignRight: false },
   { id: 'nome', label: 'Nome', alignRight: false },
   { id: 'telefone', label: 'Telefone', alignRight: false },
   { id: 'cpf', label: 'CPF', alignRight: false },
@@ -102,17 +102,17 @@ export default function ClientPage() {
               <ListHead headLabel={TABLE_HEAD} rowCount={totalItems} />
               <TableBody>
                 {clientList.map((row) => {
-                  const { idCliente, nome, telefone, cpf } = row;
+                  const { codigo, nome, telefone, cpf } = row;
 
                   return (
                     <TableRow
-                      key={idCliente}
+                      key={codigo}
                       onClick={() => {
-                        navigate(`/cliente/detalhes/${idCliente}`);
+                        navigate(`/cliente/detalhes/${codigo}`);
                       }}
                       style={{ cursor: 'pointer' }}
                     >
-                      <TableCell align="left">{idCliente}</TableCell>
+                      <TableCell align="left">{codigo}</TableCell>
                       <TableCell align="left">{nome}</TableCell>
                       <TableCell align="left">{telefone}</TableCell>
                       <TableCell align="left">{cpf}</TableCell>

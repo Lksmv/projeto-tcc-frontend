@@ -27,10 +27,16 @@ import { NumericFormat } from 'react-number-format';
 import { formatOutputDate, formatInputDate } from '../utils/formatTime';
 
 export default function ClienInfoPage() {
-    const { clientId } = useParams();
+    const { codigo } = useParams();
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
+    const [snackbarSeverity, setSnackbarSeverity] = useState('error');
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [isAddCreditDialogOpen, setAddCreditDialogOpen] = useState(false);
 
     const [formValues, setFormValues] = useState({
-        idCliente: clientId,
+        codigo: parseInt(codigo, 10),
         nome: "",
         cpf: "",
         dataNascimento: "",
@@ -46,9 +52,10 @@ export default function ClienInfoPage() {
         observacoesCredito: "",
         creditos: []
     });
+    const [originalClientDetails, setOriginalClientDetails] = useState({ ...formValues });
 
     const [creditoValues, setCreditoValues] = useState({
-        idCliente: "",
+        codigoCliente: "",
         data: "",
         valor: 0,
         observacoes: ""
@@ -93,8 +100,11 @@ export default function ClienInfoPage() {
     const addCredit = async () => {
         try {
             const valorConvertido = convertCurrencyToNumber(creditoValues.valor);
-            creditoValues.valor = valorConvertido;
-            const response = await axios.post(BACKEND_URL + 'credito', creditoValues);
+            const newCreditoValues = {
+                ...creditoValues,
+                valor: valorConvertido,
+            };
+            const response = await axios.post(BACKEND_URL + 'credito', newCreditoValues);
             const novaListaDeCreditos = [...formValues.creditos, response.data];
 
             setFormValues((prevFormValues) => ({
@@ -103,7 +113,8 @@ export default function ClienInfoPage() {
             }));
 
             setCreditoValues({
-                ...creditoValues,
+                codigoCliente: formValues.codigo,
+                data: new Date().toISOString(),
                 valor: 0,
                 observacoes: '',
             });
@@ -115,6 +126,9 @@ export default function ClienInfoPage() {
             console.error('Erro ao adicionar crédito:', error);
         }
     };
+
+
+
 
     const estiloCampo = {
         margin: '8px',
@@ -164,18 +178,12 @@ export default function ClienInfoPage() {
         'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
     ];
 
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [success, setSuccess] = useState(false);
-    const [openSnackbar, setOpenSnackbar] = useState(false);
-    const [originalClientDetails, setOriginalClientDetails] = useState({ ...formValues });
-    const [isAddCreditDialogOpen, setAddCreditDialogOpen] = useState(false);
 
     const handleOpenAddCreditDialog = () => {
         setAddCreditDialogOpen(true);
         setCreditoValues({
             ...creditoValues,
-            idCliente: formValues.idCliente, // Set the idCliente
+            codigoCliente: formValues.codigo,
             data: new Date().toISOString(),
         });
     };
@@ -190,8 +198,8 @@ export default function ClienInfoPage() {
     };
 
     useEffect(() => {
-        const clientIdToEdit = clientId;
-        axios.get(BACKEND_URL + `cliente/${clientIdToEdit}`)
+        const codigoClientToEdit = codigo;
+        axios.get(BACKEND_URL + `cliente/${codigoClientToEdit}`)
             .then((response) => {
                 const clientDetails = response.data;
                 setFormValues({
@@ -210,7 +218,7 @@ export default function ClienInfoPage() {
                 setError(error);
                 setLoading(false);
             });
-    }, [clientId]);
+    }, [codigo]);
 
     const [hasChanges, setHasChanges] = useState(false);
 
@@ -225,23 +233,47 @@ export default function ClienInfoPage() {
         setHasChanges(false);
     };
 
-    const handleSnackbarClose = () => {
-        setOpenSnackbar(false);
+    const handleSnackbarClose = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+        setSnackbarOpen(false);
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        const formatedData = formatInputDate(formValues.dataNascimento);
+
+        const requestData = {
+            ...formValues,
+            codigo: formValues.codigo,
+            dataNascimento: formatedData,
+        };
+
         try {
-            formValues.dataNascimento = formatInputDate(formValues.dataNascimento)
-            await axios.put(BACKEND_URL + `cliente/${formValues.idCliente}`, formValues);
-            setSuccess(true);
-            setOpenSnackbar(true);
+            const response = await axios.put(BACKEND_URL + `cliente/${formValues.codigo}`, requestData);
+            setFormValues({
+                ...formValues,
+                dataNascimento: formatOutputDate(formValues.dataNascimento),
+            });
+            setSnackbarMessage('Cliente atualizado com sucesso');
+            setSnackbarSeverity('success');
+            setSnackbarOpen(true);
             setHasChanges(false);
         } catch (error) {
-            setError(error);
+            if (error.response) {
+                setSnackbarMessage(error.response.data.errors[0]);
+            } else if (error.request) {
+                setSnackbarMessage('Erro de requisição: ' + error.request);
+            } else {
+                setSnackbarMessage('Erro ao salvar o cliente: ' + error.message);
+            }
+            setSnackbarSeverity('error');
+            setSnackbarOpen(true);
         }
     };
+
 
     return (
         <>
@@ -283,12 +315,13 @@ export default function ClienInfoPage() {
                             <Grid container spacing={2}>
                                 <Grid item xs={12} sm={6} display="flex" flexDirection="column" alignItems='center'>
                                     <TextField
-                                        name="idCliente"
+                                        name="codigo"
                                         label="Código"
                                         variant="filled"
+                                        numericValue
                                         fullWidth
                                         style={estiloCampo}
-                                        value={formValues.idCliente}
+                                        value={formValues.codigo}
                                         onChange={handleFieldChange}
                                         sx={{
                                             backgroundColor: '#fff'
@@ -427,6 +460,18 @@ export default function ClienInfoPage() {
                                         )}
                                     </InputMask>
                                     <TextField
+                                        name="cidade"
+                                        label="Cidade"
+                                        style={estiloCampo}
+                                        variant="filled"
+                                        fullWidth
+                                        sx={{
+                                            backgroundColor: '#fff'
+                                        }}
+                                        value={formValues.cidade}
+                                        onChange={handleFieldChange}
+                                    />
+                                    <TextField
                                         name="uf"
                                         variant="filled"
                                         select
@@ -551,6 +596,7 @@ export default function ClienInfoPage() {
                                                 thousandSeparator="."
                                                 decimalSeparator=","
                                                 prefix="R$ "
+                                                required={true}
                                                 allowNegative={false}
                                                 decimalScale={2}
                                                 fixedDecimalScale={true}
@@ -616,17 +662,17 @@ export default function ClienInfoPage() {
                 </Container>
             </Container>
             <Snackbar
-                open={openSnackbar}
+                open={snackbarOpen}
                 autoHideDuration={6000}
                 onClose={handleSnackbarClose}
             >
                 <MuiAlert
                     elevation={6}
                     variant="filled"
-                    severity={success ? 'success' : 'error'}
+                    severity={snackbarSeverity}
                     onClose={handleSnackbarClose}
                 >
-                    {success ? 'Cliente atualizado com sucesso' : 'Erro ao atualizar o cliente'}
+                    {snackbarMessage}
                 </MuiAlert>
             </Snackbar>
         </>

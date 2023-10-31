@@ -1,13 +1,10 @@
 import { Helmet } from 'react-helmet-async';
-import { filter } from 'lodash';
-import { useState } from 'react';
-import Divider from '@mui/material/Divider';
-import { AuthProvider, useAuth } from '../components/context/authProvider';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import {
   Card,
   Table,
-  Stack,
-  Paper,
   TableRow,
   TableBody,
   TableCell,
@@ -18,65 +15,67 @@ import {
   Breadcrumbs,
   Link
 } from '@mui/material';
+import { BACKEND_URL } from '../utils/backEndUrl';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import { ListHead, ListToolBar } from '../sections/@dashboard/list';
-import LIST from '../__mock/products';
 
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
   { id: 'imagem', label: 'Imagem', alignRight: false },
-  { id: 'id', label: 'Código', alignRight: false },
+  { id: 'codigo', label: 'Código', alignRight: false },
   { id: 'nome', label: 'Nome', alignRight: false },
   { id: 'tamanho', label: 'Tamanho', alignRight: false },
   { id: 'cor', label: 'Cores', alignRight: false },
-  { id: 'preco', label: 'Preço', alignRight: false }
+  { id: 'valor', label: 'valor', alignRight: false }
 ];
 
 // ----------------------------------------------------------------------
 
-function applySortFilter(array, query) {
-  const stabilizedThis = array.map((el, index) => [el, index]);
-  if (query) {
-    return filter(array, (client) =>
-      client.nome.toLowerCase().indexOf(query.toLowerCase()) !== -1 ||
-      client.id.indexOf(query) !== -1
-    );
-  }
-  return stabilizedThis.map((el) => el[0]);
-}
-
 export default function ProductPage() {
   const [page, setPage] = useState(0);
-
-  const [order] = useState('asc');
-
-  const [orderBy] = useState('');
-
-  const [filterName, setFilterName] = useState('');
-
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [filterName, setFilterName] = useState('');
+  const [productList, setProductList] = useState([]);
+  const [totalItems, setTotalItems] = useState(0);
+  const navigate = useNavigate();
 
+  const fetchProductList = async () => {
+    try {
+      const response = await axios.get(BACKEND_URL + 'produto', {
+        params: {
+          page: page,
+          size: rowsPerPage,
+          filtro: filterName,
+        },
+      });
+      setProductList(response.data.content);
+      setTotalItems(response.data.totalElements);
+    } catch (error) {
+      console.error('Erro ao buscar a lista de produtos:', error);
+    }
+  };
 
-  const handleChangePage = (newPage) => {
+  useEffect(() => {
+    fetchProductList();
+  }, [page, rowsPerPage, filterName]);
+
+  const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
 
   const handleChangeRowsPerPage = (event) => {
-    setPage(0);
     setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
   };
 
   const handleFilterByName = (event) => {
-    setPage(0);
     setFilterName(event.target.value);
+    setPage(0);
   };
 
-  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - LIST.length) : 0;
+  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - totalItems) : 0;
 
-  const filteredList = applySortFilter(LIST, filterName);
-
-  const isNotFound = !filteredList.length && !!filterName;
 
   return (
     <>
@@ -85,7 +84,7 @@ export default function ProductPage() {
       </Helmet>
       <Container maxWidth="xl" sx={{ marginBottom: "30px" }}>
         <Container maxWidth="100%" style={{ alignContent: 'left' }}>
-          <Typography variant="h4" color="text.primary" sx={{ mb: 1}}>
+          <Typography variant="h4" color="text.primary" sx={{ mb: 1 }}>
             Produto
           </Typography>
           <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />} aria-label="breadcrumb" sx={{ mb: 2 }}>
@@ -107,28 +106,21 @@ export default function ProductPage() {
 
           <TableContainer>
             <Table>
-              <ListHead
-                order={order}
-                orderBy={orderBy}
-                headLabel={TABLE_HEAD}
-                rowCount={LIST.length}
-              />
+              <ListHead headLabel={TABLE_HEAD} rowCount={totalItems} />
               <TableBody>
-                {filteredList.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                  const { id, imagem, nome, tamanho, cor, preco } = row;
+                {productList.map((row) => {
+                  const { codigo, imagens, nome, tamanho, cor, valor } = row;
                   return (
-                    <TableRow hover key={id} tabIndex={-1}>
+                    <TableRow
+                      key={codigo}
+                      onClick={() => {
+                        navigate(`/produto/detalhes/${codigo}`);
+                      }}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <TableCell align="left">{<img src={imagens[0]} style={{ maxWidth: '75px', borderRadius: '10px' }}></img>}</TableCell>
 
-
-                      <TableCell align="left">{<img src={imagem} style={{ maxWidth: '75px', borderRadius: '10px' }}></img>}</TableCell>
-
-                      <TableCell component="th" scope="row" padding="normal" >
-                        <Stack direction="row" alignItems="center" spacing={2}>
-                          <Typography variant="subtitle2" noWrap>
-                            {id}
-                          </Typography>
-                        </Stack>
-                      </TableCell>
+                      <TableCell align="left">{codigo}</TableCell>
 
                       <TableCell align="left">{nome}</TableCell>
 
@@ -136,48 +128,19 @@ export default function ProductPage() {
 
                       <TableCell align="left">{cor}</TableCell>
 
-                      <TableCell align="left">{preco}</TableCell>
+                      <TableCell align="left">{valor}</TableCell>
 
                     </TableRow>
                   );
                 })}
-                {emptyRows > 0 && (
-                  <TableRow style={{ height: 53 * emptyRows }}>
-                    <TableCell colSpan={6} />
-                  </TableRow>
-                )}
               </TableBody>
-
-              {isNotFound && (
-                <TableBody>
-                  <TableRow>
-                    <TableCell align="center" colSpan={6} sx={{ py: 3 }}>
-                      <Paper
-                        sx={{
-                          textAlign: 'center',
-                        }}
-                      >
-                        <Typography variant="h6" paragraph>
-                          Not found
-                        </Typography>
-
-                        <Typography variant="body2">
-                          No results found for &nbsp;
-                          <strong>&quot;{filterName}&quot;</strong>.
-                          <br /> Try checking for typos or using complete words.
-                        </Typography>
-                      </Paper>
-                    </TableCell>
-                  </TableRow>
-                </TableBody>
-              )}
             </Table>
           </TableContainer>
 
           <TablePagination
             rowsPerPageOptions={[10, 15, 25]}
             component="div"
-            count={LIST.length}
+            count={totalItems}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}

@@ -1,5 +1,6 @@
 import { Helmet } from 'react-helmet-async';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Container,
   Typography,
@@ -12,7 +13,7 @@ import {
   ImageList,
   ImageListItem,
   IconButton,
-  Snackbar
+  Snackbar,
 } from '@mui/material';
 import axios from 'axios';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
@@ -24,10 +25,13 @@ import CloseIcon from '@mui/icons-material/Close';
 import MuiAlert from '@mui/material/Alert';
 
 export default function ProductCreatePage() {
+  const [categorias, setCategorias] = useState([]);
+  const navigate = useNavigate()
+
   const estiloCampo = {
     margin: '8px',
     borderRadius: '5px 5px 0 0',
-    maxWidth: '90%'
+    maxWidth: '90%',
   };
 
   const buttonStyle = {
@@ -66,43 +70,59 @@ export default function ProductCreatePage() {
     },
   };
 
-  const categorias = [
-    'Nenhum', 'Terno', 'Vestido', 'Bolsa', 'Acessórios', 'Sapato'
-  ];
-
   const tamanhos = [
-    'Nenhum', 'PP', 'P', 'M', 'G', 'GG'
+    'Nenhum', 'PP', 'P', 'M', 'G', 'GG',
   ];
 
   const generos = [
     'Nenhum', 'Feminino', 'Masculino'
   ];
 
+  useEffect(() => {
+    const fetchCategorias = async () => {
+      try {
+        const response = await axios.get(BACKEND_URL + 'categoria', {
+          params: {
+            page: 0,
+            size: 100,
+            filtro: "",
+          },
+        });
+        setCategorias(response.data.content);
+      } catch (error) {
+        console.error('Erro ao buscar categorias:', error);
+      }
+    };
+
+    fetchCategorias();
+  }, []);
+
   const [formValues, setFormValues] = useState({
-    codigo: "",
-    nome: "",
-    categoria: "",
-    marca: "",
-    tamanho: "",
-    cor: "",
-    genero: "",
-    valor: "",
-    observacoes: "",
+    codigo: 0,
+    nome: '',
+    codigoCategoria: '',
+    marca: '',
+    tamanho: '',
+    cor: '',
+    genero: '',
+    valor: 0,
+    observacoes: '',
   });
 
   const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarSeverity, setSnackbarSeverity] = useState('error');
+  const [snackbarMessage, setSnackbarMessage] = useState('');
   const [success, setSuccess] = useState(false);
   const [imagens, setImagens] = useState([]);
 
-  const onDrop = useCallback(acceptedFiles => {
-
-    if (acceptedFiles?.length) {
-      setImagens(previousFiles => [
+  const onDrop = useCallback((acceptedFiles) => {
+    if (acceptedFiles.length) {
+      setImagens((previousFiles) => [
         ...previousFiles,
-        ...acceptedFiles.map(imagem =>
+        ...acceptedFiles.map((imagem) =>
           Object.assign(imagem, { preview: URL.createObjectURL(imagem) })
-        )
-      ])
+        ),
+      ]);
     }
   }, []);
 
@@ -115,32 +135,65 @@ export default function ProductCreatePage() {
   };
 
   const handleFieldChange = (e) => {
-    const { name, value } = e.target;
-    setFormValues({ ...formValues, [name]: value });
+    const { name, value } = e.target || e.currentTarget;
+    if (name) {
+      setFormValues({ ...formValues, [name]: value });
+    }
   };
 
   const handleSnackbarClose = () => {
     setOpenSnackbar(false);
   };
 
+  const convertCurrencyToNumber = (currencyString) => {
+    const numericString = currencyString.replace('R$', '').replace('.', '').replace(',', '.');
+    const numericValue = parseFloat(numericString);
+    return isNaN(numericValue) ? 0 : numericValue;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     const codigoAsInteger = parseInt(formValues.codigo, 10);
+    const valorConvertido = convertCurrencyToNumber(formValues.valor);
+    const generoChar = formValues.genero.charAt(0);
 
     const requestData = {
       ...formValues,
       codigo: codigoAsInteger,
+      valor: valorConvertido,
+      genero: generoChar,
     };
 
     try {
       const response = await axios.post(BACKEND_URL + 'produto', requestData);
       console.log('Produto salvo com sucesso:', response.data);
-      // Redirecione o usuário para a página de clientes (ou qualquer outra página desejada)
+      const codigo = response.data.codigo;
+
+      if (imagens.length > 0) {
+        const uploadPromises = imagens.map(async (img) => {
+          const formData = new FormData();
+          formData.append('file', img);
+          formData.append('codigo', codigo);
+
+          return axios.post(BACKEND_URL + 'imagens', formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          });
+        });
+        await Promise.all(uploadPromises);
+      }
       setSuccess(true);
+      setSnackbarSeverity('success');
+      setSnackbarMessage('Produto salvo com sucesso');
       setOpenSnackbar(true);
+      navigate(`/produto/detalhes/${codigo}`);
     } catch (error) {
-      console.error('Erro ao salvar o cliente:', error);
+      console.error('Erro ao salvar o produto:', error);
+      setSnackbarSeverity('error');
+      setSnackbarMessage('Erro ao salvar o produto');
+      setOpenSnackbar(true);
     }
   };
 
@@ -173,14 +226,9 @@ export default function ProductCreatePage() {
           boxShadow: 'rgba(0, 0, 0, 0.2) 0px 0px 2px 0px, rgba(0, 0, 0, 0.12) 0px 12px 24px -4px',
           borderRadius: '16px',
           padding: '24px',
-          marginBottom: '20px'
+          marginBottom: '20px',
         }}>
 
-          {/* {loading ? (
-            <Typography variant="body2">Carregando cadastro do produtos...</Typography>
-          ) : error ? (
-            <Typography variant="body2" color="error">Erro ao carregar o cadastro de produtos.</Typography>
-          ) : ( */}
           <form onSubmit={handleSubmit}>
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6} display="flex" flexDirection="column" alignItems='center'>
@@ -193,27 +241,27 @@ export default function ProductCreatePage() {
                   value={formValues.codigo}
                   onChange={handleFieldChange}
                   sx={{
-                    backgroundColor: '#fff'
+                    backgroundColor: '#fff',
                   }}
-                  inputProps={{
-                    readOnly: true,
-                  }}
+                  helperText="Deixe 0 para preencher automaticamente ou insira um valor personalizado."
                 />
                 <TextField
                   name="nome"
                   label="Nome"
                   variant="filled"
+                  required
                   fullWidth
                   style={estiloCampo}
                   value={formValues.nome}
                   onChange={handleFieldChange}
                   sx={{
-                    backgroundColor: '#fff'
+                    backgroundColor: '#fff',
                   }}
                 />
                 <TextField
-                  name="categoria"
+                  name="codigoCategoria"
                   variant="filled"
+                  required
                   select
                   label="Categoria"
                   fullWidth
@@ -221,19 +269,22 @@ export default function ProductCreatePage() {
                   sx={{
                     backgroundColor: '#fff',
                   }}
-                  value={formValues.categoria}
-                  onChange={handleFieldChange}
+                  value={formValues.codigoCategoria}
+                  onChange={(e) => {
+                    const selectedCategoria = e.target.value;
+                    setFormValues({ ...formValues, codigoCategoria: selectedCategoria });
+                  }}
                   SelectProps={{
                     MenuProps: {
                       style: {
                         maxHeight: 300,
                       },
-                    }
+                    },
                   }}
                 >
                   {categorias.map((categoria) => (
-                    <MenuItem key={categoria} value={categoria}>
-                      {categoria}
+                    <MenuItem key={categoria.codigo} value={categoria.codigo}>
+                      {categoria.nome}
                     </MenuItem>
                   ))}
                 </TextField>
@@ -246,13 +297,14 @@ export default function ProductCreatePage() {
                   value={formValues.marca}
                   onChange={handleFieldChange}
                   sx={{
-                    backgroundColor: '#fff'
+                    backgroundColor: '#fff',
                   }}
                 />
                 <TextField
                   name="tamanho"
                   variant="filled"
                   select
+                  required
                   label="Tamanho"
                   fullWidth
                   style={estiloCampo}
@@ -266,7 +318,7 @@ export default function ProductCreatePage() {
                       style: {
                         maxHeight: 300,
                       },
-                    }
+                    },
                   }}
                 >
                   {tamanhos.map((tamanho) => (
@@ -280,17 +332,19 @@ export default function ProductCreatePage() {
                   label="Cor"
                   variant="filled"
                   fullWidth
+                  required
                   style={estiloCampo}
                   value={formValues.cor}
                   onChange={handleFieldChange}
                   sx={{
-                    backgroundColor: '#fff'
+                    backgroundColor: '#fff',
                   }}
                 />
                 <TextField
                   name="genero"
                   variant="filled"
                   select
+                  required
                   label="Gênero"
                   fullWidth
                   style={estiloCampo}
@@ -304,7 +358,7 @@ export default function ProductCreatePage() {
                       style: {
                         maxHeight: 300,
                       },
-                    }
+                    },
                   }}
                 >
                   {generos.map((genero) => (
@@ -316,22 +370,24 @@ export default function ProductCreatePage() {
               </Grid>
               <Grid item xs={12} sm={6} display="flex" flexDirection="column" sx={{ alignItems: 'center' }}>
                 <NumericFormat
+                  label="Valor"
+                  variant="filled"
+                  fullWidth
+                  inputProps={{ min: '0' }}
+                  style={{ marginBottom: '15px', marginTop: '7px' }}
+                  value={formValues.valor}
                   name="valor"
-                  variant='filled'
                   customInput={TextField}
                   thousandSeparator="."
                   decimalSeparator=","
                   prefix="R$ "
-                  label="Valor"
+                  required={true}
                   allowNegative={false}
                   decimalScale={2}
                   fixedDecimalScale={true}
-                  fullWidth
-                  style={estiloCampo}
-                  value={formValues.valor}
-                  onValueChange={handleFieldChange}
+                  onChange={handleFieldChange}
                   sx={{
-                    backgroundColor: '#fff'
+                    backgroundColor: '#fff',
                   }}
                 />
                 <TextField
@@ -345,71 +401,69 @@ export default function ProductCreatePage() {
                   value={formValues.observacoes}
                   onChange={handleFieldChange}
                   sx={{
-                    backgroundColor: '#fff'
+                    backgroundColor: '#fff',
                   }}
                 />
                 {/* Upload Imagem */}
-                <div {...getRootProps()} style={{ cursor: 'pointer', backgroundColor: '#fff', borderRadius: '10px', margin: '8px', maxWidth: '90%' }}>
-                  <input {...getInputProps()} placeholder='Selecione' />
-                  <IconButton color="#8E8E8E" textalign='center' fontSize='13px'>
-                    <ImageIcon />
-                    <p style={{ paddingLeft: '8px', textAlign: 'center', fontSize: '15px' }} >Arraste e solte os arquivos ou clique para selecionar...</p>
-                  </IconButton>
+                <div style={{ cursor: 'pointer', backgroundColor: '#fff', borderRadius: '10px', margin: '8px', maxWidth: '90%' }}>
+                  <input {...getInputProps()} />
+                  <label {...getRootProps()} style={{ cursor: 'pointer', width: '100%' }}>
+                    <IconButton color="#8E8E8E" textalign="center" fontSize="13px" component="span">
+                      <ImageIcon />
+                      <p style={{ paddingLeft: '8px', textAlign: 'center', fontSize: '15px' }}>Arraste e solte os arquivos ou clique para selecionar...</p>
+                    </IconButton>
+                  </label>
                 </div>
                 {/* Preview Imagem */}
                 <div style={{ maxHeight: '200px', overflow: 'auto', margin: '8px' }}>
-                  <ImageList cols={3} rowHeight={160}>
-                    {imagens.map((imagem, index) => (
-                      <ImageListItem key={index} sx={{ width: '100%', height: 'auto' }}>
-                        <img
-                          src={URL.createObjectURL(imagem)}
-                          alt={`Imagem ${index}`}
-                          style={{ objectFit: 'cover', width: '100%', height: '100%' }}
-                        />
-                        <IconButton
-                          onClick={() => removeImage(index)}
-                          sx={{
-                            position: 'absolute',
-                            top: 8,
-                            right: 8,
-                            backgroundColor: '#8E8E8E',
-                            borderRadius: '50%',
-                            fontSize: '2px',
-                            width: '15px',
-                            height: '15px',
-                            '&:hover': {
-                              backgroundColor: '#B21447',
-                            },
-                          }}
-                        >
-                          <CloseIcon sx={{ color: '#fff', fontSize: '15px' }} />
-                        </IconButton>
-                      </ImageListItem>
-                    ))}
-                  </ImageList>
+                  {imagens.map((imagem, index) => (
+                    <div key={index} style={{ position: 'relative', display: 'inline-block', marginRight: '8px' }}>
+                      <img
+                        src={imagem.preview}
+                        alt={`Imagem ${index}`}
+                        style={{ objectFit: 'cover', width: '100px', height: '100px' }}
+                      />
+                      <IconButton
+                        onClick={() => removeImage(index)}
+                        sx={{
+                          position: 'absolute',
+                          top: 8,
+                          right: 8,
+                          backgroundColor: '#8E8E8E',
+                          borderRadius: '50%',
+                          width: '15px',
+                          height: '15px',
+                          '&:hover': {
+                            backgroundColor: '#B21447',
+                          },
+                        }}
+                      >
+                        <CloseIcon sx={{ color: '#fff', fontSize: '15px' }} />
+                      </IconButton>
+                    </div>
+                  ))}
                 </div>
               </Grid>
             </Grid>
             <div className="botoes-cadastro-produto" xs={12} sm={6} style={{ display: 'flex', justifyContent: 'end' }}>
               <Button
                 type="submit"
-                variant="contained"                
+                variant="contained"
                 style={salvarButtonStyle}
               >
                 SALVAR
               </Button>
               <Button
                 type="reset"
-                variant="contained"                
+                variant="contained"
                 style={cancelarButtonStyle}
               >
                 CANCELAR
               </Button>
             </div>
           </form>
-          {/* )} */}
         </Container>
-      </Container >
+      </Container>
       <Snackbar
         open={openSnackbar}
         autoHideDuration={6000}
@@ -418,10 +472,10 @@ export default function ProductCreatePage() {
         <MuiAlert
           elevation={6}
           variant="filled"
-          severity={success ? 'success' : 'error'}
+          severity={snackbarSeverity}
           onClose={handleSnackbarClose}
         >
-          {success ? 'Produto adicionado com sucesso' : 'Erro ao adicionar produto'}
+          {snackbarMessage}
         </MuiAlert>
       </Snackbar>
     </>
