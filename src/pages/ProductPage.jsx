@@ -85,7 +85,7 @@ export default function ProductPage() {
       </Helmet>
       <Container maxWidth="xl" sx={{ marginBottom: "30px" }}>
         <Container maxWidth="100%" style={{ alignContent: 'left' }}>
-          <Typography variant="h4" color="text.primary" sx={{ mb: 1}}>
+          <Typography variant="h4" color="text.primary" sx={{ mb: 1 }}>
             Produto
           </Typography>
           <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />} aria-label="breadcrumb" sx={{ mb: 2 }}>
@@ -118,7 +118,6 @@ export default function ProductPage() {
                   const { id, imagem, nome, tamanho, cor, preco } = row;
                   return (
                     <TableRow hover key={id} tabIndex={-1}>
-
 
                       <TableCell align="left">{<img src={imagem} style={{ maxWidth: '75px', borderRadius: '10px' }}></img>}</TableCell>
 
