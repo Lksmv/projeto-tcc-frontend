@@ -17,6 +17,7 @@ import InputMask from 'react-input-mask';
 import { BACKEND_URL } from '../utils/backEndUrl';
 import { formatOutputDate, formatInputDate } from '../utils/formatTime';
 import { NumericFormat } from 'react-number-format';
+import ProductTable from '../components/table/ProductTable';
 
 export default function RentalCreatePage() {
   const estiloCampo = {
@@ -26,7 +27,7 @@ export default function RentalCreatePage() {
   };
 
   const estiloCampoDatas = {
-    margin: '8px' ,
+    margin: '8px',
     borderRadius: '5px 5px 0 0',
     width: '90%',
   };
@@ -75,6 +76,12 @@ export default function RentalCreatePage() {
   //pegar lista de clientes cadastrados
   const clientes = [
     'Maria', 'joao'
+  ];
+
+  const products = [
+    { code: '001', name: 'Vestido' },
+    { code: '002', name: 'Terno' },
+    { code: '003', name: 'Sapato' },
   ];
 
   const [formValues, setFormValues] = useState({
@@ -158,7 +165,7 @@ export default function RentalCreatePage() {
           <form onSubmit={handleSubmit}>
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6} display="flex" flexDirection="column" alignItems='center'>
-                
+
                 {/* adicionar campo de forma de pagamento */}
 
                 <TextField
@@ -192,68 +199,13 @@ export default function RentalCreatePage() {
                       variant="filled"
                       required
                       sx={{
+                        borderRadius: '5px 5px 0 0',
                         backgroundColor: '#fff'
                       }}
                     />
                   )}
-                />                
-                <Grid item xs={12} sm={12}>
-                  <Grid container justifyContent="space-between" >
-                    <Grid item xs={6}>
-                      <InputMask
-                        mask="99-99-9999"
-                        value={formValues.dataSaida}
-                        onChange={handleFieldChange}
-                      >
-                        {() => (
-                          <TextField
-                            name="dataSaida"
-                            label="Data Saída"
-                            variant="filled"
-                            fullWidth
-                            style={estiloCampo}
-                            sx={{
-                              backgroundColor: '#fff',
-                            }}
-                          />
-                        )}
-                      </InputMask>
-                    </Grid>
-                    <Grid item xs={6}>
-                      <InputMask
-                        mask="99-99-9999"
-                        value={formValues.dataDevolucao}
-                        onChange={handleFieldChange}
-                      >
-                        {() => (
-                          <TextField
-                            name="dataDevolucao"
-                            label="Data Devolução"
-                            variant="filled"
-                            fullWidth
-                            style={estiloCampo}
-                            sx={{
-                              backgroundColor: '#fff'
-                            }}
-                          />
-                        )}
-                      </InputMask>
-                    </Grid>
-                  </Grid>
-                </Grid>
+                />           
 
-                <TextField
-                  name="produtos"
-                  label="Produtos"
-                  variant="filled"
-                  fullWidth
-                  style={estiloCampo}
-                  value={formValues.produtos}
-                  onChange={handleFieldChange}
-                  sx={{
-                    backgroundColor: '#fff'
-                  }}
-                />
                 <NumericFormat
                   name="valor"
                   variant='filled'
@@ -306,6 +258,52 @@ export default function RentalCreatePage() {
                 />
               </Grid>
               <Grid item xs={12} sm={6} display="flex" flexDirection="column" sx={{ alignItems: 'center' }}>
+
+                <Grid item xs={12} sm={11}>
+                  <Grid container justifyContent="space-between" >
+                    <Grid item xs={6}>
+                      <InputMask
+                        mask="99-99-9999"
+                        value={formValues.dataSaida}
+                        onChange={handleFieldChange}
+                      >
+                        {() => (
+                          <TextField
+                            name="dataSaida"
+                            label="Data Saída"
+                            variant="filled"
+                            fullWidth
+                            style={estiloCampo}
+                            sx={{
+                              backgroundColor: '#fff',
+                            }}
+                          />
+                        )}
+                      </InputMask>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <InputMask
+                        mask="99-99-9999"
+                        value={formValues.dataDevolucao}
+                        onChange={handleFieldChange}
+                      >
+                        {() => (
+                          <TextField
+                            name="dataDevolucao"
+                            label="Data Devolução"
+                            variant="filled"
+                            fullWidth
+                            style={estiloCampo}
+                            sx={{
+                              backgroundColor: '#fff'
+                            }}
+                          />
+                        )}
+                      </InputMask>
+                    </Grid>
+                  </Grid>
+                </Grid>
+
                 <NumericFormat
                   name="valorPago"
                   variant='filled'
@@ -343,9 +341,12 @@ export default function RentalCreatePage() {
                   sx={{
                     backgroundColor: '#fff'
                   }}
-                />                
+                />
               </Grid>
             </Grid>
+
+            <ProductTable products={products} />
+
             <Grid className="botoes-cadastro-cliente" item xs={12} sm={6} style={{ display: 'flex', justifyContent: 'end' }}>
               <Button
                 type="submit"
