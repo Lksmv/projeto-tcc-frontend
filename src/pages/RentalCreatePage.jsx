@@ -9,7 +9,8 @@ import {
   Button,
   Breadcrumbs,
   Link,
-  Autocomplete
+  Autocomplete,
+  Checkbox,
 } from '@mui/material';
 import axios from 'axios';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
@@ -17,7 +18,9 @@ import InputMask from 'react-input-mask';
 import { BACKEND_URL } from '../utils/backEndUrl';
 import { formatOutputDate, formatInputDate } from '../utils/formatTime';
 import { NumericFormat } from 'react-number-format';
-import ProductTable from '../components/table/ProductTable';
+import CheckBoxIcon from '@mui/icons-material/CheckBox';
+import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
+import FormControlLabel from '@mui/material/FormControlLabel';
 
 export default function RentalCreatePage() {
   const estiloCampo = {
@@ -26,10 +29,9 @@ export default function RentalCreatePage() {
     width: '90%',
   };
 
-  const estiloCampoDatas = {
-    margin: '8px',
-    borderRadius: '5px 5px 0 0',
-    width: '90%',
+  const estiloCheckbox = {
+    marginLeft: '11px',
+    borderRadius: 'none',
   };
 
   const buttonStyle = {
@@ -75,13 +77,13 @@ export default function RentalCreatePage() {
 
   //pegar lista de clientes cadastrados
   const clientes = [
-    'Maria', 'joao'
+    '123 - Maria', '11 - joao'
   ];
 
   const products = [
-    { code: '001', name: 'Vestido' },
-    { code: '002', name: 'Terno' },
-    { code: '003', name: 'Sapato' },
+    { name: '001 - Vestido' },
+    { name: '002 - Terno' },
+    { name: '003 - Sapato' },
   ];
 
   const [formValues, setFormValues] = useState({
@@ -91,7 +93,7 @@ export default function RentalCreatePage() {
     dataDevolucao: "",
     produtos: [],
     valor: "",
-    utilizarCredito: "",
+    utilizarCredito: false,
     total: "",
     valorPago: "",
     restanteAPagar: "",
@@ -102,6 +104,14 @@ export default function RentalCreatePage() {
   const handleFieldChange = (e) => {
     const { name, value } = e.target;
     setFormValues({ ...formValues, [name]: value });
+  };
+
+  const handleCheckboxChange = (e) => {
+    const { name, checked } = e.target;
+    setFormValues((prevFormValues) => ({
+      ...prevFormValues,
+      [name]: checked,
+    }));
   };
 
   const handleCancel = () => {
@@ -204,62 +214,50 @@ export default function RentalCreatePage() {
                       }}
                     />
                   )}
-                />           
+                />
 
-                <NumericFormat
-                  name="valor"
-                  variant='filled'
-                  customInput={TextField}
-                  thousandSeparator="."
-                  decimalSeparator=","
-                  prefix="R$ "
-                  label="Valor"
-                  allowNegative={false}
-                  decimalScale={2}
-                  fixedDecimalScale={true}
-                  fullWidth
+                <Autocomplete
+                  multiple  // Habilita a seleção múltipla
+                  id="produtos"
+                  options={products}
+                  disableCloseOnSelect
+                  getOptionLabel={(option) => option.name}
+                  renderOption={(props, option, { selected }) => (
+                    <li {...props}>
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
+                            checkedIcon={<CheckBoxIcon fontSize="small" />}
+                            checked={selected}
+                          />
+                        }
+                        label={option.name}
+                      />
+                    </li>
+                  )}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      variant="filled"
+                      label="Produtos"
+                      fullWidth
+                    />
+                  )}
+                  value={formValues.produtos}
+                  onChange={(event, newValue) => {
+                    setFormValues({ ...formValues, produtos: newValue });
+                  }}
                   style={estiloCampo}
-                  value={formValues.valor}
-                  onValueChange={handleFieldChange}
                   sx={{
                     backgroundColor: '#fff'
                   }}
                 />
-                <TextField
-                  name="utilizarCredito"
-                  label="Utilizar Crédito"
-                  variant="filled"
-                  fullWidth
-                  style={estiloCampo}
-                  value={formValues.utilizarCredito}
-                  onChange={handleFieldChange}
-                  sx={{
-                    backgroundColor: '#fff'
-                  }}
-                />
-                <NumericFormat
-                  name="total"
-                  variant='filled'
-                  customInput={TextField}
-                  thousandSeparator="."
-                  decimalSeparator=","
-                  prefix="R$ "
-                  label="Total"
-                  allowNegative={false}
-                  decimalScale={2}
-                  fixedDecimalScale={true}
-                  fullWidth
-                  style={estiloCampo}
-                  value={formValues.total}
-                  onValueChange={handleFieldChange}
-                  sx={{
-                    backgroundColor: '#fff'
-                  }}
-                />
+
+
               </Grid>
               <Grid item xs={12} sm={6} display="flex" flexDirection="column" sx={{ alignItems: 'center' }}>
-
-                <Grid item xs={12} sm={11}>
+                <Grid className='grid-datas' item xs={12} sm={11}>
                   <Grid container justifyContent="space-between" >
                     <Grid item xs={6}>
                       <InputMask
@@ -304,6 +302,80 @@ export default function RentalCreatePage() {
                   </Grid>
                 </Grid>
 
+                {/* adicionar campo de forma de pagamento */}
+              </Grid>
+            </Grid>
+
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6} display="flex" flexDirection="column" alignItems='center'>
+
+                <NumericFormat
+                  name="valor"
+                  variant='filled'
+                  customInput={TextField}
+                  thousandSeparator="."
+                  decimalSeparator=","
+                  prefix="R$ "
+                  label="Valor"
+                  allowNegative={false}
+                  decimalScale={2}
+                  fixedDecimalScale={true}
+                  fullWidth
+                  style={estiloCampo}
+                  value={formValues.valor}
+                  onValueChange={handleFieldChange}
+                  sx={{
+                    backgroundColor: '#fff'
+                  }}
+                />
+
+                <Grid container alignItems="center">
+                  <Grid item>
+                    <Checkbox
+                      name="utilizarCredito"
+                      checked={formValues.utilizarCredito}
+                      onChange={handleCheckboxChange}
+                      style={estiloCheckbox}
+                    />
+                  </Grid>
+                  <Grid item>
+                    <TextField
+                      name="creditoValor"
+                      label="Valor de Crédito"
+                      variant="filled"
+                      fullWidth
+                      style={estiloCampo}
+                      value={formValues.creditoValor}
+                      onChange={handleFieldChange}
+                      sx={{
+                        backgroundColor: '#fff'
+                      }}
+                    />
+                  </Grid>
+                </Grid>
+
+                <NumericFormat
+                  name="total"
+                  variant='filled'
+                  customInput={TextField}
+                  thousandSeparator="."
+                  decimalSeparator=","
+                  prefix="R$ "
+                  label="Total"
+                  allowNegative={false}
+                  decimalScale={2}
+                  fixedDecimalScale={true}
+                  fullWidth
+                  style={estiloCampo}
+                  value={formValues.total}
+                  onValueChange={handleFieldChange}
+                  sx={{
+                    backgroundColor: '#fff'
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} display="flex" flexDirection="column" sx={{ alignItems: 'center' }}>
+
                 <NumericFormat
                   name="valorPago"
                   variant='filled'
@@ -344,8 +416,6 @@ export default function RentalCreatePage() {
                 />
               </Grid>
             </Grid>
-
-            <ProductTable products={products} />
 
             <Grid className="botoes-cadastro-cliente" item xs={12} sm={6} style={{ display: 'flex', justifyContent: 'end' }}>
               <Button
