@@ -14,8 +14,10 @@ import {
     IconButton,
     InputAdornment,
     Dialog,
+    DialogActions,
+    DialogContent,
+    DialogContentText,
     DialogTitle,
-    DialogContent
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import axios from 'axios';
@@ -25,6 +27,7 @@ import InputMask from 'react-input-mask';
 import { BACKEND_URL } from '../utils/backEndUrl';
 import { NumericFormat } from 'react-number-format';
 import { formatOutputDate, formatInputDate } from '../utils/formatTime';
+import { useNavigate } from 'react-router-dom';
 
 export default function ClienInfoPage() {
     const { codigo } = useParams();
@@ -34,6 +37,8 @@ export default function ClienInfoPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isAddCreditDialogOpen, setAddCreditDialogOpen] = useState(false);
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const navigate = useNavigate()
 
     const [formValues, setFormValues] = useState({
         codigo: parseInt(codigo, 10),
@@ -90,6 +95,23 @@ export default function ClienInfoPage() {
         calculateCreditAndObservations();
     }, [formValues.creditos]);
 
+    const handleDeleteProduct = () => {
+        setDeleteDialogOpen(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        try {
+            await axios.delete(BACKEND_URL + `cliente/${formValues.codigo}`);
+
+            navigate(`/cliente`);
+        } catch (error) {
+            console.error('Erro ao excluir o produto:', error);
+        }
+    };
+
+    const handleCancelDelete = () => {
+        setDeleteDialogOpen(false);
+    };
 
     const convertCurrencyToNumber = (currencyString) => {
         const numericString = currencyString.replace('R$', '').replace('.', '').replace(',', '.');
@@ -142,12 +164,11 @@ export default function ClienInfoPage() {
         boxSizing: 'border-box',
         textTransform: 'none',
     };
-
     const salvarButtonStyle = {
         ...buttonStyle,
         backgroundColor: '#1976D2',
         color: '#fff',
-        width: '90px',
+        width: '117px',
         height: '36px',
         marginRight: '8px',
         transition: 'background-color 0.3s',
@@ -165,10 +186,22 @@ export default function ClienInfoPage() {
         color: '#fff',
         width: '117px',
         height: '36px',
-        marginLeft: '8px',
         transition: 'background-color 0.3s',
         '&:hover': {
             backgroundColor: '#D81B60',
+        },
+    };
+
+    const deleteButtonStyle = {
+        ...buttonStyle,
+        backgroundColor: '#F44336',
+        color: '#fff',
+        width: '117px',
+        height: '36px',
+        marginLeft: '8px',
+        transition: 'background-color 0.3s',
+        '&:hover': {
+            backgroundColor: '#D32F2F',
         },
     };
 
@@ -637,30 +670,50 @@ export default function ClienInfoPage() {
                                     </Dialog>
                                 </Grid>
                             </Grid>
-                            <Grid className="botoes-cadastro-cliente" item xs={12} sm={6} style={{ display: 'flex', justifyContent: 'end' }}>
+                            <div xs={12} sm={6} style={{ display: 'flex', justifyContent: 'end', paddingRight: '24px' }}>
                                 <Button
                                     type="submit"
                                     variant="contained"
                                     style={salvarButtonStyle}
-                                    disabled={!hasChanges}
                                 >
-                                    SALVAR
+                                    ATUALIZAR
                                 </Button>
-
                                 <Button
                                     type="reset"
                                     variant="contained"
-                                    style={cancelarButtonStyle}
                                     onClick={handleCancel}
-                                    disabled={!hasChanges}
+                                    style={cancelarButtonStyle}
                                 >
                                     CANCELAR
                                 </Button>
-                            </Grid>
+                                <Button
+                                    variant="contained"
+                                    style={deleteButtonStyle}
+                                    onClick={handleDeleteProduct}
+                                >
+                                    EXCLUIR
+                                </Button>
+                            </div>
                         </form>
                     )}
                 </Container>
             </Container>
+            <Dialog open={deleteDialogOpen} onClose={handleCancelDelete}>
+                <DialogTitle>Confirmação de Exclusão</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        Tem certeza de que deseja excluir este produto?
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCancelDelete} color="primary">
+                        Cancelar
+                    </Button>
+                    <Button onClick={handleConfirmDelete} color="primary">
+                        Excluir
+                    </Button>
+                </DialogActions>
+            </Dialog>
             <Snackbar
                 open={snackbarOpen}
                 autoHideDuration={6000}

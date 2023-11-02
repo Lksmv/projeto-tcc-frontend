@@ -6,13 +6,13 @@ import { useAuth } from '../../../components/context/authProvider';
 const MENU_OPTIONS = [
   {
     id: 1,
-    label: 'Área usuário',
+    label: 'Usuário',
     route: '/usuario',
     requiresAdmin: true,
   },
   {
     id: 2,
-    label: 'Área funcionários',
+    label: 'Funcionários',
     route: '/funcionario',
     requiresAdmin: true,
   },
@@ -45,7 +45,7 @@ const AccountPopover = () => {
 
   const handleLogout = () => {
     if (token) {
-      logout(); // Deslogar apenas se o usuário estiver autenticado
+      logout();
     }
     navigate('/login');
     handleClose();
@@ -68,7 +68,7 @@ const AccountPopover = () => {
   return (
     <>
       <IconButton onClick={handleOpen} sx={{ padding: 0 }}>
-        <Avatar alt="avatar" sx={{ bgcolor: '#FFF', color: '#454F5B' }} />
+        <Avatar alt="avatar" sx={{ bgcolor: 'transparent', color: '#000' }} />
       </IconButton>
 
       <Popover

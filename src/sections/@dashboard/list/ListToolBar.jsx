@@ -51,22 +51,20 @@ export default function ListToolBar({ filtro, onfiltro, placeHolder, buttonText,
       />
 
       <Box sx={{ display: 'flex' }}>
-        {buttonText && toPage && (
-          <Button
-            variant="contained"
-            sx={{
-              backgroundColor: '#336DC3',
-              color: '#fff',
-              maxWidth: '190px',
-            }}
-            startIcon={<AddIcon />}
-            to={toPage}
-            component={RouterLink}
-            onClick={popup}
-          >
-            {buttonText}
-          </Button>
-        )}
+        <Button
+          variant="contained"
+          sx={{
+            backgroundColor: '#336DC3',
+            color: '#fff',
+            maxWidth: '190px',
+          }}
+          startIcon={<AddIcon />}
+          to={toPage}
+          component={RouterLink}
+          onClick={popup}
+        >
+          {buttonText}
+        </Button>
       </Box>
     </StyledRoot>
   );

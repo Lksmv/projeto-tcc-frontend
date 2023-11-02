@@ -13,6 +13,13 @@ import {
   ImageListItem,
   IconButton,
   Snackbar,
+  Checkbox,
+  FormControlLabel,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
 } from '@mui/material';
 import axios from 'axios';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
@@ -22,8 +29,9 @@ import { NumericFormat } from 'react-number-format';
 import ImageIcon from '@mui/icons-material/Image';
 import CloseIcon from '@mui/icons-material/Close';
 import MuiAlert from '@mui/material/Alert';
-
 import { Helmet } from 'react-helmet-async';
+
+import { useNavigate } from 'react-router-dom';
 
 export default function ProductInfoPage() {
   const estiloCampo = {
@@ -42,32 +50,46 @@ export default function ProductInfoPage() {
 
   const salvarButtonStyle = {
     ...buttonStyle,
-    backgroundColor: '#1976D2',
-    color: '#fff',
-    width: '90px',
-    height: '36px',
+    backgroundColor: '#1976D2',     
+    color: '#fff', 
+    width: '117px', 
+    height: '36px', 
     marginRight: '8px',
     transition: 'background-color 0.3s',
     '&:hover': {
-      backgroundColor: '#1565C0',
+      backgroundColor: '#1565C0', 
     },
     '&:active': {
-      backgroundColor: '#0D47A1',
+      backgroundColor: '#0D47A1', 
     },
   };
 
   const cancelarButtonStyle = {
     ...buttonStyle,
-    backgroundColor: '#E91E63',
-    color: '#fff',
-    width: '117px',
-    height: '36px',
+    backgroundColor: '#E91E63', 
+    color: '#fff', 
+    width: '117px', 
+    height: '36px', 
+    transition: 'background-color 0.3s',
+    '&:hover': {
+      backgroundColor: '#D81B60', 
+    },
+  };
+
+  const deleteButtonStyle = {
+    ...buttonStyle,
+    backgroundColor: '#F44336', 
+    color: '#fff', 
+    width: '117px', 
+    height: '36px', 
     marginLeft: '8px',
     transition: 'background-color 0.3s',
     '&:hover': {
-      backgroundColor: '#D81B60',
+      backgroundColor: '#D32F2F', 
     },
   };
+
+  const navigate = useNavigate()
 
   const tamanhos = ['Nenhum', 'PP', 'P', 'M', 'G', 'GG'];
 
@@ -90,6 +112,7 @@ export default function ProductInfoPage() {
     valor: '',
     observacoes: '',
     imagens: [],
+    trajeVendido: ''
   });
 
   const [error, setError] = useState(null);
@@ -97,34 +120,85 @@ export default function ProductInfoPage() {
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [originalProductDetails, setOriginalProductDetails] = useState({ ...formValues });
   const [categorias, setCategorias] = useState([]);
+  const [snackbarSeverity, setSnackbarSeverity] = useState('error');
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
-  const onDrop = useCallback((acceptedFiles) => {
-    if (acceptedFiles?.length) {
-      setFormValues((prevValues) => ({
-        ...prevValues,
-        imagens: [
-          ...prevValues.imagens,
-          ...acceptedFiles.map((imagem) => ({
-            ...imagem,
-            preview: URL.createObjectURL(imagem),
-          })),
-        ],
-      }));
+  const handleDeleteProduct = () => {
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    try {
+      await axios.delete(BACKEND_URL + `produto/${formValues.codigo}`);
+      navigate(`/produto`);
+    } catch (error) {
+      console.error('Erro ao excluir o produto:', error);
     }
-  }, []);
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteDialogOpen(false);
+  };
+
+  const onDrop = useCallback(async (acceptedFiles) => {
+    if (acceptedFiles?.length) {
+      try {
+        const uploadPromises = acceptedFiles.map(async (img) => {
+          const formData = new FormData();
+          formData.append('file', img);
+          formData.append('codigo', codigo);
+          const response = await axios.post(BACKEND_URL + 'imagens', formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          });
+          return response.data;
+        });
+
+        const uploadedImages = await Promise.all(uploadPromises);
+
+        setFormValues((prevFormValues) => ({
+          ...prevFormValues,
+          imagens: [...prevFormValues.imagens, ...uploadedImages],
+        }));
+
+        setSuccess(true);
+        setSnackbarSeverity('success');
+        setSnackbarMessage('Imagem(s) salva(s) com sucesso');
+      } catch (error) {
+        console.error('Erro ao fazer o upload das imagens:', error);
+        setSuccess(false);
+        setSnackbarSeverity('error');
+        setSnackbarMessage('Erro ao fazer o upload das imagens');
+      }
+    }
+  }, [formValues, codigo]);
 
   const { getRootProps, getInputProps } = useDropzone({ onDrop });
 
-  const removeImage = (index) => {
-    const updatedFiles = [...formValues.imagens];
-    updatedFiles.splice(index, 1);
-    setFormValues({ ...formValues, imagens: updatedFiles });
+  const removeImage = async (id, index) => {
+    try {
+      await axios.delete(BACKEND_URL + `imagens/${id}`);
+
+      const updatedFiles = [...formValues.imagens];
+      updatedFiles.splice(index, 1);
+      setFormValues({ ...formValues, imagens: updatedFiles });
+    } catch (error) {
+      console.error('Erro ao excluir a imagem:', error);
+    }
   };
 
   const [hasChanges, setHasChanges] = useState(false);
 
   const handleFieldChange = (e) => {
     const { name, value } = e.target;
+    setFormValues({ ...formValues, [name]: value });
+    setHasChanges(true);
+  };
+  const handleFieldChangeCheck = (e) => {
+    const { name, checked } = e.target;
+    const value = checked ? 'T' : 'F';
     setFormValues({ ...formValues, [name]: value });
     setHasChanges(true);
   };
@@ -155,45 +229,6 @@ export default function ProductInfoPage() {
           imagens: productDetails.imagens || [],
           codigoCategoria: productDetails.categoria.codigo,
         });
-
-        const fetchProductImages = async () => {
-          if (productDetails.imagensIds) {
-            const imagePromises = productDetails.imagensIds.map(async (imageId) => {
-              try {
-                const response = await axios.get(BACKEND_URL + `imagens/${imageId}`, {
-                  responseType: 'arraybuffer',
-                });
-                if (response.data) {
-                  const blob = new Blob([response.data], { type: response.headers['content-type'] });
-                  const imageUrl = URL.createObjectURL(blob);
-                  return imageUrl;
-                } else {
-                  console.error(`Imagem com ID ${imageId} não encontrada.`);
-                  return null;
-                }
-              } catch (error) {
-                console.error(`Erro ao buscar imagem com ID ${imageId}:`, error);
-                return null;
-              }
-            });
-
-            const imagesData = await Promise.all(imagePromises);
-            const filteredImagesData = imagesData.filter((imageData) => imageData !== null);
-
-            setFormValues({
-              ...productDetails,
-              imagens: filteredImagesData || [],
-              codigoCategoria: productDetails.categoria.codigo,
-            });
-            setOriginalProductDetails({
-              ...productDetails,
-              imagens: filteredImagesData || [],
-              codigoCategoria: productDetails.categoria.codigo,
-            });
-          }
-        };
-
-        fetchProductImages();
       })
       .catch((error) => {
         setError(error);
@@ -217,7 +252,7 @@ export default function ProductInfoPage() {
     fetchCategorias();
   }, [codigo]);
 
-  const handleSubmit = async (e) => {
+  const handleUpdate = async (e) => {
     e.preventDefault();
 
     const codigoAsInteger = parseInt(formValues.codigo, 10);
@@ -228,13 +263,13 @@ export default function ProductInfoPage() {
     };
 
     try {
-      const response = await axios.post(BACKEND_URL + 'produto', requestData);
-      console.log('Produto salvo com sucesso:', response.data);
+      const response = await axios.put(BACKEND_URL + `produto/${codigoAsInteger}`, requestData);
+      console.log('Produto atualizado com sucesso:', response.data);
       setSuccess(true);
       setOpenSnackbar(true);
       setHasChanges(false);
     } catch (error) {
-      console.error('Erro ao salvar o produto:', error);
+      console.error('Erro ao atualizar o produto:', error);
       setSuccess(false);
       setOpenSnackbar(true);
     }
@@ -284,9 +319,9 @@ export default function ProductInfoPage() {
             marginBottom: '20px',
           }}
         >
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleUpdate}>
             <Grid container spacing={2}>
-              <Grid item xs={12} sm={6} display="flex" flexDirection="column" alignItems="center">
+              <Grid item xs={12} sm={6} display="flex" flexDirection="column" alignItems="left">
                 <TextField
                   name="codigo"
                   label="Código"
@@ -319,7 +354,8 @@ export default function ProductInfoPage() {
                   }}
                   value={formValues.codigoCategoria}
                   onChange={(e) => {
-                    setFormValues({ ...formValues });
+                    const selectedCategoria = e.target.value;
+                    setFormValues({ ...formValues, codigoCategoria: selectedCategoria });
                   }}
                   SelectProps={{
                     MenuProps: {
@@ -399,6 +435,18 @@ export default function ProductInfoPage() {
                     </MenuItem>
                   ))}
                 </TextField>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      name="trajeVendido"
+                      color="primary"
+                      checked={formValues.trajeVendido == 'T' ? true : false}
+                      onChange={handleFieldChangeCheck}
+                    />
+                  }
+                  label="Traje Vendido"
+                  sx={{ marginLeft: 0 }}
+                />
               </Grid>
               <Grid item xs={12} sm={6} display="flex" flexDirection="column" sx={{ alignItems: 'center' }}>
                 <NumericFormat
@@ -431,25 +479,27 @@ export default function ProductInfoPage() {
                   onChange={handleFieldChange}
                 />
                 {/* Upload Imagem */}
-                <div {...getRootProps()} style={{ cursor: 'pointer', backgroundColor: '#fff', borderRadius: '10px', margin: '8px', maxWidth: '90%' }}>
-                  <input {...getInputProps()} placeholder="Selecione" />
-                  <IconButton color="#8E8E8E" textAlign="center" fontSize="13px">
-                    <ImageIcon />
-                    <p style={{ paddingLeft: '8px', textAlign: 'center', fontSize: '15px' }}>Arraste e solte os arquivos ou clique para selecionar...</p>
-                  </IconButton>
+                <div style={{ cursor: 'pointer', backgroundColor: '#fff', borderRadius: '10px', margin: '8px', width: '90%' }}>
+                  <input {...getInputProps()} />
+                  <label {...getRootProps()} style={{ cursor: 'pointer', width: '100%' }}>
+                    <IconButton color="#8E8E8E" textalign="center" fontSize="13px" component="span" >
+                      <ImageIcon />
+                      <p style={{ paddingLeft: '8px', textAlign: 'center', fontSize: '15px' }}>Arraste e solte os arquivos ou clique para selecionar...</p>
+                    </IconButton>
+                  </label>
                 </div>
                 {/* Preview Imagem */}
-                <div style={{ maxHeight: '200px', overflow: 'auto', margin: '8px' }}>
-                  <ImageList cols={3} rowHeight={160}>
+                <div style={{ maxHeight: '200px', overflow: 'auto', margin: '8px', width: '90%' }}>
+                  <ImageList cols={3} rowHeight={'200px'}>
                     {formValues.imagens.map((imagem, index) => (
-                      <ImageListItem key={index} sx={{ width: '100%', height: 'auto' }}>
+                      <ImageListItem key={imagem.idImagem} sx={{ width: '100%', height: 'auto' }}>
                         <img
-                          src={imagem}
-                          alt={`Imagem ${index}`}
+                          src={imagem.caminhoImagem}
+                          alt={`Imagem ${imagem.idImagem}`}
                           style={{ objectFit: 'cover', width: '100%', height: '100%' }}
                         />
                         <IconButton
-                          onClick={() => removeImage(index)}
+                          onClick={() => removeImage(imagem.idImagem, index)}
                           sx={{
                             position: 'absolute',
                             top: 8,
@@ -472,13 +522,13 @@ export default function ProductInfoPage() {
                 </div>
               </Grid>
             </Grid>
-            <div className="botoes-cadastro-produto" xs={12} sm={6} style={{ display: 'flex', justifyContent: 'end' }}>
+            <div xs={12} sm={6} style={{ display: 'flex', justifyContent: 'end', paddingRight: '24px' }}>
               <Button
                 type="submit"
                 variant="contained"
                 style={salvarButtonStyle}
               >
-                SALVAR
+                ATUALIZAR
               </Button>
               <Button
                 type="reset"
@@ -488,10 +538,33 @@ export default function ProductInfoPage() {
               >
                 CANCELAR
               </Button>
+              <Button
+                variant="contained"
+                style={deleteButtonStyle}
+                onClick={handleDeleteProduct}
+              >
+                EXCLUIR
+              </Button>
             </div>
           </form>
         </Container>
       </Container >
+      <Dialog open={deleteDialogOpen} onClose={handleCancelDelete}>
+        <DialogTitle>Confirmação de Exclusão</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Tem certeza de que deseja excluir este produto?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCancelDelete} color="primary">
+            Cancelar
+          </Button>
+          <Button onClick={handleConfirmDelete} color="primary">
+            Excluir
+          </Button>
+        </DialogActions>
+      </Dialog>
       <Snackbar
         open={openSnackbar}
         autoHideDuration={6000}
@@ -500,10 +573,10 @@ export default function ProductInfoPage() {
         <MuiAlert
           elevation={6}
           variant="filled"
-          severity={success ? 'success' : 'error'}
+          severity={snackbarSeverity}
           onClose={handleSnackbarClose}
         >
-          {success ? 'Produto atualizado com sucesso' : 'Erro ao atualizar o produto'}
+          {snackbarMessage}
         </MuiAlert>
       </Snackbar>
     </>

@@ -60,6 +60,11 @@ export default function ProductPage() {
     fetchProductList();
   }, [page, rowsPerPage, filterName]);
 
+
+  useEffect(() => {
+    fetchProductList();
+  }, [page, rowsPerPage, filterName]);
+
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
@@ -109,7 +114,12 @@ export default function ProductPage() {
               <ListHead headLabel={TABLE_HEAD} rowCount={totalItems} />
               <TableBody>
                 {productList.map((row) => {
-                  const { codigo, imagens, nome, tamanho, cor, valor } = row;
+                  const { codigo, nome, imagens, tamanho, cor, valor } = row;
+                  let img = {}
+                  if(imagens.length > 0) {
+                    img = imagens[0]
+                  }
+
                   return (
                     <TableRow
                       key={codigo}
@@ -118,18 +128,15 @@ export default function ProductPage() {
                       }}
                       style={{ cursor: 'pointer' }}
                     >
-                      <TableCell align="left">{<img src={imagens[0]} style={{ maxWidth: '75px', borderRadius: '10px' }}></img>}</TableCell>
+                      <TableCell align="left">
+                        <img src={img.caminhoImagem} style={{ maxWidth: '75px', borderRadius: '10px' }} alt={codigo} />
+                      </TableCell>
 
                       <TableCell align="left">{codigo}</TableCell>
-
                       <TableCell align="left">{nome}</TableCell>
-
                       <TableCell align="left">{tamanho}</TableCell>
-
                       <TableCell align="left">{cor}</TableCell>
-
                       <TableCell align="left">{valor}</TableCell>
-
                     </TableRow>
                   );
                 })}

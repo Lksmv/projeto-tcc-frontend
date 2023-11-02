@@ -26,6 +26,11 @@ import MuiAlert from '@mui/material/Alert';
 
 export default function ProductCreatePage() {
   const [categorias, setCategorias] = useState([]);
+  const [errors, setErrors] = useState({
+    codigo: '',
+    nome: '',
+    imagens: '',
+  });
   const navigate = useNavigate()
 
   const estiloCampo = {
@@ -117,14 +122,14 @@ export default function ProductCreatePage() {
 
   const onDrop = useCallback((acceptedFiles) => {
     if (acceptedFiles.length) {
-      setImagens((previousFiles) => [
-        ...previousFiles,
-        ...acceptedFiles.map((imagem) =>
-          Object.assign(imagem, { preview: URL.createObjectURL(imagem) })
-        ),
-      ]);
+        setImagens((previousFiles) => [
+          ...previousFiles,
+          ...acceptedFiles.map((imagem) =>
+            Object.assign(imagem, { preview: URL.createObjectURL(imagem) })
+          ),
+        ]);
     }
-  }, []);
+  }, [imagens]);
 
   const { getRootProps, getInputProps } = useDropzone({ onDrop });
 
@@ -144,18 +149,12 @@ export default function ProductCreatePage() {
   const handleSnackbarClose = () => {
     setOpenSnackbar(false);
   };
-
-  const convertCurrencyToNumber = (currencyString) => {
-    const numericString = currencyString.replace('R$', '').replace('.', '').replace(',', '.');
-    const numericValue = parseFloat(numericString);
-    return isNaN(numericValue) ? 0 : numericValue;
-  };
-
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     const codigoAsInteger = parseInt(formValues.codigo, 10);
-    const valorConvertido = convertCurrencyToNumber(formValues.valor);
+    const valorConvertido = formValues.valor;
     const generoChar = formValues.genero.charAt(0);
 
     const requestData = {
@@ -370,24 +369,24 @@ export default function ProductCreatePage() {
               </Grid>
               <Grid item xs={12} sm={6} display="flex" flexDirection="column" sx={{ alignItems: 'center' }}>
                 <NumericFormat
-                  label="Valor"
-                  variant="filled"
-                  fullWidth
-                  inputProps={{ min: '0' }}
-                  style={{ marginBottom: '15px', marginTop: '7px' }}
-                  value={formValues.valor}
                   name="valor"
+                  variant="filled"
                   customInput={TextField}
                   thousandSeparator="."
                   decimalSeparator=","
                   prefix="R$ "
-                  required={true}
+                  label="Valor"
                   allowNegative={false}
                   decimalScale={2}
                   fixedDecimalScale={true}
-                  onChange={handleFieldChange}
+                  fullWidth
+                  style={estiloCampo}
+                  value={formValues.valor}
                   sx={{
                     backgroundColor: '#fff',
+                  }}
+                  onValueChange={(values) => {
+                    handleFieldChange({ target: { name: 'valor', value: values.floatValue } });
                   }}
                 />
                 <TextField
@@ -405,7 +404,7 @@ export default function ProductCreatePage() {
                   }}
                 />
                 {/* Upload Imagem */}
-                <div style={{ cursor: 'pointer', backgroundColor: '#fff', borderRadius: '10px', margin: '8px', maxWidth: '90%' }}>
+                <div style={{ cursor: 'pointer', backgroundColor: '#fff', borderRadius: '10px', margin: '8px', width: '90%' }}>
                   <input {...getInputProps()} />
                   <label {...getRootProps()} style={{ cursor: 'pointer', width: '100%' }}>
                     <IconButton color="#8E8E8E" textalign="center" fontSize="13px" component="span">
@@ -415,33 +414,38 @@ export default function ProductCreatePage() {
                   </label>
                 </div>
                 {/* Preview Imagem */}
-                <div style={{ maxHeight: '200px', overflow: 'auto', margin: '8px' }}>
-                  {imagens.map((imagem, index) => (
-                    <div key={index} style={{ position: 'relative', display: 'inline-block', marginRight: '8px' }}>
-                      <img
-                        src={imagem.preview}
-                        alt={`Imagem ${index}`}
-                        style={{ objectFit: 'cover', width: '100px', height: '100px' }}
-                      />
-                      <IconButton
-                        onClick={() => removeImage(index)}
-                        sx={{
-                          position: 'absolute',
-                          top: 8,
-                          right: 8,
-                          backgroundColor: '#8E8E8E',
-                          borderRadius: '50%',
-                          width: '15px',
-                          height: '15px',
-                          '&:hover': {
-                            backgroundColor: '#B21447',
-                          },
-                        }}
-                      >
-                        <CloseIcon sx={{ color: '#fff', fontSize: '15px' }} />
-                      </IconButton>
-                    </div>
-                  ))}
+                <div style={{ maxHeight: '200px', overflow: 'auto', margin: '8px', width: '90%' }}>
+                  <ImageList cols={3} rowHeight={'200px'}>
+                    {imagens.map((imagem, index) => (
+
+                      <ImageListItem key={index} sx={{ width: '100%', height: 'auto' }}>
+                        <img
+                          src={imagem.preview}
+                          alt={`Imagem ${index}`}
+                          style={{ objectFit: 'cover', width: '100%', height: '100%' }}
+                        />
+                        <IconButton
+                          onClick={() => removeImage(index)}
+                          sx={{
+                            position: 'absolute',
+                            top: 8,
+                            right: 8,
+                            backgroundColor: '#8E8E8E',
+                            borderRadius: '50%',
+                            width: '15px',
+                            height: '15px',
+                            '&:hover': {
+                              backgroundColor: '#B21447',
+                            },
+                          }}
+                        >
+                          <CloseIcon sx={{ color: '#fff', fontSize: '15px' }} />
+                        </IconButton>
+                      </ImageListItem>
+
+
+                    ))}
+                  </ImageList>
                 </div>
               </Grid>
             </Grid>

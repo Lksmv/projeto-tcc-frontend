@@ -1,26 +1,68 @@
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import { Helmet } from 'react-helmet-async';
-// @mui
 import { useTheme } from '@mui/material/styles';
-import {
-  Container,
-  Typography,
-  Grid
-} from '@mui/material';
+import { Container, Typography, Grid } from '@mui/material';
 import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
 import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import AssignmentLateIcon from '@mui/icons-material/AssignmentLate';
+import { BACKEND_URL } from '../utils/backEndUrl';
 
-import {
-  AppCurrentVisits,
-  AppWebsiteVisits,
-  AppWidgetSummary,
-} from '../sections/@dashboard/app';
-
-// ----------------------------------------------------------------------
+import { AppCurrentVisits, AppWebsiteVisits, AppWidgetSummary } from '../sections/@dashboard/app';
 
 export default function DashboardAppPage() {
   const theme = useTheme();
+  const [aluguelSemanal, setAluguelSemanal] = useState(0);
+  const [aguardandoRetirada, setAguardandoRetirada] = useState(0);
+  const [produtosAlugados, setProdutosAlugados] = useState(0);
+  const [pedidosAtrasados, setPedidosAtrasados] = useState(0);
+  const [labels, setLabels] = useState([]);
+  const [dados, setDados] = useState([]); 
+  const [cData, setCData] = useState([]); 
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [aluguelResponse, atrasadosResponse, produtosAlugadosResponse, aguardandoRetiradaResponse, relatorioUltimosResponse,relatorioProximoResponse] = await Promise.all([
+          axios.get(BACKEND_URL + 'aluguel/ultimos-sete-dias'),
+          axios.get(BACKEND_URL + 'aluguel/quantidade-atrasados'),
+          axios.get(BACKEND_URL + 'produto/quantidade-alugados'),
+          axios.get(BACKEND_URL + 'produto/quantidade-aguardando-retirada'),
+          axios.get(BACKEND_URL + 'aluguel/ultimos-sete-dias-por-dia'),
+          axios.get(BACKEND_URL + 'aluguel/proximos-sete-dias-por-dia'),
+        ]);
+
+        setAluguelSemanal(aluguelResponse.data);
+        setPedidosAtrasados(atrasadosResponse.data);
+        setProdutosAlugados(produtosAlugadosResponse.data);
+        setAguardandoRetirada(aguardandoRetiradaResponse.data);
+
+        const relatorioUData = relatorioUltimosResponse.data;
+        const relatorioPData = relatorioProximoResponse.data;
+        const newLabels = [];
+        const newDados = [];
+        const newCData = [];
+
+        relatorioUData.forEach((data) => {
+          newCData.push({label: data.diaDaSemana, value: data.quantidade})
+        });
+        setCData(newCData);
+        relatorioPData.forEach((data) => {
+          newLabels.push(data.dia)
+          newDados.push(data.quantidade)
+        });
+
+
+        setLabels(newLabels);
+        setDados(newDados);
+      } catch (error) {
+        console.error('Erro ao buscar Dados:', error);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   return (
     <>
@@ -39,46 +81,34 @@ export default function DashboardAppPage() {
           paddingRight: '20px',
           paddingBottom: '20px',
           borderRadius: '5px',
-          backgroundColor: '#aaa'
+          backgroundColor: '#aaa',
         }}>
           <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="Aluguel semanal" total={714000} color="success" icon={<CurrencyExchangeIcon />} />
+            <AppWidgetSummary title="Aluguel semanal" total={aluguelSemanal} color="success" icon={<CurrencyExchangeIcon />} />
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="Aguardando retirada" total={1352831} color="info" icon={<HourglassEmptyIcon />} />
+            <AppWidgetSummary title="Aguardando retirada" total={aguardandoRetirada} color="info" icon={<HourglassEmptyIcon />} />
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="Item Orders" total={1723315} color="warning" icon={<AssignmentIcon />} />
+            <AppWidgetSummary title="Produtos alugados" total={produtosAlugados} color="warning" icon={<AssignmentIcon />} />
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="Pedidos atrasados" total={234} color="error" icon={<AssignmentLateIcon />} />
+            <AppWidgetSummary title="Pedidos atrasados" total={pedidosAtrasados} color="error" icon={<AssignmentLateIcon />} />
           </Grid>
 
           <Grid item xs={12} md={6} lg={8}>
             <AppWebsiteVisits
-              title="Aluguel Semanal"
-              chartLabels={[
-                '01/01/2003',
-                '02/01/2003',
-                '03/01/2003',
-                '04/01/2003',
-                '05/01/2003',
-                '06/01/2003',
-                '07/01/2003',
-                '08/01/2003',
-                '09/01/2003',
-                '10/01/2003',
-                '11/01/2003',
-              ]}
+              title="Aluguéis dos próximos Sete Dias."
+              chartLabels={labels}
               chartData={[
                 {
                   name: 'Total',
                   type: 'line',
                   fill: 'solid',
-                  data: [67, 25, 36, 30, 45, 35, 64, 52, 59, 36, 39],
+                  data: dados,
                 },
               ]}
             />
@@ -86,13 +116,8 @@ export default function DashboardAppPage() {
 
           <Grid item xs={12} md={6} lg={4}>
             <AppCurrentVisits
-              title="Categoria mais alugada"
-              chartData={[
-                { label: 'Terno', value: 4344 },
-                { label: 'Vestido', value: 5435 },
-                { label: 'Sapato', value: 1443 },
-                { label: 'bolsa', value: 4443 },
-              ]}
+              title="Quantidade de aluguéis dos ultimos Sete dias."
+              chartData={cData}
               chartColors={[
                 theme.palette.primary.main,
                 theme.palette.info.main,
