@@ -16,6 +16,7 @@ import RentalPage from './pages/RentalPage';
 import HomePage from './pages/HomePage';
 import CatalogPage from './pages/CatalogPage';
 import RentalCreatePage from './pages/RentalCreatePage';
+import RentalInfoPage from './pages/RentalInfoPage';
 import ProductCreatePage from './pages/ProductCreatePage';
 import ProductInfoPage from './pages/ProductInfoPage';
 import ClientInfoPage from './pages/ClientInfoPage';
@@ -75,7 +76,11 @@ export default function Router() {
         {
           path: '/aluguel/cadastro',
           element: <RentalCreatePage />
-        }
+        },
+        {
+          path: '/aluguel/detalhes/:codigo',
+          element: <RentalInfoPage />
+        },
       ]
     },
     {

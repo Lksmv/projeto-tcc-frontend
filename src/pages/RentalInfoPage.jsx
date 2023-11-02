@@ -22,8 +22,14 @@ import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import FormControlLabel from '@mui/material/FormControlLabel';
 
-export default function RentalCreatePage() {
+export default function RentalInfoPage() {
   const estiloCampo = {
+    margin: '8px',
+    borderRadius: '5px 5px 0 0',
+    width: '90%',
+  };
+
+  const estiloCampoValores = {
     margin: '8px',
     borderRadius: '5px 5px 0 0',
     width: '90%',
@@ -332,6 +338,7 @@ export default function RentalCreatePage() {
 
               </Grid>
 
+
               <Grid item className='grid-direita' xs={12} sm={6} display="flex" flexDirection="column" sx={{ alignItems: 'center' }}>
 
                 <NumericFormat
@@ -428,7 +435,7 @@ export default function RentalCreatePage() {
                 />
               </Grid>
             </Grid>
-
+            
             <Grid className="botoes-cadastro-cliente" item xs={12} sm={6} style={{ display: 'flex', justifyContent: 'end' }}>
               <Button
                 type="submit"
