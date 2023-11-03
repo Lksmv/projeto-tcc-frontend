@@ -18,15 +18,20 @@ import {
   Button,
   Dialog,
   DialogTitle,
-  DialogContent
+  DialogContent,
+  Snackbar,
+  IconButton,
+  SnackbarContent,
 } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import { BACKEND_URL } from '../utils/backEndUrl';
 import { ListHead, ListToolBar } from '../sections/@dashboard/list';
 
 const TABLE_HEAD = [
-  { id: 'codigo', label: 'Código', alignRight: false },
+  { id: 'idFormaDePagamento', label: 'Código', alignRight: false },
   { id: 'nome', label: 'Nome', alignRight: false },
+  { id: 'taxa', label: 'Taxa (%)', alignRight: false },
 ];
 
 export default function PaymentPage() {
@@ -42,41 +47,96 @@ export default function PaymentPage() {
   const [paymentList, setPaymentList] = useState([]);
   const [totalItems, setTotalItems] = useState(0);
   const [isAddPaymentDialogOpen, setAddPaymentDialogOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [isSnackbarOpen, setSnackbarOpen] = useState(false);
 
   const [paymentValues, setPaymentValues] = useState({
-    codigo: "",
+    idFormaDePagamento: "",
     nome: "",
+    taxa: ""
   });
+
+  const handleSnackbarClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setSnackbarOpen(false);
+  };
+
+  const showSnackbar = (message) => {
+    setSnackbarMessage(message);
+    setSnackbarOpen(true);
+  };
+
+  const handleEditPayment = (payment) => {
+    setPaymentValues({ ...payment });
+    handleOpenEditPaymentDialog();
+  };
+
+  const handleCreateOrUpdatePayment = async () => {
+    const requestData = {
+      ...paymentValues
+    };
+
+    try {
+      if (paymentValues.idFormaDePagamento) {
+        const response = await axios.put(
+          `${BACKEND_URL}forma-de-pagamento/${paymentValues.idFormaDePagamento}`,
+          requestData
+        );
+        showSnackbar('Forma de pagamento atualizada com sucesso.');
+      } else {
+        const response = await axios.post(
+          BACKEND_URL + 'forma-de-pagamento',
+          requestData
+        );
+        showSnackbar('Forma de pagamento criada com sucesso.');
+      }
+      handleCloseAddPaymentDialog();
+      fetchPaymentList();
+    } catch (error) {
+      showSnackbar('Erro ao salvar a forma de pagamento.');
+      console.error('Erro ao salvar a forma de pagamento:', error);
+    }
+  };
+
+
+
+  const handleOpenEditPaymentDialog = () => {
+    setAddPaymentDialogOpen(true);
+  };
 
   const handleOpenAddPaymentDialog = () => {
     setAddPaymentDialogOpen(true);
     setPaymentValues({
-      ...paymentValues,
-      // idCliente: paymentValues.idCliente, // Set the idAluguel?
-      data: new Date().toISOString(),
+      ...paymentValues
     });
   };
 
   const handleCloseAddPaymentDialog = () => {
     setAddPaymentDialogOpen(false);
+    setPaymentValues({
+      idFormaDePagamento: "",
+      nome: "",
+      taxa: ""
+    });
   };
 
   const fetchPaymentList = async () => {
-    
-    // erros da tela são daqui, porque n existe forma de pagamento do backend ainda
-    // try {
-    //   const response = await axios.get(BACKEND_URL + 'formaPagamento', {
-    //     params: {
-    //       page: page,
-    //       size: rowsPerPage,
-    //       filtro: filtro,
-    //     },
-    //   });
-    //   setPaymentList(response.data.content);
-    //   setTotalItems(response.data.totalElements);
-    // } catch (error) {
-    //   console.error('Erro ao buscar a lista de formas de pagamento:', error);
-    // }
+
+    try {
+      const response = await axios.get(BACKEND_URL + 'forma-de-pagamento', {
+        params: {
+          page: page,
+          size: rowsPerPage,
+          filtro: filtro,
+        },
+      });
+      setPaymentList(response.data.content);
+      setTotalItems(response.data.totalElements);
+    } catch (error) {
+      console.error('Erro ao buscar a lista de formas de pagamento:', error);
+    }
   };
 
   useEffect(() => {
@@ -100,24 +160,6 @@ export default function PaymentPage() {
   const handleFieldChange = (e) => {
     const { name, value } = e.target;
     setPaymentValues({ ...paymentValues, [name]: value });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    const codigoAsInteger = parseInt(paymentValues.codigo, 10);
-
-    const requestData = {
-      ...paymentValues,
-      codigo: codigoAsInteger,
-    };
-
-    try {
-      const response = await axios.post(BACKEND_URL + 'formaPagamento', requestData);
-      console.log('Forma de pagamento salva com sucesso:', response.data);
-    } catch (error) {
-      console.error('Erro ao salvar a forma de pagamento:', error);
-    }
   };
 
   const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - totalItems) : 0;
@@ -154,28 +196,29 @@ export default function PaymentPage() {
               <ListHead headLabel={TABLE_HEAD} rowCount={totalItems} />
               <TableBody>
                 {paymentList.map((row) => {
-                  const { codigo, nome } = row;
+                  const { idFormaDePagamento, nome, taxa } = row;
 
                   return (
-                    <TableRow key={codigo} hover tabIndex={-1}>
+                    <TableRow
+                      key={idFormaDePagamento}
+                      hover
+                      tabIndex={-1}
+                      onClick={() => handleEditPayment(row)} // Adicione esta linha
+                    >
                       <TableCell component="th" scope="row" padding="normal">
                         <Stack direction="row" alignItems="center" spacing={2}>
                           <Typography variant="subtitle2" noWrap>
-                            {codigo}
+                            {idFormaDePagamento}
                           </Typography>
                         </Stack>
                       </TableCell>
                       <TableCell align="left">{nome}</TableCell>
+                      <TableCell align="left">{taxa + '%'}</TableCell>
                     </TableRow>
                   );
                 })}
-
-                {emptyRows > 0 && (
-                  <TableRow style={{ height: 53 * emptyRows }}>
-                    <TableCell colSpan={6} />
-                  </TableRow>
-                )}
               </TableBody>
+
             </Table>
           </TableContainer>
 
@@ -194,23 +237,10 @@ export default function PaymentPage() {
           <DialogTitle>Adicionar Forma de Pagamento</DialogTitle>
           <DialogContent>
 
-            <form onSubmit={handleSubmit} style={{
+            <form style={{
               display: 'flex',
               justifyContent: 'center',
             }}>
-              {/* acresecentar os campos que vão aqui */}
-              <TextField
-                name="codigo"
-                label="Código"
-                variant="filled"
-                fullWidth
-                style={estiloCampo}
-                value={paymentValues.codigo}
-                onChange={handleFieldChange}
-                sx={{
-                  backgroundColor: '#fff',
-                }}
-              />
               <TextField
                 name="nome"
                 label="Nome"
@@ -223,34 +253,69 @@ export default function PaymentPage() {
                   backgroundColor: '#fff',
                 }}
               />
+              <TextField
+                name="taxa"
+                label="Taxa (%)"
+                variant="filled"
+                fullWidth
+                style={estiloCampo}
+                value={paymentValues.taxa}
+                onChange={handleFieldChange}
+                sx={{
+                  backgroundColor: '#fff',
+                }}
+              />
             </form>
             <div style={{
               display: 'flex',
               justifyContent: 'center',
             }}>
-            <Button onClick={() => {
-              addPayment();
-              handleCloseAddPaymentDialog();
-            }} style={{
-              marginTop: '10px',
-              backgroundColor: '#1976D2',
-              color: '#fff',
-              width: '90px',
-              height: '36px',
-              marginRight: '8px',
-              transition: 'background-color 0.3s',
-              '&:hover': {
-                backgroundColor: '#1565C0',
-              },
-              '&:active': {
-                backgroundColor: '#0D47A1',
-              },
-            }}> Adicionar</Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+              <Button onClick={() => {
+                handleCreateOrUpdatePayment();
+                handleCloseAddPaymentDialog();
+              }} style={{
+                marginTop: '10px',
+                backgroundColor: '#1976D2',
+                color: '#fff',
+                width: '90px',
+                height: '36px',
+                marginRight: '8px',
+                transition: 'background-color 0.3s',
+                '&:hover': {
+                  backgroundColor: '#1565C0',
+                },
+                '&:active': {
+                  backgroundColor: '#0D47A1',
+                },
+              }}> Adicionar</Button>
+            </div>
+          </DialogContent>
+        </Dialog>
 
-    </Container >
+      </Container >
+      <Snackbar
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'left',
+        }}
+        open={isSnackbarOpen}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+      >
+        <SnackbarContent
+          message={snackbarMessage}
+          action={
+            <IconButton
+              size="small"
+              aria-label="close"
+              color="inherit"
+              onClick={handleSnackbarClose}
+            >
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          }
+        />
+      </Snackbar>
     </>
   );
 }

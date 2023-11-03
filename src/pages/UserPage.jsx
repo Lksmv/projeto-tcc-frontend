@@ -20,9 +20,13 @@ import {
   Button,
   Dialog,
   DialogTitle,
-  DialogContent
+  DialogContent,
+  Snackbar,
+  IconButton,
+  SnackbarContent,
 } from '@mui/material';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
+import CloseIcon from '@mui/icons-material/Close';
 import { BACKEND_URL } from '../utils/backEndUrl';
 import { ListHead, ListToolBar } from '../sections/@dashboard/list';
 
@@ -37,7 +41,7 @@ export default function UserPage() {
   const estiloCampo = {
     margin: '8px',
     borderRadius: '5px 5px 0 0',
-    maxWidth: '90%'
+    maxWidth: '90%',
   };
 
   const buttonStyle = {
@@ -82,30 +86,55 @@ export default function UserPage() {
   const [userList, setUserList] = useState([]);
   const [totalItems, setTotalItems] = useState(0);
   const [isAddUserDialogOpen, setAddUserDialogOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [isSnackbarOpen, setSnackbarOpen] = useState(false);
 
-  const cargos = [
-    'Nenhum', 'Administrador', 'Funcionário'
-  ];
+  const cargos = [{ nome: 'Administrador', id: 1 }, { nome: 'Funcionário', id: 2 }];
 
   const [userValues, setUserValues] = useState({
-    codigo: "",
-    nome: "",
-    cargo: "",
-    login: "",
-    senha: "",
+    codigo: 0,
+    nome: '',
+    idCargo: 2,
+    login: '',
+    senha: '',
+    update: ''
   });
 
   const handleOpenAddUserDialog = () => {
     setAddUserDialogOpen(true);
+  };
+  const handleOpenEditUserDialog = (row) => {
+    setAddUserDialogOpen(true);
     setUserValues({
-      ...userValues,
-      // idCliente: paymentValues.idCliente, // Set the idAluguel?
-      data: new Date().toISOString(),
+      ...row,
+      senha: '',
+      update: row.codigo,
+      idCargo: row.cargoDTO.idCargo
     });
   };
 
   const handleCloseAddUserDialog = () => {
-    setAddUserDialogOpen(false);
+    setAddUserDialogOpen(false),
+      setUserValues({
+        codigo: 0,
+        nome: '',
+        idCargo: 2,
+        login: '',
+        senha: '',
+        update: ''
+      });
+  };
+
+  const handleSnackbarClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setSnackbarOpen(false);
+  };
+
+  const showSnackbar = (message) => {
+    setSnackbarMessage(message);
+    setSnackbarOpen(true);
   };
 
   const fetchUserList = async () => {
@@ -114,7 +143,7 @@ export default function UserPage() {
         params: {
           page: page,
           size: rowsPerPage,
-          filtro: filtro, //fazer o filtro no backend
+          filtro: filtro,
         },
       });
       setUserList(response.data.content);
@@ -147,41 +176,62 @@ export default function UserPage() {
     setUserValues({ ...userValues, [name]: value });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    const codigoAsInteger = parseInt(userValues.codigo, 10);
-
+  const handleCreateOrUpdateUser = async () => {
     const requestData = {
       ...userValues,
-      codigo: codigoAsInteger,
     };
 
-    try {
-      const response = await axios.post(BACKEND_URL + 'usuario', requestData);
-      console.log('Usuário salvo com sucesso:', response.data);
-    } catch (error) {
-      console.error('Erro ao salvar o usuário:', error);
-    }
-  };
+    console.log(requestData);
 
-  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - totalItems) : 0;
+    try {
+      if (userValues.update) {
+        const response = await axios.put(
+          `${BACKEND_URL}usuario/${userValues.update}`,
+          requestData
+        );
+        showSnackbar('Usuario atualizada com sucesso.');
+      } else {
+        const response = await axios.post(
+          BACKEND_URL + 'usuario',
+          requestData
+        );
+        showSnackbar('Usuario criado com sucesso.');
+      }
+      handleCloseAddUserDialog();
+      fetchUserList();
+    } catch (error) {
+      showSnackbar('Erro ao salvar o Usuario.');
+      console.error('Erro ao salvar o Usuario:', error);
+    }
+  }
+
+  const emptyRows =
+    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - totalItems) : 0;
 
   return (
     <>
       <Helmet>
         <title>Usuário</title>
       </Helmet>
-      <Container maxWidth="xl" sx={{ marginBottom: "30px" }}>
-        <Container maxWidth="100%" style={{ marginTop: '16px', alignContent: 'left' }}>
+      <Container maxWidth="xl" sx={{ marginBottom: '30px' }}>
+        <Container
+          maxWidth="100%"
+          style={{ marginTop: '16px', alignContent: 'left' }}
+        >
           <Typography variant="h4" color="text.primary" sx={{ mb: 1 }}>
             Usuário
           </Typography>
-          <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />} aria-label="breadcrumb" sx={{ mb: 2 }}>
+          <Breadcrumbs
+            separator={<NavigateNextIcon fontSize="small" />}
+            aria-label="breadcrumb"
+            sx={{ mb: 2 }}
+          >
             <Link color="inherit" href="/dashboard">
               Dashboard
             </Link>
-            <Typography variant="subtitle1" color="text.primary">Usuário</Typography>
+            <Typography variant="subtitle1" color="text.primary">
+              Usuário
+            </Typography>
           </Breadcrumbs>
         </Container>
 
@@ -199,10 +249,15 @@ export default function UserPage() {
               <ListHead headLabel={TABLE_HEAD} rowCount={totalItems} />
               <TableBody>
                 {userList.map((row) => {
-                  const { codigo, nome, login, cargo } = row;
+                  const { codigo, nome, login, cargoDTO } = row;
 
                   return (
-                    <TableRow key={codigo} hover tabIndex={-1}>
+                    <TableRow
+                      key={codigo}
+                      hover
+                      tabIndex={-1}
+                      onClick={() => handleOpenEditUserDialog(row)}
+                    >
                       <TableCell component="th" scope="row" padding="normal">
                         <Stack direction="row" alignItems="center" spacing={2}>
                           <Typography variant="subtitle2" noWrap>
@@ -212,7 +267,7 @@ export default function UserPage() {
                       </TableCell>
                       <TableCell align="left">{nome}</TableCell>
                       <TableCell align="left">{login}</TableCell>
-                      <TableCell align="left">{cargo}</TableCell>
+                      <TableCell align="left">{cargoDTO.idCargo == 1 ? 'Administrador' : 'Funcionário'}</TableCell>
                     </TableRow>
                   );
                 })}
@@ -240,11 +295,7 @@ export default function UserPage() {
         <Dialog open={isAddUserDialogOpen} onClose={handleCloseAddUserDialog}>
           <DialogTitle>Adicionar Usuário</DialogTitle>
           <DialogContent>
-
-            <form onSubmit={handleSubmit} style={{
-              display: 'flex',
-              justifyContent: 'center',
-            }}>
+            <form style={{ display: 'flex', justifyContent: 'center' }}>
               <Grid container spacing={2} padding={1}>
                 <Grid item xs={12} sm={6} display="flex" flexDirection="column" alignItems='center'>
                   <TextField
@@ -281,19 +332,19 @@ export default function UserPage() {
                     sx={{
                       backgroundColor: '#fff',
                     }}
-                    value={userValues.cargo}
+                    value={userValues.idCargo}
                     onChange={handleFieldChange}
                     SelectProps={{
                       MenuProps: {
                         style: {
                           maxHeight: 300,
                         },
-                      }
+                      },
                     }}
                   >
                     {cargos.map((cargo) => (
-                      <MenuItem key={cargo} value={cargo}>
-                        {cargo}
+                      <MenuItem key={cargo.id} value={cargo.id}>
+                        {cargo.nome}
                       </MenuItem>
                     ))}
                   </TextField>
@@ -326,34 +377,58 @@ export default function UserPage() {
                 </Grid>
               </Grid>
             </form>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'center',
-            }}>
-              <Button onClick={() => {
-                addPayment();
-                handleCloseAddPaymentDialog();
-              }} style={{
-                margin: '10px',
-                backgroundColor: '#1976D2',
-                color: '#fff',
-                width: '90px',
-                height: '36px',
-                marginRight: '8px',
-                transition: 'background-color 0.3s',
-                '&:hover': {
-                  backgroundColor: '#1565C0',
-                },
-                '&:active': {
-                  backgroundColor: '#0D47A1',
-                },
-              }}> Adicionar</Button>
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <Button
+                onClick={() => {
+                  handleCreateOrUpdateUser();
+                  handleCloseAddUserDialog();
+                }}
+                style={{
+                  marginTop: '10px',
+                  backgroundColor: '#1976D2',
+                  color: '#fff',
+                  width: '90px',
+                  height: '36px',
+                  marginRight: '8px',
+                  transition: 'background-color 0.3s',
+                  '&:hover': {
+                    backgroundColor: '#1565C0',
+                  },
+                  '&:active': {
+                    backgroundColor: '#0D47A1',
+                  },
+                }}
+              >
+                Adicionar
+              </Button>
             </div>
-
           </DialogContent>
         </Dialog>
+      </Container>
 
-      </Container >
+      <Snackbar
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'left',
+        }}
+        open={isSnackbarOpen}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+      >
+        <SnackbarContent
+          message={snackbarMessage}
+          action={
+            <IconButton
+              size="small"
+              aria-label="close"
+              color="inherit"
+              onClick={handleSnackbarClose}
+            >
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          }
+        />
+      </Snackbar>
     </>
   );
 }
