@@ -80,6 +80,10 @@ export default function RentalCreatePage() {
     '123 - Maria', '11 - joao'
   ];
 
+  const funcionarios = [
+    '1 - Maria', '11 - joao'
+  ];
+
   const products = [
     { name: '001 - Vestido' },
     { name: '002 - Terno' },
@@ -89,6 +93,7 @@ export default function RentalCreatePage() {
   const [formValues, setFormValues] = useState({
     codigo: 0,
     cliente: "",
+    funcionario: "",
     dataSaida: "",
     dataDevolucao: "",
     produtos: [],
@@ -98,6 +103,7 @@ export default function RentalCreatePage() {
     valorPago: "",
     restanteAPagar: "",
     formaPagamento: "",
+    patrocinio: false,
   });
 
   const [formasPagamento, setformasPagamento] = useState([]);
@@ -179,6 +185,7 @@ export default function RentalCreatePage() {
 
             <Grid container spacing={2}>
               <Grid item className='grid-esquerda' xs={12} sm={6} display="flex" flexDirection="column" alignItems='center'>
+
                 <TextField
                   name="idAluguel"
                   label="Código"
@@ -195,8 +202,8 @@ export default function RentalCreatePage() {
                   }}
                 />
                 <Autocomplete
-                  options={clientes} // A lista de clientes
-                  getOptionLabel={(option) => option} // Função para obter o rótulo de cada cliente
+                  options={clientes}
+                  getOptionLabel={(option) => option}
                   value={formValues.cliente}
                   onChange={(event, newValue) => {
                     setFormValues({ ...formValues, cliente: newValue });
@@ -207,6 +214,28 @@ export default function RentalCreatePage() {
                     <TextField
                       {...params}
                       label="Cliente"
+                      variant="filled"
+                      required
+                      sx={{
+                        borderRadius: '5px 5px 0 0',
+                        backgroundColor: '#fff'
+                      }}
+                    />
+                  )}
+                />
+                <Autocomplete
+                  options={funcionarios}
+                  getOptionLabel={(option) => option}
+                  value={formValues.funcionario}
+                  onChange={(event, newValue) => {
+                    setFormValues({ ...formValues, funcionario: newValue });
+                  }}
+                  fullWidth
+                  style={estiloCampo}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Funcionário"
                       variant="filled"
                       required
                       sx={{
@@ -254,6 +283,67 @@ export default function RentalCreatePage() {
                   }}
                 />
 
+                <Grid className='grid-datas' item xs={12} sm={12} style={{ display: 'flex', width: '93%', alignItems: 'center' }}>
+                  <Grid container>
+                    <Grid item xs={6}>
+                      <InputMask
+                        mask="99-99-9999"
+                        value={formValues.dataSaida}
+                        onChange={handleFieldChange}
+                      >
+                        {() => (
+                          <TextField
+                            name="dataSaida"
+                            label="Data Saída"
+                            variant="filled"
+                            fullWidth
+                            style={estiloCampo}
+                            sx={{
+                              backgroundColor: '#fff',
+                            }}
+                          />
+                        )}
+                      </InputMask>
+                    </Grid>
+                    <Grid item xs={6} style={{ textAlign: 'right' }}>
+                      <InputMask
+                        mask="99-99-9999"
+                        value={formValues.dataDevolucao}
+                        onChange={handleFieldChange}
+                      >
+                        {() => (
+                          <TextField
+                            name="dataDevolucao"
+                            label="Data Devolução"
+                            variant="filled"
+                            fullWidth
+                            style={estiloCampo}
+                            sx={{
+                              backgroundColor: '#fff'
+                            }}
+                          />
+                        )}
+                      </InputMask>
+                    </Grid>
+                  </Grid>
+                </Grid>
+
+                <Grid container className='grid-utilizarCredito' alignItems="center">
+                  <Grid style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                    <Checkbox
+                      name="patrocinio"
+                      checked={formValues.patrocinio}
+                      onChange={handleCheckboxChange}
+                      style={estiloCheckbox}
+                    />
+                    <span>Aluguel patrocinado</span>
+                  </Grid>
+                </Grid>
+
+              </Grid>
+
+              <Grid item className='grid-direita' xs={12} sm={6} display="flex" flexDirection="column" sx={{ alignItems: 'center' }}>
+
                 <TextField
                   name="formaPagamento"
                   variant="filled"
@@ -285,55 +375,6 @@ export default function RentalCreatePage() {
                   ))}
                 </TextField>
 
-                <Grid className='grid-datas' item xs={12} sm={11}>
-                  <Grid container>
-                    <Grid item xs={6}>
-                      <InputMask
-                        mask="99-99-9999"
-                        value={formValues.dataSaida}
-                        onChange={handleFieldChange}
-                      >
-                        {() => (
-                          <TextField
-                            name="dataSaida"
-                            label="Data Saída"
-                            variant="filled"
-                            fullWidth
-                            style={estiloCampo}
-                            sx={{
-                              backgroundColor: '#fff',
-                            }}
-                          />
-                        )}
-                      </InputMask>
-                    </Grid>
-                    <Grid item xs={6}>
-                      <InputMask
-                        mask="99-99-9999"
-                        value={formValues.dataDevolucao}
-                        onChange={handleFieldChange}
-                      >
-                        {() => (
-                          <TextField
-                            name="dataDevolucao"
-                            label="Data Devolução"
-                            variant="filled"
-                            fullWidth
-                            style={estiloCampo}
-                            sx={{
-                              backgroundColor: '#fff'
-                            }}
-                          />
-                        )}
-                      </InputMask>
-                    </Grid>
-                  </Grid>
-                </Grid>
-
-              </Grid>
-
-              <Grid item className='grid-direita' xs={12} sm={6} display="flex" flexDirection="column" sx={{ alignItems: 'center' }}>
-
                 <NumericFormat
                   name="valor"
                   variant='filled'
@@ -352,8 +393,9 @@ export default function RentalCreatePage() {
                   sx={{
                     backgroundColor: '#fff'
                   }}
+                  disabled={formValues.patrocinio}
                 />
-                <Grid container className='grid-utilizarCredito' alignItems="center">
+                <Grid container className='grid-utilizarCredito' alignItems="center" style={{ display: 'flex', width: '93%' }}>
                   <Grid item xs={12} sm={6}>
                     <NumericFormat
                       name="creditoValor"
@@ -405,6 +447,7 @@ export default function RentalCreatePage() {
                   sx={{
                     backgroundColor: '#fff'
                   }}
+                  disabled={formValues.patrocinio}
                 />
 
                 <NumericFormat
@@ -425,6 +468,7 @@ export default function RentalCreatePage() {
                   sx={{
                     backgroundColor: '#fff'
                   }}
+                  disabled={formValues.patrocinio}
                 />
               </Grid>
             </Grid>

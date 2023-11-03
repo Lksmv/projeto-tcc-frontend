@@ -3,137 +3,329 @@ import axios from 'axios';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
 import {
-  Card,
-  Table,
-  TableRow,
-  TableBody,
-  TableCell,
   Container,
   Typography,
-  TableContainer,
-  TablePagination,
   Breadcrumbs,
   Link,
+  Grid,
+  TextField,
+  MenuItem,
+  Button,
+  Autocomplete
 } from '@mui/material';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import { BACKEND_URL } from '../utils/backEndUrl';
-import { ListHead, ListToolBar } from '../sections/@dashboard/list';
+import InputMask from 'react-input-mask';
 
-const TABLE_HEAD = [
-  { id: 'idCliente', label: 'Código', alignRight: false },
-  { id: 'nome', label: 'Nome', alignRight: false },
-  { id: 'telefone', label: 'Telefone', alignRight: false },
-  { id: 'cpf', label: 'CPF', alignRight: false },
-];
+export default function ReportPage() {
 
-export default function ClientPage() {
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [filtro, setFiltro] = useState('');
-  const [clientList, setClientList] = useState([]);
-  const [totalItems, setTotalItems] = useState(0);
-  const navigate = useNavigate();
+  const estiloCampo = {
+    margin: '8px',
+    borderRadius: '5px 5px 0 0',
+    width: '90%',
+  };
 
-  const fetchClientList = async () => {
+  const buttonStyle = {
+    fontFamily: 'Roboto, sans-serif',
+    borderRadius: '4px',
+    boxSizing: 'border-box',
+    textTransform: 'none',
+  };
+
+  const salvarButtonStyle = {
+    ...buttonStyle,
+    backgroundColor: '#1976D2',
+    color: '#fff',
+    width: '90px',
+    height: '36px',
+    marginRight: '8px',
+    transition: 'background-color 0.3s',
+    '&:hover': {
+      backgroundColor: '#1565C0',
+    },
+    '&:active': {
+      backgroundColor: '#0D47A1',
+    },
+  };
+
+  const cancelarButtonStyle = {
+    ...buttonStyle,
+    backgroundColor: '#E91E63',
+    color: '#fff',
+    width: '117px',
+    height: '36px',
+    marginLeft: '8px',
+    transition: 'background-color 0.3s',
+    '&:hover': {
+      backgroundColor: '#D81B60',
+    },
+  };
+
+  const tipos = [
+    'Devolução', 'Retirada'
+  ];
+
+  const clientes = [
+    '123 - Maria', '11 - joao'
+  ];
+
+  const [formValues, setFormValues] = useState({
+    tipo: "",
+    cliente: "",
+    dataInicial: "",
+    dataFinal: "",
+    codigoCategoria: "",
+  });
+
+  const [categorias, setCategorias] = useState([]);
+  const navigate = useNavigate()
+
+  const handleFieldChange = (e) => {
+    const { name, value } = e.target;
+    setFormValues({ ...formValues, [name]: value });
+  };
+
+  const handleCancel = () => {
+    navigate('/dashboard');
+  };
+
+  const handleReport = () => {
+    navigate('/dashboard');
+  };
+ 
+  useEffect(() => {
+    const fetchCategorias = async () => {
+      try {
+        const response = await axios.get(BACKEND_URL + 'categoria', {
+          params: {
+            page: 0,
+            size: 100,
+            filtro: "",
+          },
+        });
+        setCategorias(response.data.content);
+      } catch (error) {
+        console.error('Erro ao buscar categorias:', error);
+      }
+    };
+
+    fetchCategorias();
+  }, []);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const formatedDataInicial = formatInputDate(formValues.dataInicial);
+    const formatedDataFinal = formatInputDate(formValues.dataFinal);
+
+    const requestData = {
+      ...formValues,
+      dataInicial: formatedDataInicial,
+      dataFinal: formatedDataFinal,
+    };
+    let response;
     try {
-      const response = await axios.get(BACKEND_URL + 'cliente', {
-        params: {
-          page: page,
-          size: rowsPerPage,
-          filtro: filtro,
-        },
-      });
-      setClientList(response.data.content);
-      setTotalItems(response.data.totalElements);
+      response = await axios.post(BACKEND_URL + 'relatorio', requestData);
     } catch (error) {
-      console.error('Erro ao buscar a lista de clientes:', error);
+      if (error.response) {
+        setSnackbarMessage(error.response.data.errors[0]);
+      } else if (error.request) {
+        setSnackbarMessage('Erro de requisição: ' + error.request);
+      } else {
+        setSnackbarMessage('Erro ao gerar relatório: ' + error.message);
+      }
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
     }
   };
-
-  useEffect(() => {
-    fetchClientList();
-  }, [page, rowsPerPage, filtro]);
-
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
-
-  const handleFilterByName = (event) => {
-    setFiltro(event.target.value);
-    setPage(0);
-  };
-
-  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - totalItems) : 0;
 
   return (
     <>
       <Helmet>
-        <title>Relatórios</title>
+        <title>Relatório</title>
       </Helmet>
-      <Container maxWidth="xl" sx={{ marginBottom: "30px" }}>
-        <Container maxWidth="100%" style={{ alignContent: 'left' }}>
+      <Container>
+        <Container maxWidth="lg" style={{ paddingLeft: '20px', paddingRight: '20px' }}>
           <Typography variant="h4" color="text.primary" sx={{ mb: 1 }}>
-          Relatórios
+            Relatório
           </Typography>
           <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />} aria-label="breadcrumb" sx={{ mb: 2 }}>
             <Link color="inherit" href="/dashboard">
               Dashboard
             </Link>
-            <Typography variant="subtitle1" color="text.primary">Relatórios</Typography>
+            <Typography variant="subtitle1" color="text.primary">Relatório</Typography>            
           </Breadcrumbs>
         </Container>
 
-        <Card>
-          <ListToolBar
-            filtro={filtro}
-            onfiltro={handleFilterByName}
-            placeHolder={'Procurar por Código ou Nome'}
-            buttonText={'Adicionar Cliente'}
-            toPage={"/cliente/cadastro"}
-          />
+        <Container style={{
+          backgroundColor: '#c4c4c4',
+          transition: 'box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms',
+          overflow: 'hidden',
+          position: 'relative',
+          boxShadow: 'rgba(0, 0, 0, 0.2) 0px 0px 2px 0px, rgba(0, 0, 0, 0.12) 0px 12px 24px -4px',
+          borderRadius: '16px',
+          padding: '24px',
+          marginBottom: '20px'
+        }}>
 
-          <TableContainer>
-            <Table>
-              <ListHead headLabel={TABLE_HEAD} rowCount={totalItems} />
-              <TableBody>
-                {clientList.map((row) => {
-                  const { idCliente, nome, telefone, cpf } = row;
+          <form onSubmit={handleSubmit}>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6} display="flex" flexDirection="column" alignItems='center'>
 
-                  return (
-                    <TableRow
-                      key={idCliente}
-                      onClick={() => {
-                        navigate(`/cliente/detalhes/${idCliente}`);
+                <TextField
+                  name="tipo"
+                  variant="filled"
+                  select
+                  label="Tipo"
+                  fullWidth
+                  required
+                  style={estiloCampo}
+                  sx={{
+                    backgroundColor: '#fff',
+                  }}
+                  value={formValues.tipo}
+                  onChange={handleFieldChange}
+                  SelectProps={{
+                    MenuProps: {
+                      style: {
+                        maxHeight: 300,
+                      },
+                    }
+                  }}
+                >
+                  {tipos.map((tipo) => (
+                    <MenuItem key={tipo} value={tipo}>
+                      {tipo}
+                    </MenuItem>
+                  ))}
+                </TextField>
+
+                <Autocomplete
+                  options={clientes}
+                  getOptionLabel={(option) => option}
+                  value={formValues.cliente}
+                  onChange={(event, newValue) => {
+                    setFormValues({ ...formValues, cliente: newValue });
+                  }}
+                  fullWidth
+                  style={estiloCampo}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Cliente"
+                      variant="filled"
+                      required
+                      sx={{
+                        borderRadius: '5px 5px 0 0',
+                        backgroundColor: '#fff'
                       }}
-                      style={{ cursor: 'pointer' }}
-                    >
-                      <TableCell align="left">{idCliente}</TableCell>
-                      <TableCell align="left">{nome}</TableCell>
-                      <TableCell align="left">{telefone}</TableCell>
-                      <TableCell align="left">{cpf}</TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                    />
+                  )}
+                />
 
-          <TablePagination
-            rowsPerPageOptions={[10, 15, 25]}
-            component="div"
-            count={totalItems}
-            rowsPerPage={rowsPerPage}
-            page={page}
-            onPageChange={handleChangePage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-          />
-        </Card>
-      </Container>
+                <Grid className='grid-datas' item xs={12} sm={12} style={{ display: 'flex', width: '93%', alignItems: 'center' }}>
+                  <Grid container>
+                    <Grid item xs={6}>
+                      <InputMask
+                        mask="99-99-9999"
+                        value={formValues.dataInicial}
+                        onChange={handleFieldChange}
+                      >
+                        {() => (
+                          <TextField
+                            name="dataInicial"
+                            label="Data Inicial"
+                            variant="filled"
+                            fullWidth
+                            style={estiloCampo}
+                            sx={{
+                              backgroundColor: '#fff',
+                            }}
+                          />
+                        )}
+                      </InputMask>
+                    </Grid>
+                    <Grid item xs={6} style={{ textAlign: 'right' }}>
+                      <InputMask
+                        mask="99-99-9999"
+                        value={formValues.dataFinal}
+                        onChange={handleFieldChange}
+                      >
+                        {() => (
+                          <TextField
+                            name="dataFinal"
+                            label="Data Final"
+                            variant="filled"
+                            fullWidth
+                            style={estiloCampo}
+                            sx={{
+                              backgroundColor: '#fff'
+                            }}
+                          />
+                        )}
+                      </InputMask>
+                    </Grid>
+                  </Grid>
+                </Grid>
+
+                <TextField
+                  name="codigoCategoria"
+                  variant="filled"
+                  required
+                  select
+                  label="Categoria"
+                  fullWidth
+                  style={estiloCampo}
+                  sx={{
+                    backgroundColor: '#fff',
+                  }}
+                  value={formValues.codigoCategoria}
+                  onChange={(e) => {
+                    const selectedCategoria = e.target.value;
+                    setFormValues({ ...formValues, codigoCategoria: selectedCategoria });
+                  }}
+                  SelectProps={{
+                    MenuProps: {
+                      style: {
+                        maxHeight: 300,
+                      },
+                    },
+                  }}
+                >
+                  {categorias.map((categoria) => (
+                    <MenuItem key={categoria.codigo} value={categoria.codigo}>
+                      {categoria.nome}
+                    </MenuItem>
+                  ))}
+                </TextField>
+
+              </Grid>
+              <Grid item xs={12} sm={6} display="flex" flexDirection="column" sx={{ alignItems: 'center' }}>
+
+              </Grid>
+            </Grid>
+            <Grid className="botoes-cadastro-cliente" item xs={12} sm={6} style={{ display: 'flex', justifyContent: 'end' }}>
+              <Button
+                type="submit"
+                variant="contained"
+                style={salvarButtonStyle}
+                onClick={handleReport}
+              >
+                AVANÇAR
+              </Button>
+
+              <Button
+                type="reset"
+                variant="contained"
+                style={cancelarButtonStyle}
+                onClick={handleCancel}
+              >
+                CANCELAR
+              </Button>
+            </Grid>
+          </form>
+        </Container>
+      </Container >
     </>
   );
 }

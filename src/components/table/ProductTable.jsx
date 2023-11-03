@@ -1,119 +1,102 @@
 import React, { useState } from 'react';
-import { Helmet } from 'react-helmet-async';
-import { filter } from 'lodash';
 import {
-    Card,
     Table,
-    Stack,
-    Paper,
-    TableRow,
     TableBody,
     TableCell,
-    Container,
-    Typography,
     TableContainer,
-    Breadcrumbs,
-    Link
+    TableHead,
+    TableRow,
+    Checkbox,
+    Paper,
+    TextField,
 } from '@mui/material';
-import { ListHead, ListToolBar } from '../../sections/@dashboard/list';
-import LIST from '../../__mock/products';
 
-const TABLE_HEAD = [
-    { id: 'id', label: 'Código', alignRight: false },
-    { id: 'nome', label: 'Nome', alignRight: false },
-];
+const ProductTable = () => {
+    const [rows, setRows] = useState([
+        { id: 1, nome: 'Produto A', valor: 10 },
+        { id: 2, nome: 'Produto B', valor: 20 },
+        { id: 3, nome: 'Produto C', valor: 30 },
+        { id: 4, nome: 'Produto D', valor: 30 },
+        { id: 5, nome: 'Produto E', valor: 30 },
+        { id: 6, nome: 'Produto F', valor: 30 },
+    ]);
+    const [selectedRows, setSelectedRows] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
 
-function applySortFilter(array, query) {
-    if (query) {
-        return filter(array, (client) =>
-            client.nome.toLowerCase().indexOf(query.toLowerCase()) !== -1 ||
-            client.id.indexOf(query) !== -1
-        );
-    }
-    return array;
-}
+    const handleRowSelect = (row) => {
+        const selectedIndex = selectedRows.indexOf(row);
+        const newSelected = [...selectedRows];
 
-export default function ProductTable() {
-    const [page, setPage] = useState(0);
-    const [order] = useState('asc');
-    const [orderBy] = useState('');
-    const [filterName, setFilterName] = useState('');
+        if (selectedIndex === -1) {
+            newSelected.push(row);
+        } else {
+            newSelected.splice(selectedIndex, 1);
+        }
 
-    const handleChangePage = (newPage) => {
-        setPage(newPage);
+        setSelectedRows(newSelected);
     };
 
-    const handleFilterByName = (event) => {
-        setPage(0);
-        setFilterName(event.target.value);
-    };
+    const isSelected = (row) => selectedRows.indexOf(row) !== -1;
 
-    const filteredList = applySortFilter(LIST, filterName);
-
-    const isNotFound = !filteredList.length && !!filterName;
+    const filteredRows = rows.filter((row) =>
+        row.id.toString().includes(searchTerm) || row.nome.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     return (
-        <>
-            <Container maxWidth="xl" sx={{ marginBottom: "30px" }}>
-                <Card>
-                    <ListToolBar
-                        filterName={filterName}
-                        onFilterName={handleFilterByName}
-                        placeHolder={'Procurar por Código ou Nome'}                        
-                    />
-                    <TableContainer>
-                        <div style={{ maxHeight: '300px', overflow: 'auto' }}>
-                            <Table>
-                                <ListHead
-                                    order={order}
-                                    orderBy={orderBy}
-                                    headLabel={TABLE_HEAD}
-                                    rowCount={LIST.length}
+        <div style={{ width: '100%'}}>
+            <TextField
+                label="Produtos"
+                variant="filled"
+                fullWidth
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{ marginBottom: '20px', borderRadius: '5px 5px 0 0' }}
+                sx={{
+                    backgroundColor: '#fff',
+                }}
+            />
+            <TableContainer component={Paper} style={{ maxHeight: '220px', overflowY: 'auto' }}>
+                <Table>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell padding="checkbox" style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>
+                                <Checkbox
+                                    checked={selectedRows.length === rows.length}
+                                    onChange={() => {
+                                        if (selectedRows.length === rows.length) {
+                                            setSelectedRows([]);
+                                        } else {
+                                            setSelectedRows(rows);
+                                        }
+                                    }}
                                 />
-                                <TableBody>
-                                    {filteredList.map((row) => {
-                                        const { id, imagem, nome } = row;
-                                        return (
-                                            <TableRow hover key={id} tabIndex={-1}>
-                                                <TableCell component="th" scope="row" padding="normal" >
-                                                    <Stack direction="row" alignItems="center" spacing={2}>
-                                                        <Typography variant="subtitle2" noWrap>
-                                                            {id}
-                                                        </Typography>
-                                                    </Stack>
-                                                </TableCell>
-                                                <TableCell align="left">{nome}</TableCell>
-                                            </TableRow>
-                                        );
-                                    })}
-                                </TableBody>
-                                {isNotFound && (
-                                    <TableBody>
-                                        <TableRow>
-                                            <TableCell align="center" colSpan={2} sx={{ py: 3 }}>
-                                                <Paper
-                                                    sx={{
-                                                        textAlign: 'center',
-                                                    }}
-                                                >
-                                                    <Typography variant="h6" paragraph>
-                                                        Not found
-                                                    </Typography>
-                                                    <Typography variant="body2">
-                                                        No results found for &nbsp;
-                                                        <strong>&quot;{filterName}&quot;</strong>.
-                                                        <br /> Try checking for typos or using complete words.
-                                                    </Typography>
-                                                </Paper>
-                                            </TableCell>
-                                        </TableRow>
-                                    </TableBody>
-                                )}
-                            </Table>
-                        </div>
-                    </TableContainer>
-                </Card>
-            </Container>
-        </>
+                            </TableCell>
+                            <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>Codigo</TableCell>
+                            <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>Nome</TableCell>
+                            <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>Valor</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {filteredRows.map((row) => (
+                            <TableRow
+                                key={row.id}
+                                selected={isSelected(row)}
+                                hover
+                                onClick={() => handleRowSelect(row)}
+                            >
+                                <TableCell padding="checkbox">
+                                    <Checkbox checked={isSelected(row)} />
+                                </TableCell>
+                                <TableCell>{row.id}</TableCell>
+                                <TableCell>{row.nome}</TableCell>
+                                <TableCell>{row.valor}</TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </TableContainer>
+        </div>
     );
-}
+};
+
+export default ProductTable;

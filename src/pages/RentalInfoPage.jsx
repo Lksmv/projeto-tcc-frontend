@@ -21,15 +21,10 @@ import { NumericFormat } from 'react-number-format';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import FormControlLabel from '@mui/material/FormControlLabel';
+import ProductTable from '../components/table/ProductTable';
 
 export default function RentalInfoPage() {
   const estiloCampo = {
-    margin: '8px',
-    borderRadius: '5px 5px 0 0',
-    width: '90%',
-  };
-
-  const estiloCampoValores = {
     margin: '8px',
     borderRadius: '5px 5px 0 0',
     width: '90%',
@@ -86,6 +81,10 @@ export default function RentalInfoPage() {
     '123 - Maria', '11 - joao'
   ];
 
+  const funcionarios = [
+    '1 - Maria', '11 - joao'
+  ];
+
   const products = [
     { name: '001 - Vestido' },
     { name: '002 - Terno' },
@@ -95,6 +94,7 @@ export default function RentalInfoPage() {
   const [formValues, setFormValues] = useState({
     codigo: 0,
     cliente: "",
+    funcionario: "",
     dataSaida: "",
     dataDevolucao: "",
     produtos: [],
@@ -104,9 +104,11 @@ export default function RentalInfoPage() {
     valorPago: "",
     restanteAPagar: "",
     formaPagamento: "",
+    dataContrato: "",
   });
 
   const [formasPagamento, setformasPagamento] = useState([]);
+  const [selectedProducts, setSelectedProducts] = useState([]);
 
   const navigate = useNavigate()
 
@@ -223,42 +225,115 @@ export default function RentalInfoPage() {
                   )}
                 />
                 <Autocomplete
-                  multiple  // Habilita a seleção múltipla
-                  id="produtos"
-                  options={products}
-                  disableCloseOnSelect
-                  getOptionLabel={(option) => option.name}
-                  renderOption={(props, option, { selected }) => (
-                    <li {...props}>
-                      <FormControlLabel
-                        control={
-                          <Checkbox
-                            icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
-                            checkedIcon={<CheckBoxIcon fontSize="small" />}
-                            checked={selected}
-                          />
-                        }
-                        label={option.name}
-                      />
-                    </li>
-                  )}
+                  options={funcionarios}
+                  getOptionLabel={(option) => option}
+                  value={formValues.funcionario}
+                  onChange={(event, newValue) => {
+                    setFormValues({ ...formValues, funcionario: newValue });
+                  }}
+                  fullWidth
+                  style={estiloCampo}
                   renderInput={(params) => (
                     <TextField
                       {...params}
+                      label="Funcionário"
                       variant="filled"
-                      label="Produtos"
-                      fullWidth
+                      required
+                      sx={{
+                        borderRadius: '5px 5px 0 0',
+                        backgroundColor: '#fff'
+                      }}
                     />
                   )}
-                  value={formValues.produtos}
-                  onChange={(event, newValue) => {
-                    setFormValues({ ...formValues, produtos: newValue });
-                  }}
-                  style={estiloCampo}
-                  sx={{
-                    backgroundColor: '#fff'
-                  }}
                 />
+
+                <Grid item xs={12} sm={12} style={{ display: 'flex', width: '90%', alignItems: 'center', margin: '8px' }}>
+                  <ProductTable
+                    products={products}
+                    selectedProducts={selectedProducts}
+                    onProductSelect={(selectedProducts) => setSelectedProducts(selectedProducts)}
+                  />
+                </Grid>
+
+                <Grid container className='grid-utilizarCredito' alignItems="center">
+                  <Grid style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                    <Checkbox
+                      name="patrocinio"
+                      checked={formValues.patrocinio}
+                      onChange={handleCheckboxChange}
+                      style={estiloCheckbox}
+                    />
+                    <span>Aluguel patrocinado</span>
+                  </Grid>
+                </Grid>
+
+              </Grid>
+
+              <Grid item className='grid-direita' xs={12} sm={6} flexDirection="column" sx={{ alignItems: 'center' }}>
+
+                <Grid className='grid-datas' item xs={12} sm={12} style={{ display: 'flex', width: '93%', alignItems: 'center' }}>
+                  <Grid container>
+                    <Grid item xs={6}>
+                      <InputMask
+                        mask="99-99-9999"
+                        value={formValues.dataSaida}
+                        onChange={handleFieldChange}
+                      >
+                        {() => (
+                          <TextField
+                            name="dataSaida"
+                            label="Data Saída"
+                            variant="filled"
+                            fullWidth
+                            style={estiloCampo}
+                            sx={{
+                              backgroundColor: '#fff',
+                            }}
+                          />
+                        )}
+                      </InputMask>
+                    </Grid>
+                    <Grid item xs={6} style={{ textAlign: 'right' }}>
+                      <InputMask
+                        mask="99-99-9999"
+                        value={formValues.dataDevolucao}
+                        onChange={handleFieldChange}
+                      >
+                        {() => (
+                          <TextField
+                            name="dataDevolucao"
+                            label="Data Devolução"
+                            variant="filled"
+                            fullWidth
+                            style={estiloCampo}
+                            sx={{
+                              backgroundColor: '#fff'
+                            }}
+                          />
+                        )}
+                      </InputMask>
+                    </Grid>
+                  </Grid>
+                </Grid>
+
+                <InputMask
+                  mask="99-99-9999"
+                  value={formValues.dataContrato}
+                  onChange={handleFieldChange}
+                >
+                  {() => (
+                    <TextField
+                      name="dataContrato"
+                      label="Data Contrato"
+                      variant="filled"
+                      fullWidth
+                      style={estiloCampo}
+                      sx={{
+                        backgroundColor: '#fff',
+                      }}
+                    />
+                  )}
+                </InputMask>
 
                 <TextField
                   name="formaPagamento"
@@ -291,76 +366,56 @@ export default function RentalInfoPage() {
                   ))}
                 </TextField>
 
-                <Grid className='grid-datas' item xs={12} sm={11}>
+                <Grid className='grid-valor' item xs={12} sm={12} style={{ display: 'flex', width: '93%', alignItems: 'center' }}>
                   <Grid container>
                     <Grid item xs={6}>
-                      <InputMask
-                        mask="99-99-9999"
-                        value={formValues.dataSaida}
-                        onChange={handleFieldChange}
-                      >
-                        {() => (
-                          <TextField
-                            name="dataSaida"
-                            label="Data Saída"
-                            variant="filled"
-                            fullWidth
-                            style={estiloCampo}
-                            sx={{
-                              backgroundColor: '#fff',
-                            }}
-                          />
-                        )}
-                      </InputMask>
+                      <NumericFormat
+                        name="valor"
+                        variant='filled'
+                        customInput={TextField}
+                        thousandSeparator="."
+                        decimalSeparator=","
+                        prefix="R$ "
+                        label="Valor"
+                        allowNegative={false}
+                        decimalScale={2}
+                        fixedDecimalScale={true}
+                        fullWidth
+                        style={estiloCampo}
+                        value={formValues.valor}
+                        onValueChange={handleFieldChange}
+                        sx={{
+                          backgroundColor: '#fff'
+                        }}
+                        disabled={formValues.patrocinio}
+                      />
                     </Grid>
-                    <Grid item xs={6}>
-                      <InputMask
-                        mask="99-99-9999"
-                        value={formValues.dataDevolucao}
-                        onChange={handleFieldChange}
-                      >
-                        {() => (
-                          <TextField
-                            name="dataDevolucao"
-                            label="Data Devolução"
-                            variant="filled"
-                            fullWidth
-                            style={estiloCampo}
-                            sx={{
-                              backgroundColor: '#fff'
-                            }}
-                          />
-                        )}
-                      </InputMask>
+                    <Grid item xs={6} style={{ textAlign: 'right' }}>
+                      <NumericFormat
+                        name="valorPago"
+                        variant='filled'
+                        customInput={TextField}
+                        thousandSeparator="."
+                        decimalSeparator=","
+                        prefix="R$ "
+                        label="Valor Pago"
+                        allowNegative={false}
+                        decimalScale={2}
+                        fixedDecimalScale={true}
+                        fullWidth
+                        style={estiloCampo}
+                        value={formValues.valorPago}
+                        onValueChange={handleFieldChange}
+                        sx={{
+                          backgroundColor: '#fff'
+                        }}
+                        disabled={formValues.patrocinio}
+                      />
                     </Grid>
                   </Grid>
                 </Grid>
 
-              </Grid>
-
-
-              <Grid item className='grid-direita' xs={12} sm={6} display="flex" flexDirection="column" sx={{ alignItems: 'center' }}>
-
-                <NumericFormat
-                  name="valor"
-                  variant='filled'
-                  customInput={TextField}
-                  thousandSeparator="."
-                  decimalSeparator=","
-                  prefix="R$ "
-                  label="Valor"
-                  allowNegative={false}
-                  decimalScale={2}
-                  fixedDecimalScale={true}
-                  fullWidth
-                  style={estiloCampo}
-                  value={formValues.valor}
-                  onValueChange={handleFieldChange}
-                  sx={{
-                    backgroundColor: '#fff'
-                  }}
-                />
-                <Grid container className='grid-utilizarCredito' alignItems="center">
+                <Grid container className='grid-utilizarCredito' alignItems="center" style={{ display: 'flex', width: '93%' }}>
                   <Grid item xs={12} sm={6}>
                     <NumericFormat
                       name="creditoValor"
@@ -395,26 +450,6 @@ export default function RentalInfoPage() {
                 </Grid>
 
                 <NumericFormat
-                  name="valorPago"
-                  variant='filled'
-                  customInput={TextField}
-                  thousandSeparator="."
-                  decimalSeparator=","
-                  prefix="R$ "
-                  label="Valor Pago"
-                  allowNegative={false}
-                  decimalScale={2}
-                  fixedDecimalScale={true}
-                  fullWidth
-                  style={estiloCampo}
-                  value={formValues.valorPago}
-                  onValueChange={handleFieldChange}
-                  sx={{
-                    backgroundColor: '#fff'
-                  }}
-                />
-
-                <NumericFormat
                   name="total"
                   variant='filled'
                   customInput={TextField}
@@ -432,10 +467,12 @@ export default function RentalInfoPage() {
                   sx={{
                     backgroundColor: '#fff'
                   }}
+                  disabled={formValues.patrocinio}
                 />
               </Grid>
+
             </Grid>
-            
+
             <Grid className="botoes-cadastro-cliente" item xs={12} sm={6} style={{ display: 'flex', justifyContent: 'end' }}>
               <Button
                 type="submit"
