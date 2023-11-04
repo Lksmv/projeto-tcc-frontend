@@ -45,19 +45,28 @@ export const navConfig = [
     icon: <CurrencyExchangeIcon sx={{ color: '#fff' }} />,
   },
   {
-    title: (
-      <Typography variant="body1" sx={{ color: '#FFF' }}>
-        Relatório
-      </Typography>
-    ),
-    path: '/relatorio',
-    icon: <SummarizeIcon sx={{ color: '#fff' }} />,
-  }
+    title: 'Relatório',
+    icon: <SummarizeIcon />,
+    subitems: [
+      {
+        title: 'Clientes',
+        path: '/filtro/clientes',
+      },
+      {
+        title: 'Produtos',
+        path: '/filtro/produtos',
+      },
+      {
+        title: 'Aluguel',
+        path: '/filtro/aluguel',
+      },
+    ],
+  },
 ];
 
 export const navConfigAdmin = [
 
-  ...navConfig, 
+  ...navConfig,
   {
     title: (
       <Typography variant="body1" sx={{ color: '#FFF' }}>
@@ -76,5 +85,4 @@ export const navConfigAdmin = [
     path: '/categoria',
     icon: <LocalOfferIcon sx={{ color: '#fff' }} />,
   }
-
 ];

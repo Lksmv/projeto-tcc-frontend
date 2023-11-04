@@ -87,7 +87,6 @@ export default function RentalCreatePage() {
     patrocinio: false,
   });
 
-
   const [formasPagamento, setformasPagamento] = useState([]);
   const [clientes, setClientes] = useState([]);
   const [produtos, setProdutos] = useState([]);
