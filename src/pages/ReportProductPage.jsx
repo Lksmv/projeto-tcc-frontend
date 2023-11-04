@@ -9,13 +9,11 @@ import {
     Link,
     Grid,
     TextField,
-    MenuItem,
     Button,
     Autocomplete
 } from '@mui/material';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import { BACKEND_URL } from '../utils/backEndUrl';
-import InputMask from 'react-input-mask';
 
 export default function ReportPage() {
 
@@ -76,7 +74,7 @@ export default function ReportPage() {
     };
 
     const handleReport = () => {
-        navigate('/dashboard');
+        navigate('/filtro/produtos/relatorio');
     };  
 
     const handleSubmit = async (e) => {

@@ -86,7 +86,7 @@ export default function ReportPage() {
     };
 
     const handleReport = () => {
-        navigate('/dashboard');
+        navigate('/filtro/aluguel/relatorio');
     };
 
     useEffect(() => {

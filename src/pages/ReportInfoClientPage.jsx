@@ -1,46 +1,67 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Helmet } from 'react-helmet-async';
-import { useNavigate } from 'react-router-dom';
 import {
-  Card,
   Table,
   TableRow,
   TableBody,
   TableCell,
   Container,
   Typography,
-  TableContainer,
-  TablePagination,
   Breadcrumbs,
   Link,
+  TableContainer,
+  Paper,
+  TableHead,
+  Button,
+  Grid
 } from '@mui/material';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import { BACKEND_URL } from '../utils/backEndUrl';
-import { ListHead, ListToolBar } from '../sections/@dashboard/list';
-
-const TABLE_HEAD = [
-  { id: 'codigo', label: 'Código', alignRight: false },
-  { id: 'nome', label: 'Nome', alignRight: false },
-  { id: 'telefone', label: 'Telefone', alignRight: false },
-  { id: 'cpf', label: 'CPF', alignRight: false },
-];
 
 export default function ReportInfoClientPage() {
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [filtro, setFiltro] = useState('');
+
+  const buttonStyle = {
+    fontFamily: 'Roboto, sans-serif',
+    borderRadius: '4px',
+    boxSizing: 'border-box',
+    textTransform: 'none',
+  };
+
+  const imprimirButtonStyle = {
+    ...buttonStyle,
+    marginTop: '-25px',
+    backgroundColor: '#808080',
+    color: '#fff',
+    width: '90px',
+    height: '36px',
+    marginRight: '8px',
+    transition: 'background-color 0.3s',
+    '&:hover': {
+      backgroundColor: '#1565C0',
+    },
+    '&:active': {
+      backgroundColor: '#0D47A1',
+    },
+  };
+
   const [clientList, setClientList] = useState([]);
   const [totalItems, setTotalItems] = useState(0);
-  const navigate = useNavigate();
+
+  const [rows, setRows] = useState([
+    { codigo: 1, nome: 'Produto A', telefone: 10, codAluguel: '1', aluguelFinalizado: true, dataDevolucao: '', dataDevolvido: '' },
+    { codigo: 2, nome: 'Produto B', telefone: 20, codAluguel: '1', aluguelFinalizado: true, dataDevolucao: '', dataDevolvido: '' },
+    { codigo: 3, nome: 'Produto C', telefone: 30, codAluguel: '1', aluguelFinalizado: true, dataDevolucao: '', dataDevolvido: '' },
+    { codigo: 4, nome: 'Produto D', telefone: 30, codAluguel: '1', aluguelFinalizado: true, dataDevolucao: '', dataDevolvido: '' },
+    { codigo: 5, nome: 'Produto E', telefone: 30, codAluguel: '1', aluguelFinalizado: true, dataDevolucao: '', dataDevolvido: '' },
+    { codigo: 6, nome: 'Produto F', telefone: 30, codAluguel: '1', aluguelFinalizado: true, dataDevolucao: '', dataDevolvido: '' },
+  ]);
 
   const fetchClientList = async () => {
     try {
       const response = await axios.get(BACKEND_URL + 'cliente', {
         params: {
-          page: page,
-          size: rowsPerPage,
-          filtro: filtro,
+          size: rows,
         },
       });
       setClientList(response.data.content);
@@ -51,88 +72,69 @@ export default function ReportInfoClientPage() {
   };
 
   useEffect(() => {
-    fetchClientList();
-  }, [page, rowsPerPage, filtro]);
+  }, [rows]);
 
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
+  const handlePrint = () => {
+    // Handle the print action here, for example, by opening the print dialog.
+    window.print();
   };
 
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
-
-  const handleFilterByName = (event) => {
-    setFiltro(event.target.value);
-    setPage(0);
-  };
-
-  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - totalItems) : 0;
 
   return (
     <>
       <Helmet>
-        <title>Cliente</title>
+        <title>Relatório Cliente</title>
       </Helmet>
       <Container maxWidth="xl" sx={{ marginBottom: "30px" }}>
         <Container maxWidth="100%" style={{ alignContent: 'left' }}>
           <Typography variant="h4" color="text.primary" sx={{ mb: 1 }}>
-            Cliente
+            Relatório Cliente
           </Typography>
-          <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />} aria-label="breadcrumb" sx={{ mb: 2 }}>
-            <Link color="inherit" href="/dashboard">
-              Dashboard
-            </Link>
-            <Typography variant="subtitle1" color="text.primary">Cliente</Typography>
-          </Breadcrumbs>
+          <Grid container >
+            <Grid item xs={6}>
+              <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />} aria-label="breadcrumb" sx={{ mb: 2 }}>
+                <Link color="inherit" href="/dashboard">
+                  Dashboard
+                </Link>
+                <Typography variant="subtitle1" color="text.primary">Relatório Cliente</Typography>
+              </Breadcrumbs>
+            </Grid>
+            <Grid item xs={6} style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+              <Button variant="filled" onClick={handlePrint} style={imprimirButtonStyle}>Imprimir</Button>
+            </Grid>
+          </Grid>
         </Container>
 
-        <Card>
-          <ListToolBar
-            filtro={filtro}
-            onfiltro={handleFilterByName}
-            placeHolder={'Procurar por Código ou Nome'}
-            buttonText={'Adicionar Cliente'}
-            toPage={"/cliente/cadastro"}
-          />
-
-          <TableContainer>
+        <div style={{ width: '100%' }}>
+          <TableContainer component={Paper} style={{ maxHeight: '550px', overflowY: 'auto' }}>
             <Table>
-              <ListHead headLabel={TABLE_HEAD} rowCount={totalItems} />
+              <TableHead>
+                <TableRow>
+                  <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>Código</TableCell>
+                  <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>Nome</TableCell>
+                  <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>Telefone</TableCell>
+                  <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>Cód. Aluguel</TableCell>
+                  <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>Aluguel Finalizado</TableCell>
+                  <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>Data Devolução</TableCell>
+                  <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>Data Devolvido</TableCell>
+                </TableRow>
+              </TableHead>
               <TableBody>
-                {clientList.map((row) => {
-                  const { codigo, nome, telefone, cpf } = row;
-
-                  return (
-                    <TableRow
-                      key={codigo}
-                      onClick={() => {
-                        navigate(`/cliente/detalhes/${codigo}`);
-                      }}
-                      style={{ cursor: 'pointer' }}
-                    >
-                      <TableCell align="left">{codigo}</TableCell>
-                      <TableCell align="left">{nome}</TableCell>
-                      <TableCell align="left">{telefone}</TableCell>
-                      <TableCell align="left">{cpf}</TableCell>
-                    </TableRow>
-                  );
-                })}
+                {rows.map((row) => (
+                  <TableRow key={row.codigo}>
+                    <TableCell>{row.codigo}</TableCell>
+                    <TableCell>{row.nome}</TableCell>
+                    <TableCell>{row.telefone}</TableCell>
+                    <TableCell>{row.codAluguel}</TableCell>
+                    <TableCell>{row.aluguelFinalizado ? "Sim" : "Não"}</TableCell>
+                    <TableCell>{row.dataDevolucao}</TableCell>
+                    <TableCell>{row.dataDevolvido}</TableCell>
+                  </TableRow>
+                ))}
               </TableBody>
             </Table>
           </TableContainer>
-
-          <TablePagination
-            rowsPerPageOptions={[10, 15, 25]}
-            component="div"
-            count={totalItems}
-            rowsPerPage={rowsPerPage}
-            page={page}
-            onPageChange={handleChangePage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-          />
-        </Card>
+        </div>
       </Container>
     </>
   );
