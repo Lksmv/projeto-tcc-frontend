@@ -1,13 +1,10 @@
 import { Helmet } from 'react-helmet-async';
-import { filter } from 'lodash';
-import { useState } from 'react';
-import Divider from '@mui/material/Divider';
-import { AuthProvider, useAuth } from '../components/context/authProvider';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import {
   Card,
   Table,
-  Stack,
-  Paper,
   TableRow,
   TableBody,
   TableCell,
@@ -18,67 +15,65 @@ import {
   Breadcrumbs,
   Link,
 } from '@mui/material';
+import { BACKEND_URL } from '../utils/backEndUrl';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import { ListHead, ListToolBar } from '../sections/@dashboard/list';
-import LIST from '../__mock/rental';
+import { formatOutputDate } from '../utils/formatTime';
 
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
-  { id: 'id', label: 'Código', alignRight: false },
+  { id: 'codigo', label: 'Código', alignRight: false },
   { id: 'cliente', label: 'Cliente', alignRight: false },
-  { id: 'produto', label: 'Produto', alignRight: false },
-  { id: 'qtdProdutos', label: 'Quantidade', alignRight: false },
-  { id: 'saida', label: 'Saída', alignRight: false },
-  { id: 'devolucao', label: 'Devolução', alignRight: false },
-  { id: 'valor', label: 'Valor', alignRight: false },
-  { id: 'finalizado', label: 'Finalizado', alignRight: false },
+  { id: 'produto', label: 'Produto(s)', alignRight: false },
+  { id: 'dataSaida', label: 'Data Saída', alignRight: false },
+  { id: 'dataDevolucao', label: 'Data Devolução', alignRight: false },
+  { id: 'statusAluguel', label: 'Status', alignRight: false },
 ];
 
 // ----------------------------------------------------------------------
 
-function applySortFilter(array, query) {
-  const stabilizedThis = array.map((el, index) => [el, index]);
-  if (query) {
-    return filter(array, (rental) =>
-      rental.cliente.toLowerCase().indexOf(query.toLowerCase()) !== -1 ||
-      rental.id.indexOf(query) !== -1
-    );
-  }
-  return stabilizedThis.map((el) => el[0]);
-}
-
 export default function RentalPage() {
   const [page, setPage] = useState(0);
-
-  const [order] = useState('asc');
-
-  const [orderBy] = useState('cliente');
-
-  const [filterName, setFilterName] = useState('');
-
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [filterName, setFilterName] = useState('');
+  const [rentalList, setRentalList] = useState([]);
+  const [totalItems, setTotalItems] = useState(0);
+  const navigate = useNavigate();
 
+  const fetchRental = async () => {
+    try {
+      const response = await axios.get(BACKEND_URL + 'aluguel', {
+        params: {
+          page: page,
+          size: rowsPerPage,
+          filtro: filterName,
+        },
+      });
+      setRentalList(response.data.content);
+      setTotalItems(response.data.totalElements);
+    } catch (error) {
+      console.error('Erro ao buscar a lista de aluguel:', error);
+    }
+  };
 
-  const handleChangePage = (newPage) => {
+  useEffect(() => {
+    fetchRental();
+  }, [page, rowsPerPage, filterName]);
+
+  const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
 
   const handleChangeRowsPerPage = (event) => {
-    setPage(0);
     setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
   };
 
   const handleFilterByName = (event) => {
-    setPage(0);
     setFilterName(event.target.value);
+    setPage(0);
   };
-
-  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - LIST.length) : 0;
-
-  const filteredList = applySortFilter(LIST, filterName);
-
-  const isNotFound = !filteredList.length && !!filterName;
 
   return (
     <>
@@ -109,80 +104,44 @@ export default function RentalPage() {
 
           <TableContainer>
             <Table>
-              <ListHead
-                order={order}
-                headLabel={TABLE_HEAD}
-                rowCount={LIST.length}
-              />
+              <ListHead headLabel={TABLE_HEAD} rowCount={totalItems} />
               <TableBody>
-                {filteredList.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                  const { id, cliente, produto, qtdProdutos, saida, devolucao, valor, finalizado } = row;
+                {rentalList.map((row) => {
+                  const listaProdutos = row.listaProdutos;
+                  console.log(listaProdutos);
+                  const produtos = row.listaProdutos.map((rowData) => {
+                    return rowData.produtoDTO.codigo + " - " + rowData.produtoDTO.nome;
+                  }).join(', '); 
+
+                  const cliente = row.clienteDTO.nome;
+
+                  const { codigo, dataSaida, dataDevolucao, statusAluguel } = row;
 
                   return (
-                    <TableRow hover key={id} tabIndex={-1}>
-
-                      <TableCell component="th" scope="row" padding="normal" >
-                        <Stack direction="row" alignItems="center" spacing={2}>
-                          <Typography variant="subtitle2" noWrap>
-                            {id}
-                          </Typography>
-                        </Stack>
-                      </TableCell>
-
+                    <TableRow
+                      key={codigo}
+                      onClick={() => {
+                        navigate(`/aluguel/detalhes/${codigo}`);
+                      }}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <TableCell align="left">{codigo}</TableCell>
                       <TableCell align="left">{cliente}</TableCell>
-
-                      <TableCell align="left">{produto}</TableCell>
-
-                      <TableCell align="left">{qtdProdutos}</TableCell>
-
-                      <TableCell align="left">{saida}</TableCell>
-
-                      <TableCell align="left">{devolucao}</TableCell>
-
-                      <TableCell align="left">{valor}</TableCell>
-
-                      <TableCell align="left">{finalizado}</TableCell>
-
+                      <TableCell align="left">{produtos}</TableCell> {/* Exibir a lista de produtos aqui */}
+                      <TableCell align="left">{formatOutputDate(dataSaida)}</TableCell>
+                      <TableCell align="left">{formatOutputDate(dataDevolucao)}</TableCell>
+                      <TableCell align="left">{statusAluguel}</TableCell>
                     </TableRow>
                   );
                 })}
-                {emptyRows > 0 && (
-                  <TableRow style={{ height: 53 * emptyRows }}>
-                    <TableCell colSpan={6} />
-                  </TableRow>
-                )}
               </TableBody>
-
-              {isNotFound && (
-                <TableBody>
-                  <TableRow>
-                    <TableCell align="center" colSpan={6} sx={{ py: 3 }}>
-                      <Paper
-                        sx={{
-                          textAlign: 'center',
-                        }}
-                      >
-                        <Typography variant="h6" paragraph>
-                          Not found
-                        </Typography>
-
-                        <Typography variant="body2">
-                          No results found for &nbsp;
-                          <strong>&quot;{filterName}&quot;</strong>.
-                          <br /> Try checking for typos or using complete words.
-                        </Typography>
-                      </Paper>
-                    </TableCell>
-                  </TableRow>
-                </TableBody>
-              )}
             </Table>
           </TableContainer>
 
           <TablePagination
             rowsPerPageOptions={[10, 15, 25]}
             component="div"
-            count={LIST.length}
+            count={totalItems}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}

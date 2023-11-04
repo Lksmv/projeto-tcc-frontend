@@ -1,5 +1,5 @@
 import { Helmet } from 'react-helmet-async';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Container,
@@ -12,6 +12,7 @@ import {
   Autocomplete,
   Checkbox,
 } from '@mui/material';
+import MenuItem from '@mui/material/MenuItem';
 import axios from 'axios';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import InputMask from 'react-input-mask';
@@ -70,26 +71,6 @@ export default function RentalCreatePage() {
     },
   };
 
-  const estados = [
-    'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG',
-    'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
-  ];
-
-  //pegar lista de clientes cadastrados
-  const clientes = [
-    '123 - Maria', '11 - joao'
-  ];
-
-  const funcionarios = [
-    '1 - Maria', '11 - joao'
-  ];
-
-  const products = [
-    { name: '001 - Vestido' },
-    { name: '002 - Terno' },
-    { name: '003 - Sapato' },
-  ];
-
   const [formValues, setFormValues] = useState({
     codigo: 0,
     cliente: "",
@@ -106,9 +87,67 @@ export default function RentalCreatePage() {
     patrocinio: false,
   });
 
+
   const [formasPagamento, setformasPagamento] = useState([]);
+  const [clientes, setClientes] = useState([]);
+  const [produtos, setProdutos] = useState([]);
+  const [clienteSelecionado, setClienteSelecionado] = useState(null);
+  const [filtro, setFiltro] = useState('');
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
 
   const navigate = useNavigate()
+
+  const fetchData = async () => {
+    try {
+      const response = await axios.get(BACKEND_URL + 'forma-de-pagamento', {
+        params: {
+          page: page,
+          size: rowsPerPage,
+          filtro: filtro,
+        },
+      });
+      setformasPagamento(response.data.content);
+    } catch (error) {
+      console.error('Erro ao buscar a lista de formas de pagamento:', error);
+    }
+  };
+
+  const fetchClientes = async () => {
+    try {
+      const response = await axios.get(BACKEND_URL + 'cliente', {
+        params: {
+          page: page,
+          size: rowsPerPage,
+          filtro: filtro,
+        },
+      });
+      setClientes(response.data.content);
+    } catch (error) {
+      console.error('Erro ao buscar clientes:', error);
+    }
+  };
+
+  const fetchProduct = async () => {
+    try {
+      const response = await axios.get(BACKEND_URL + 'produto', {
+        params: {
+          page: page,
+          size: rowsPerPage,
+          filtro: filtro,
+        },
+      });
+      setProdutos(response.data.content);
+    } catch (error) {
+      console.error('Erro ao buscar produto:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchProduct();
+    fetchClientes();
+    fetchData();
+  }, [page, rowsPerPage, filtro]);
 
   const handleFieldChange = (e) => {
     const { name, value } = e.target;
@@ -203,13 +242,12 @@ export default function RentalCreatePage() {
                 />
                 <Autocomplete
                   options={clientes}
-                  getOptionLabel={(option) => option}
-                  value={formValues.cliente}
+                  getOptionLabel={(option) => option.codigo + ' - ' + option.nome}
+                  style={estiloCampo}
                   onChange={(event, newValue) => {
-                    setFormValues({ ...formValues, cliente: newValue });
+                    setClienteSelecionado(newValue.codigo);
                   }}
                   fullWidth
-                  style={estiloCampo}
                   renderInput={(params) => (
                     <TextField
                       {...params}
@@ -218,11 +256,15 @@ export default function RentalCreatePage() {
                       required
                       sx={{
                         borderRadius: '5px 5px 0 0',
-                        backgroundColor: '#fff'
+                        backgroundColor: '#fff',
+                      }}
+                      onChange={(event) => {
+                        setFiltro(event.target.value);
                       }}
                     />
                   )}
                 />
+
                 <Autocomplete
                   options={funcionarios}
                   getOptionLabel={(option) => option}

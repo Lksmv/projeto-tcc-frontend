@@ -60,11 +60,6 @@ export default function ProductPage() {
     fetchProductList();
   }, [page, rowsPerPage, filterName]);
 
-
-  useEffect(() => {
-    fetchProductList();
-  }, [page, rowsPerPage, filterName]);
-
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
@@ -78,8 +73,6 @@ export default function ProductPage() {
     setFilterName(event.target.value);
     setPage(0);
   };
-
-  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - totalItems) : 0;
 
 
   return (

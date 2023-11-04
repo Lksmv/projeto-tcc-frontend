@@ -24,6 +24,7 @@ import UserPage from './pages/UserPage';
 import PaymentPage from './pages/PaymentPage';
 import CategoryPage from './pages/CategoryPage';
 import ReportPage from './pages/ReportPage';
+import EmployeePage from './pages/EmployeePage';
 
 export default function Router() {
   const { authState } = useAuth();
@@ -57,6 +58,21 @@ export default function Router() {
         {
           index: true,
           element: <UserPage />
+        }
+      ]
+    },    
+    {
+      path: '/funcionario',
+      element: isAuthenticated ? (
+        <DashboardLayout>
+        </DashboardLayout>
+      ) : (
+        <Navigate to="/login" />
+      ),
+      children: [
+        {
+          index: true,
+          element: <EmployeePage />
         }
       ]
     },
