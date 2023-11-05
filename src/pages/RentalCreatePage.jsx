@@ -12,16 +12,14 @@ import {
   Autocomplete,
   Checkbox,
 } from '@mui/material';
-import MenuItem from '@mui/material/MenuItem';
+import Snackbar from '@mui/material/Snackbar';
+import MuiAlert from '@mui/material/Alert';
 import axios from 'axios';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import InputMask from 'react-input-mask';
 import { BACKEND_URL } from '../utils/backEndUrl';
 import { formatOutputDate, formatInputDate } from '../utils/formatTime';
 import { NumericFormat } from 'react-number-format';
-import CheckBoxIcon from '@mui/icons-material/CheckBox';
-import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
-import FormControlLabel from '@mui/material/FormControlLabel';
 
 export default function RentalCreatePage() {
   const estiloCampo = {
@@ -73,28 +71,34 @@ export default function RentalCreatePage() {
 
   const [formValues, setFormValues] = useState({
     codigo: 0,
-    cliente: "",
-    funcionario: "",
+    codigoCliente: 0,
+    codigoFuncionario: 0,
     dataSaida: "",
     dataDevolucao: "",
-    produtos: [],
-    valor: "",
+    listaProdutos: [],
+    valor: 0,
+    valorCredito: 0,
     utilizarCredito: false,
-    total: "",
-    valorPago: "",
-    restanteAPagar: "",
-    formaPagamento: "",
+    valorAdicional: 0,
+    total: 0,
+    valorPago: 0,
+    formaPagamento: 0,
     patrocinio: false,
   });
-
 
   const [formasPagamento, setformasPagamento] = useState([]);
   const [clientes, setClientes] = useState([]);
   const [produtos, setProdutos] = useState([]);
-  const [clienteSelecionado, setClienteSelecionado] = useState(null);
-  const [filtro, setFiltro] = useState('');
+  const [funcionarios, setFuncionarios] = useState([]);
+  const [filtroFuncionario, setFiltroFuncionario] = useState('');
+  const [filtroCliente, setFiltroCliente] = useState('');
+  const [filtroProduto, setFiltroProduto] = useState('');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [desabilitar, setDesabilitar] = useState(!!false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
 
   const navigate = useNavigate()
 
@@ -103,8 +107,8 @@ export default function RentalCreatePage() {
       const response = await axios.get(BACKEND_URL + 'forma-de-pagamento', {
         params: {
           page: page,
-          size: rowsPerPage,
-          filtro: filtro,
+          size: 50,
+          filtro: "",
         },
       });
       setformasPagamento(response.data.content);
@@ -113,13 +117,19 @@ export default function RentalCreatePage() {
     }
   };
 
+  const showSnackbar = (message, severity) => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
+    setSnackbarOpen(true);
+  };
+
   const fetchClientes = async () => {
     try {
       const response = await axios.get(BACKEND_URL + 'cliente', {
         params: {
           page: page,
           size: rowsPerPage,
-          filtro: filtro,
+          filtro: filtroCliente,
         },
       });
       setClientes(response.data.content);
@@ -134,7 +144,7 @@ export default function RentalCreatePage() {
         params: {
           page: page,
           size: rowsPerPage,
-          filtro: filtro,
+          filtro: filtroProduto,
         },
       });
       setProdutos(response.data.content);
@@ -143,24 +153,106 @@ export default function RentalCreatePage() {
     }
   };
 
-  useEffect(() => {
-    fetchProduct();
-    fetchClientes();
-    fetchData();
-  }, [page, rowsPerPage, filtro]);
-
-  const handleFieldChange = (e) => {
-    const { name, value } = e.target;
-    setFormValues({ ...formValues, [name]: value });
+  const fetchEmployees = async () => {
+    try {
+      const response = await axios.get(BACKEND_URL + 'funcionario', {
+        params: {
+          page: page,
+          size: rowsPerPage,
+          filtro: filtroFuncionario,
+        },
+      });
+      setFuncionarios(response.data.content);
+    } catch (error) {
+      console.error('Erro ao buscar funcionários:', error);
+    }
   };
 
-  const handleCheckboxChange = (e) => {
+  useEffect(() => {
+    fetchClientes();
+  }, [page, rowsPerPage, filtroCliente]);
+
+  useEffect(() => {
+    fetchProduct();
+  }, [page, rowsPerPage, filtroProduto]);
+
+  useEffect(() => {
+    fetchEmployees();
+  }, [page, rowsPerPage, filtroFuncionario]);
+
+  useEffect(() => {
+    fetchData();
+  }, [page, rowsPerPage]);
+
+  const handleFieldChange = (e) => {
+    const { name, value } = e.target || e.currentTarget;
+    if (name) {
+      setFormValues({ ...formValues, [name]: value });
+    }
+  };
+
+  const handleCheckboxPatrocinioChange = (e) => {
     const { name, checked } = e.target;
     setFormValues((prevFormValues) => ({
       ...prevFormValues,
       [name]: checked,
     }));
+    setDesabilitar(checked);
+
   };
+
+  const calculateAllValues = () => {
+    if (!formValues.patrocinio) {
+      if (formValues.utilizarCredito) {
+        let totalAluguel = formValues.valorCredito >= formValues.valor - formValues.valorPago ? 0 : formValues.valor - formValues.valorCredito - formValues.valorPago;
+        setFormValues((prevFormValues) => ({
+          ...prevFormValues,
+          total: totalAluguel,
+        }));
+      } else {
+        setFormValues((prevFormValues) => ({
+          ...prevFormValues,
+          total: formValues.valor - formValues.valorPago
+        }));
+      }
+    } else {
+      setFormValues((prevFormValues) => ({
+        ...prevFormValues,
+      }));
+    }
+  }
+
+  useEffect(() => {
+    calculateAllValues();
+  }, [formValues.utilizarCredito]);
+
+  useEffect(() => {
+    calculateAllValues();
+  }, [formValues.patrocinio]);
+
+  useEffect(() => {
+    calculateAllValues();
+  }, [formValues.valor]);
+
+  useEffect(() => {
+    calculateAllValues();
+  }, [formValues.valorPago]);
+
+  useEffect(() => {
+    calculateAllValues();
+  }, [formValues.valorCredito]);
+
+
+
+
+  const handleCheckboxCreditoChange = (e) => {
+    const { name, checked } = e.target;
+    setFormValues((prevFormValues) => ({
+      ...prevFormValues,
+      [name]: checked
+    }));
+  };
+
 
   const handleCancel = () => {
     navigate('/aluguel');
@@ -175,6 +267,8 @@ export default function RentalCreatePage() {
 
     const requestData = {
       ...formValues,
+      utilizarCredito: formValues.utilizarCredito ? 'S' : 'N',
+      patrocinio: formValues.patrocinio ? 'S' : 'N',
       codigo: codigoAsInteger,
       dataSaida: formatedDataSaida,
       dataDevolucao: formatedDataDevolucao,
@@ -182,13 +276,88 @@ export default function RentalCreatePage() {
 
     try {
       const response = await axios.post(BACKEND_URL + 'aluguel', requestData);
-      const aluguelId = response.data.idAluguel
-      navigate(`/aluguel/detalhes/${aluguelId}`);
+      const codigo = response.data.codigo
+      console.log(formValues)
+      showSnackbar('Aluguel criado com sucesso', 'success');
+      navigate(`/aluguel/detalhes/${codigo}`);
     } catch (error) {
-      console.error('Erro ao salvar o aluguel:', error);
+      if (error.response) {
+        setSnackbarMessage(error.response.data.errors[0]);
+        console.log(error)
+      } else if (error.request) {
+        setSnackbarMessage('Erro de requisição: ' + error.request);
+      } else {
+        setSnackbarMessage('Erro ao salvar o Aluguel: ' + error.message);
+      }
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
     }
   };
 
+  const handleClienteChange = (event, newValue) => {
+    if (newValue) {
+      const array = Object.values(newValue.listaCreditos);
+      const credito = array.reduce((total, credito) => total + credito.valor, 0);
+      setFormValues((prevFormValues) => ({
+        ...prevFormValues,
+        codigoCliente: newValue.codigo,
+        valorCredito: credito
+      }));
+    } else {
+      setFormValues((prevFormValues) => ({
+        ...prevFormValues,
+        codigoCliente: 0
+      }));
+    }
+  };
+
+  const handleFuncionarioChange = (event, newValue) => {
+    if (newValue) {
+      setFormValues((prevFormValues) => ({
+        ...prevFormValues,
+        codigoFuncionario: newValue.codigo
+      }));
+    } else {
+      setFormValues((prevFormValues) => ({
+        ...prevFormValues,
+        codigoFuncionario: 0
+      }));
+    }
+  };
+
+  const handleProdutoChange = (event, newValue) => {
+    if (newValue) {
+      const produtosArray = Object.values(newValue);
+      const listaProdutosIds = produtosArray.map(produto => produto.codigo);
+      const somaValores = produtosArray.reduce((total, produto) => total + produto.valor, 0);
+      setFormValues((prevFormValues) => ({
+        ...prevFormValues,
+        listaProdutos: listaProdutosIds,
+        valor: somaValores
+      }));
+
+    } else {
+      setFormValues((prevFormValues) => ({
+        ...prevFormValues,
+        valor: 0,
+        listaProdutos: []
+      }));
+    }
+  };
+
+  const handleFormaPagamentoChange = (event, newValue) => {
+    if (newValue) {
+      setFormValues((prevFormValues) => ({
+        ...prevFormValues,
+        formaPagamento: newValue.idFormaDePagamento
+      }));
+    } else {
+      setFormValues((prevFormValues) => ({
+        ...prevFormValues,
+        formaPagamento: 0
+      }));
+    }
+  };
   return (
     <>
       <Helmet>
@@ -232,7 +401,6 @@ export default function RentalCreatePage() {
                   fullWidth
                   style={estiloCampo}
                   value={formValues.codigo}
-                  onChange={handleFieldChange}
                   sx={{
                     backgroundColor: '#fff'
                   }}
@@ -244,10 +412,10 @@ export default function RentalCreatePage() {
                   options={clientes}
                   getOptionLabel={(option) => option.codigo + ' - ' + option.nome}
                   style={estiloCampo}
-                  onChange={(event, newValue) => {
-                    setClienteSelecionado(newValue.codigo);
-                  }}
+                  onChange={handleClienteChange}
+                  isOptionEqualToValue={(option, value) => option.codigo === value.codigo}
                   fullWidth
+                  required
                   renderInput={(params) => (
                     <TextField
                       {...params}
@@ -259,7 +427,7 @@ export default function RentalCreatePage() {
                         backgroundColor: '#fff',
                       }}
                       onChange={(event) => {
-                        setFiltro(event.target.value);
+                        setFiltroCliente(event.target.value);
                       }}
                     />
                   )}
@@ -267,62 +435,51 @@ export default function RentalCreatePage() {
 
                 <Autocomplete
                   options={funcionarios}
-                  getOptionLabel={(option) => option}
-                  value={formValues.funcionario}
-                  onChange={(event, newValue) => {
-                    setFormValues({ ...formValues, funcionario: newValue });
-                  }}
-                  fullWidth
+                  getOptionLabel={(option) => option.codigo + ' - ' + option.nome}
                   style={estiloCampo}
+                  onChange={handleFuncionarioChange}
+                  isOptionEqualToValue={(option, value) => option.codigo === value.codigo}
+                  fullWidth
+                  required
                   renderInput={(params) => (
                     <TextField
                       {...params}
-                      label="Funcionário"
+                      label="Funcionario"
                       variant="filled"
                       required
                       sx={{
                         borderRadius: '5px 5px 0 0',
-                        backgroundColor: '#fff'
+                        backgroundColor: '#fff',
+                      }}
+                      onChange={(event) => {
+                        setFiltroFuncionario(event.target.value);
                       }}
                     />
                   )}
                 />
                 <Autocomplete
-                  multiple  // Habilita a seleção múltipla
-                  id="produtos"
-                  options={products}
-                  disableCloseOnSelect
-                  getOptionLabel={(option) => option.name}
-                  renderOption={(props, option, { selected }) => (
-                    <li {...props}>
-                      <FormControlLabel
-                        control={
-                          <Checkbox
-                            icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
-                            checkedIcon={<CheckBoxIcon fontSize="small" />}
-                            checked={selected}
-                          />
-                        }
-                        label={option.name}
-                      />
-                    </li>
-                  )}
+                  multiple
+                  required
+                  options={produtos}
+                  getOptionLabel={(option) => option.codigo + ' - ' + option.nome}
+                  style={estiloCampo}
+                  onChange={handleProdutoChange}
+                  isOptionEqualToValue={(option, value) => option.codigo === value.codigo}
+                  fullWidth
                   renderInput={(params) => (
                     <TextField
                       {...params}
+                      label="Produto"
                       variant="filled"
-                      label="Produtos"
-                      fullWidth
+                      sx={{
+                        borderRadius: '5px 5px 0 0',
+                        backgroundColor: '#fff',
+                      }}
+                      onChange={(event) => {
+                        setFiltroProduto(event.target.value);
+                      }}
                     />
                   )}
-                  value={formValues.produtos}
-                  onChange={(event, newValue) => {
-                    setFormValues({ ...formValues, produtos: newValue });
-                  }}
-                  style={estiloCampo}
-                  sx={{
-                    backgroundColor: '#fff'
-                  }}
                 />
 
                 <Grid className='grid-datas' item xs={12} sm={12} style={{ display: 'flex', width: '93%', alignItems: 'center' }}>
@@ -341,8 +498,9 @@ export default function RentalCreatePage() {
                             fullWidth
                             style={estiloCampo}
                             sx={{
-                              backgroundColor: '#fff',
+                              backgroundColor: '#fff'
                             }}
+                            required
                           />
                         )}
                       </InputMask>
@@ -352,6 +510,7 @@ export default function RentalCreatePage() {
                         mask="99-99-9999"
                         value={formValues.dataDevolucao}
                         onChange={handleFieldChange}
+                        required
                       >
                         {() => (
                           <TextField
@@ -360,6 +519,7 @@ export default function RentalCreatePage() {
                             variant="filled"
                             fullWidth
                             style={estiloCampo}
+                            required
                             sx={{
                               backgroundColor: '#fff'
                             }}
@@ -374,8 +534,8 @@ export default function RentalCreatePage() {
                   <Grid style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                     <Checkbox
                       name="patrocinio"
-                      checked={formValues.patrocinio}
-                      onChange={handleCheckboxChange}
+                      checked={!!formValues.patrocinio}
+                      onChange={handleCheckboxPatrocinioChange}
                       style={estiloCheckbox}
                     />
                     <span>Aluguel patrocinado</span>
@@ -385,38 +545,6 @@ export default function RentalCreatePage() {
               </Grid>
 
               <Grid item className='grid-direita' xs={12} sm={6} display="flex" flexDirection="column" sx={{ alignItems: 'center' }}>
-
-                <TextField
-                  name="formaPagamento"
-                  variant="filled"
-                  required
-                  select
-                  label="Forma de Pagamento"
-                  fullWidth
-                  style={estiloCampo}
-                  sx={{
-                    backgroundColor: '#fff',
-                  }}
-                  value={formValues.formaPagamento}
-                  onChange={(e) => {
-                    const selectedFormaPagamento = e.target.value;
-                    setFormValues({ ...formValues, formaPagamento: selectedFormaPagamento });
-                  }}
-                  SelectProps={{
-                    MenuProps: {
-                      style: {
-                        maxHeight: 300,
-                      },
-                    },
-                  }}
-                >
-                  {formasPagamento.map((formaPagamento) => (
-                    <MenuItem key={formaPagamento.codigo} value={formaPagamento.codigo}>
-                      {formaPagamento.nome}
-                    </MenuItem>
-                  ))}
-                </TextField>
-
                 <NumericFormat
                   name="valor"
                   variant='filled'
@@ -431,11 +559,13 @@ export default function RentalCreatePage() {
                   fullWidth
                   style={estiloCampo}
                   value={formValues.valor}
-                  onValueChange={handleFieldChange}
+                  onValueChange={(values) => {
+                    handleFieldChange({ target: { name: 'valor', value: values.floatValue } });
+                  }}
                   sx={{
                     backgroundColor: '#fff'
                   }}
-                  disabled={formValues.patrocinio}
+                  disabled={desabilitar}
                 />
                 <Grid container className='grid-utilizarCredito' alignItems="center" style={{ display: 'flex', width: '93%' }}>
                   <Grid item xs={12} sm={6}>
@@ -452,24 +582,46 @@ export default function RentalCreatePage() {
                       fixedDecimalScale={true}
                       fullWidth
                       style={estiloCampo}
-                      value={formValues.creditoValor}
-                      onValueChange={handleFieldChange}
+                      value={formValues.valorCredito}
                       sx={{
                         backgroundColor: '#fff'
                       }}
-                      disabled={!formValues.utilizarCredito}
+                      inputProps={{
+                        readOnly: true,
+                      }}
+                      disabled={desabilitar}
                     />
                   </Grid>
                   <Grid style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                     <Checkbox
                       name="utilizarCredito"
-                      checked={formValues.utilizarCredito}
-                      onChange={handleCheckboxChange}
+                      checked={!!formValues.utilizarCredito}
+                      onChange={handleCheckboxCreditoChange}
                       style={estiloCheckbox}
                     />
                     <span>Utilizar Crédito</span>
                   </Grid>
                 </Grid>
+
+                <Autocomplete
+                  options={formasPagamento}
+                  getOptionLabel={(option) => option.idFormaDePagamento + ' - ' + option.nome}
+                  style={estiloCampo}
+                  onChange={handleFormaPagamentoChange}
+                  isOptionEqualToValue={(option, value) => option.idFormaDePagamento === value.idFormaDePagamento}
+                  fullWidth
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Forma de pagamento"
+                      variant="filled"
+                      sx={{
+                        borderRadius: '5px 5px 0 0',
+                        backgroundColor: '#fff',
+                      }}
+                    />
+                  )}
+                />
 
                 <NumericFormat
                   name="valorPago"
@@ -485,11 +637,13 @@ export default function RentalCreatePage() {
                   fullWidth
                   style={estiloCampo}
                   value={formValues.valorPago}
-                  onValueChange={handleFieldChange}
+                  onValueChange={(values) => {
+                    handleFieldChange({ target: { name: 'valorPago', value: values.floatValue } });
+                  }}
                   sx={{
                     backgroundColor: '#fff'
                   }}
-                  disabled={formValues.patrocinio}
+                  disabled={desabilitar}
                 />
 
                 <NumericFormat
@@ -506,11 +660,13 @@ export default function RentalCreatePage() {
                   fullWidth
                   style={estiloCampo}
                   value={formValues.total}
-                  onValueChange={handleFieldChange}
                   sx={{
                     backgroundColor: '#fff'
                   }}
-                  disabled={formValues.patrocinio}
+                  inputProps={{
+                    readOnly: true,
+                  }}
+                  disabled={desabilitar}
                 />
               </Grid>
             </Grid>
@@ -536,6 +692,20 @@ export default function RentalCreatePage() {
           </form>
         </Container>
       </Container >
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={() => setSnackbarOpen(false)}
+      >
+        <MuiAlert
+          elevation={6}
+          variant="filled"
+          onClose={() => setSnackbarOpen(false)}
+          severity={snackbarSeverity}
+        >
+          {snackbarMessage}
+        </MuiAlert>
+      </Snackbar>
     </>
   );
 }

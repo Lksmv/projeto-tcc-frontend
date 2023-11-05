@@ -1,6 +1,7 @@
 import { Helmet } from 'react-helmet-async';
-import React, { useState } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import {
   Container,
   Typography,
@@ -71,44 +72,70 @@ export default function RentalInfoPage() {
     },
   };
 
-  const estados = [
-    'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG',
-    'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
-  ];
-
-  //pegar lista de clientes cadastrados
-  const clientes = [
-    '123 - Maria', '11 - joao'
-  ];
-
-  const funcionarios = [
-    '1 - Maria', '11 - joao'
-  ];
-
-  const products = [
-    { name: '001 - Vestido' },
-    { name: '002 - Terno' },
-    { name: '003 - Sapato' },
-  ];
 
   const [formValues, setFormValues] = useState({
     codigo: 0,
-    cliente: "",
-    funcionario: "",
+    cliente: 0,
+    funcionario: 0,
     dataSaida: "",
     dataDevolucao: "",
-    produtos: [],
-    valor: "",
+    dataEmissao: "",
+    listaProdutos: [],
+    listaPagamentos: [],
+    valor: 0,
+    valorCredito: 0,
+    valorAdicional: 0,
+    total: 0,
+    valorPago: 0,
+    formaPagamento: 0,
     utilizarCredito: false,
-    total: "",
-    valorPago: "",
-    restanteAPagar: "",
-    formaPagamento: "",
-    dataContrato: "",
+    patrocinio: false,
+    statusAluguel: ""
   });
 
+
+  const [cliente, setCliente] = useState([]);
+  const [funcionario, setFuncionario] = useState([]);
   const [formasPagamento, setformasPagamento] = useState([]);
+  const [funcionarios, setFuncionarios] = useState([]);
+  const [desabilitar, setDesabilitar] = useState(!!false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
   const [selectedProducts, setSelectedProducts] = useState([]);
+
+
+
+  const fetchData = async () => {
+    try {
+      const response = await axios.get(BACKEND_URL + 'forma-de-pagamento', {
+        params: {
+          page: 0,
+          size: 50,
+          filtro: "",
+        },
+      });
+      setformasPagamento(response.data.content);
+    } catch (error) {
+      console.error('Erro ao buscar a lista de formas de pagamento:', error);
+    }
+  };
+
+
+  const fetchEmployees = async () => {
+    try {
+      const response = await axios.get(BACKEND_URL + 'funcionario', {
+        params: {
+          page: 0,
+          size: 100,
+          filtro: "",
+        },
+      });
+      setFuncionarios(response.data.content);
+    } catch (error) {
+      console.error('Erro ao buscar funcionários:', error);
+    }
+  };
 
   const navigate = useNavigate()
 
@@ -151,6 +178,33 @@ export default function RentalInfoPage() {
       console.error('Erro ao salvar o aluguel:', error);
     }
   };
+
+  const { codigo } = useParams();
+
+  useEffect(() => {
+    const codigoRental = codigo;
+    axios
+      .get(BACKEND_URL + `aluguel/${codigoRental}`)
+      .then((response) => {
+        const rentalDetails = response.data;
+        setCliente(rentalDetails.clienteDTO)
+        setFuncionario(rentalDetails.funcionarioDTO)
+        setFormValues({
+          ...rentalDetails,
+          cliente: cliente.codigo,
+          funcionario: funcionario.codigo,
+          patrocinio: rentalDetails.patrocinio == 'S' ? true : false,
+          utilizarCredito: rentalDetails.utilizarCredito == 'S' ? true : false,
+        });
+        console.log(formValues)
+      })
+      .catch((error) => {
+        setError(error);
+      });
+    fetchData();
+    fetchEmployees()
+  }, [codigo]);
+
 
   return (
     <>
@@ -202,27 +256,17 @@ export default function RentalInfoPage() {
                     readOnly: true,
                   }}
                 />
-                <Autocomplete
-                  options={clientes} // A lista de clientes
-                  getOptionLabel={(option) => option} // Função para obter o rótulo de cada cliente
-                  value={formValues.cliente}
-                  onChange={(event, newValue) => {
-                    setFormValues({ ...formValues, cliente: newValue });
-                  }}
+                <TextField
                   fullWidth
+                  value={formValues.cliente}
                   style={estiloCampo}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Cliente"
-                      variant="filled"
-                      required
-                      sx={{
-                        borderRadius: '5px 5px 0 0',
-                        backgroundColor: '#fff'
-                      }}
-                    />
-                  )}
+                  label="Cliente"
+                  variant="filled"
+                  required
+                  sx={{
+                    borderRadius: '5px 5px 0 0',
+                    backgroundColor: '#fff'
+                  }}
                 />
                 <Autocomplete
                   options={funcionarios}
@@ -249,7 +293,7 @@ export default function RentalInfoPage() {
 
                 <Grid item xs={12} sm={12} style={{ display: 'flex', width: '90%', alignItems: 'center', margin: '8px' }}>
                   <ProductTable
-                    products={products}
+                    products={formValues.listaProdutos}
                     selectedProducts={selectedProducts}
                     onProductSelect={(selectedProducts) => setSelectedProducts(selectedProducts)}
                   />
@@ -335,37 +379,6 @@ export default function RentalInfoPage() {
                   )}
                 </InputMask>
 
-                <TextField
-                  name="formaPagamento"
-                  variant="filled"
-                  required
-                  select
-                  label="Forma de Pagamento"
-                  fullWidth
-                  style={estiloCampo}
-                  sx={{
-                    backgroundColor: '#fff',
-                  }}
-                  value={formValues.formaPagamento}
-                  onChange={(e) => {
-                    const selectedFormaPagamento = e.target.value;
-                    setFormValues({ ...formValues, formaPagamento: selectedFormaPagamento });
-                  }}
-                  SelectProps={{
-                    MenuProps: {
-                      style: {
-                        maxHeight: 300,
-                      },
-                    },
-                  }}
-                >
-                  {formasPagamento.map((formaPagamento) => (
-                    <MenuItem key={formaPagamento.codigo} value={formaPagamento.codigo}>
-                      {formaPagamento.nome}
-                    </MenuItem>
-                  ))}
-                </TextField>
-
                 <Grid className='grid-valor' item xs={12} sm={12} style={{ display: 'flex', width: '93%', alignItems: 'center' }}>
                   <Grid container>
                     <Grid item xs={6}>
@@ -387,7 +400,6 @@ export default function RentalInfoPage() {
                         sx={{
                           backgroundColor: '#fff'
                         }}
-                        disabled={formValues.patrocinio}
                       />
                     </Grid>
                     <Grid item xs={6} style={{ textAlign: 'right' }}>
@@ -409,7 +421,6 @@ export default function RentalInfoPage() {
                         sx={{
                           backgroundColor: '#fff'
                         }}
-                        disabled={formValues.patrocinio}
                       />
                     </Grid>
                   </Grid>
@@ -467,7 +478,6 @@ export default function RentalInfoPage() {
                   sx={{
                     backgroundColor: '#fff'
                   }}
-                  disabled={formValues.patrocinio}
                 />
               </Grid>
 

@@ -108,7 +108,6 @@ export default function RentalPage() {
               <TableBody>
                 {rentalList.map((row) => {
                   const listaProdutos = row.listaProdutos;
-                  console.log(listaProdutos);
                   const produtos = row.listaProdutos.map((rowData) => {
                     return rowData.produtoDTO.codigo + " - " + rowData.produtoDTO.nome;
                   }).join(', '); 
