@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
 //
 import Header from './header';
+import HeaderCatalogo from './header/HeaderCatalogo';
 import Footer from '../../components/footer'
 
 const StyledRoot = styled('div')({
@@ -19,15 +20,14 @@ const Main = styled('div')(() => ({
 }));
 
 
-export default function CatalogoLayout() {
+export default function CatalogoLayout({ catalogo }) {
   return (
-
     <StyledRoot>
-      <Header/>
+      {catalogo ? <HeaderCatalogo /> : <Header />}
       <Main>
         <Outlet />
       </Main>
-      <Footer/>
+      <Footer />
     </StyledRoot>
   );
 }

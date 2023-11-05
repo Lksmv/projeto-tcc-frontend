@@ -240,7 +240,7 @@ export default function Router() {
     {
       path: '/',
       element: (
-        <CatalogoLayout>
+        <CatalogoLayout catalogo={false}>
         </CatalogoLayout>
       ),
       children: [
@@ -251,9 +251,9 @@ export default function Router() {
       ],
     },
     {
-      path: '/catalogo',
+      path: '/catalogo/:genero',
       element: (
-        <CatalogoLayout>
+        <CatalogoLayout catalogo={true} >
         </CatalogoLayout>),
       children: [
         {

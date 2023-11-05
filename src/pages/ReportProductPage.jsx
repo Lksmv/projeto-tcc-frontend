@@ -107,18 +107,18 @@ export default function ReportPage() {
     return (
         <>
             <Helmet>
-                <title>Relatório</title>
+                <title>Relatório de Produtos</title>
             </Helmet>
             <Container>
                 <Container maxWidth="lg" style={{ paddingLeft: '20px', paddingRight: '20px' }}>
                     <Typography variant="h4" color="text.primary" sx={{ mb: 1 }}>
-                        Relatório
+                        Relatório de Produtos
                     </Typography>
                     <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />} aria-label="breadcrumb" sx={{ mb: 2 }}>
                         <Link color="inherit" href="/dashboard">
                             Dashboard
                         </Link>
-                        <Typography variant="subtitle1" color="text.primary">Relatório</Typography>
+                        <Typography variant="subtitle1" color="text.primary">Relatório de Produtos</Typography>
                     </Breadcrumbs>
                 </Container>
 

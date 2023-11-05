@@ -5,6 +5,7 @@ import { Container, Button } from '@mui/material';
 import pageBackground from '../assets/page.png';
 import AliceCarousel from 'react-alice-carousel';
 import 'react-alice-carousel/lib/alice-carousel.css';
+import { Link as RouterLink } from 'react-router-dom';
 
 const containerStyle = {
   display: 'flex',
@@ -69,7 +70,7 @@ const carouselContainerStyle = {
   padding: '20px 0px 20px 0px'
 };
 
-export default function DashboardAppPage() {
+export default function HomePage() {
   const theme = useTheme();
   const [isLeftButtonHovered, setIsLeftButtonHovered] = useState(false);
   const [isRightButtonHovered, setIsRightButtonHovered] = useState(false);
@@ -88,17 +89,16 @@ export default function DashboardAppPage() {
             ...(isRightButtonHovered ? darkerOverlayStyle : defaultOpacity),
           }}
           onMouseEnter={() => {
-            setIsRightButtonHovered(true);
+            setIsLeftButtonHovered(true);
           }}
           onMouseLeave={() => {
-            setIsRightButtonHovered(false);
+            setIsLeftButtonHovered(false);
           }}
         >
           <Button
             style={transparentButtonStyle}
-            onClick={() => {
-              // Lidar com o clique no botão esquerdo
-            }}
+            to="/catalogo/masculino"
+            component={RouterLink}
           >
           </Button>
         </div>
@@ -109,17 +109,16 @@ export default function DashboardAppPage() {
             ...(isLeftButtonHovered ? darkerOverlayStyle : defaultOpacity),
           }}
           onMouseEnter={() => {
-            setIsLeftButtonHovered(true);
+            setIsRightButtonHovered(true);
           }}
           onMouseLeave={() => {
-            setIsLeftButtonHovered(false);
+            setIsRightButtonHovered(false);
           }}
         >
           <Button
             style={transparentButtonStyle}
-            onClick={() => {
-              // Lidar com o clique no botão direito
-            }}
+            to="/catalogo/feminino"
+            component={RouterLink}
           >
           </Button>
         </div>

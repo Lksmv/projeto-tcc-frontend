@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { Box, Collapse, Paper, Typography, List, ListItem, ListItemText, ListItemButton, Checkbox, FormControlLabel, Divider, Button } from '@mui/material';
 
 ProductFilter.propTypes = {
   filterOptions: PropTypes.array, // Lista de opções de filtro aninhadas
   onFilterChange: PropTypes.func, // Função chamada ao aplicar filtros
+  genero: PropTypes.string, // Parâmetro de gênero
 };
 
-export default function ProductFilter({ filterOptions, onFilterChange}) {
+export default function ProductFilter({ filterOptions, onFilterChange, genero }) {
   const [openFilter, setOpenFilter] = useState(false);
   const [selectedFilters, setSelectedFilters] = useState([]);
 
@@ -23,6 +24,14 @@ export default function ProductFilter({ filterOptions, onFilterChange}) {
 
     setSelectedFilters(newSelected);
   };
+
+  useEffect(() => {
+    if (genero === 'masculino') {
+      setSelectedFilters(['Masculino']);
+    } else if (genero === 'feminino') {
+      setSelectedFilters(['Feminino']);
+    }
+  }, [genero]);
 
   const applyFilters = () => {
     // Você pode adicionar mais lógica aqui para aplicar os filtros
