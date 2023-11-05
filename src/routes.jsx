@@ -23,8 +23,13 @@ import ClientInfoPage from './pages/ClientInfoPage';
 import UserPage from './pages/UserPage';
 import PaymentPage from './pages/PaymentPage';
 import CategoryPage from './pages/CategoryPage';
-import ReportPage from './pages/ReportPage';
 import EmployeePage from './pages/EmployeePage';
+import ReportClientPage from './pages/ReportClientPage';
+import ReportProductPage from './pages/ReportProductPage';
+import ReportRentalPage from './pages/ReportRentalPage';
+import ReportInfoClientPage from './pages/ReportInfoClientPage';
+import ReportInfoProductPage from './pages/ReportInfoProductPage';
+import ReportInfoRentalPage from './pages/ReportInfoRentalPage';
 
 export default function Router() {
   const { authState } = useAuth();
@@ -60,7 +65,7 @@ export default function Router() {
           element: <UserPage />
         }
       ]
-    },    
+    },
     {
       path: '/funcionario',
       element: isAuthenticated ? (
@@ -146,7 +151,7 @@ export default function Router() {
       ]
     },
     {
-      path: '/relatorio',
+      path: '/filtro/clientes',
       element: isAuthenticated ? (
         <DashboardLayout>
         </DashboardLayout>
@@ -156,8 +161,50 @@ export default function Router() {
       children: [
         {
           index: true,
-          element: <ReportPage />
-        }
+          element: <ReportClientPage />
+        },
+        {
+          path: '/filtro/clientes/relatorio',
+          element: <ReportInfoClientPage />
+        },
+      ]
+    },
+    {
+      path: '/filtro/produtos',
+      element: isAuthenticated ? (
+        <DashboardLayout>
+        </DashboardLayout>
+      ) : (
+        <Navigate to="/login" />
+      ),
+      children: [
+        {
+          index: true,
+          element: <ReportProductPage />
+        },
+        {
+          path: '/filtro/produtos/relatorio',
+          element: <ReportInfoProductPage />
+        },
+      ]
+    },
+    {
+      path: '/filtro/aluguel',
+      element: isAuthenticated ? (
+        <DashboardLayout>
+        </DashboardLayout>
+      ) : (
+        <Navigate to="/login" />
+      ),
+      children: [
+        {
+          index: true,
+          element: <ReportRentalPage />
+        },
+        {
+          path: '/filtro/aluguel/relatorio',
+          element: <ReportInfoRentalPage />
+        },
       ]
     },
     {
