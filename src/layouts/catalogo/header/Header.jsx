@@ -41,7 +41,13 @@ export default function Header() {
   }, []);
 
   return (
-    <StyledRoot isScrolled={isScrolled} style={{  opacity: 0.6,}}>
+    <StyledRoot sx={{
+      zIndex: (theme) => theme.zIndex.drawer + 1,
+      boxShadow: "0px 0px 0px 0px",
+      background: (theme) => `linear-gradient(180deg, rgba(198, 28, 74, ${isScrolled}) 0%, rgba(134, 28, 88, ${isScrolled}) 98%)`,
+      transition: 'background 0.3s',
+      opacity: 0.6,
+    }}>
       <StyledToolbar>
         <Grid container justifyContent="center" alignItems="center" sx={{ flexGrow: 1 }}>
           <Box>
