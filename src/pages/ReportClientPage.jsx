@@ -16,11 +16,17 @@ import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import { BACKEND_URL } from '../utils/backEndUrl';
 
 export default function ReportClientPage() {
+  const [clientes, setClientes] = useState([]);
+  const [cliente, setCliente] = useState(null);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage] = useState(10);
+  const [filterName, setFilterName] = useState('');
+  const navigate = useNavigate();
 
   const estiloCampo = {
     margin: '8px',
-    borderRadius: '5px 5px 0 0',
-    width: '90%',
+    borderRadius: '5px',
+    width: '100%',
   };
 
   const buttonStyle = {
@@ -59,53 +65,36 @@ export default function ReportClientPage() {
     },
   };
 
-  const tipos = [
-    'Devolução', 'Retirada'
-  ];
+  const fetchClientes = async () => {
+    try {
+      const response = await axios.get(BACKEND_URL + 'cliente', {
+        params: {
+          page: page,
+          size: rowsPerPage,
+          filtro: filterName,
+        },
+      });
+      setClientes(response.data.content);
+    } catch (error) {
+      console.error('Erro ao buscar clientes:', error);
+    }
+  };
 
-  const clientes = [
-    '123 - Maria', '11 - joao'
-  ];
+  useEffect(() => {
+    fetchClientes();
+  }, [page, rowsPerPage, filterName]);
 
-  const [formValues, setFormValues] = useState({
-    cliente: "",    
-  });
-
-  const navigate = useNavigate()
+  const handleClienteChange = (event, newValue) => {
+    setCliente(newValue);
+  };
 
   const handleCancel = () => {
     navigate('/dashboard');
   };
 
-  const handleReport = () => {
-    navigate('/filtro/clientes/relatorio');
-  };
-
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-
-    const formatedDataInicial = formatInputDate(formValues.dataInicial);
-    const formatedDataFinal = formatInputDate(formValues.dataFinal);
-
-    const requestData = {
-      ...formValues,
-      dataInicial: formatedDataInicial,
-      dataFinal: formatedDataFinal,
-    };
-    let response;
-    try {
-      response = await axios.post(BACKEND_URL + 'relatorio', requestData);
-    } catch (error) {
-      if (error.response) {
-        setSnackbarMessage(error.response.data.errors[0]);
-      } else if (error.request) {
-        setSnackbarMessage('Erro de requisição: ' + error.request);
-      } else {
-        setSnackbarMessage('Erro ao gerar relatório: ' + error.message);
-      }
-      setSnackbarSeverity('error');
-      setSnackbarOpen(true);
-    }
+    navigate(`/cliente/relatorio/${cliente.codigo}`);
   };
 
   return (
@@ -114,75 +103,71 @@ export default function ReportClientPage() {
         <title>Relatório de Clientes</title>
       </Helmet>
       <Container>
-        <Container maxWidth="lg" style={{ paddingLeft: '20px', paddingRight: '20px' }}>
-          <Typography variant="h4" color="text.primary" sx={{ mb: 1 }}>
+        <Container maxWidth="lg" style={{ padding: '20px' }}>
+          <Typography variant="h4" color="textPrimary" sx={{ mb: 2 }}>
             Relatório de Clientes
           </Typography>
           <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />} aria-label="breadcrumb" sx={{ mb: 2 }}>
             <Link color="inherit" href="/dashboard">
               Dashboard
             </Link>
-            <Typography variant="subtitle1" color="text.primary">Relatório de Clientes</Typography>
+            <Typography variant="subtitle1" color="textPrimary">Relatório de Clientes</Typography>
           </Breadcrumbs>
         </Container>
 
         <Container style={{
-          backgroundColor: '#c4c4c4',
-          transition: 'box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms',
-          overflow: 'hidden',
-          position: 'relative',
-          boxShadow: 'rgba(0, 0, 0, 0.2) 0px 0px 2px 0px, rgba(0, 0, 0, 0.12) 0px 12px 24px -4px',
+          backgroundColor: '#f0f0f0',
           borderRadius: '16px',
           padding: '24px',
-          marginBottom: '20px',
-          width: '700px',
+          margin: '20px auto',
+          maxWidth: '700px',
         }}>
-
           <form onSubmit={handleSubmit}>
-            <Grid display="flex" flexDirection="column" alignItems='center' style={{ paddingRight: '70px', paddingLeft: '70px'}}>               
-
-               <Autocomplete
-                 options={clientes}
-                 getOptionLabel={(option) => option}
-                 value={formValues.cliente}
-                 onChange={(event, newValue) => {
-                   setFormValues({ ...formValues, cliente: newValue });
-                 }}
-                 fullWidth
-                 style={estiloCampo}
-                 renderInput={(params) => (
-                   <TextField
-                     {...params}
-                     label="Cliente"
-                     variant="filled"
-                     required
-                     sx={{
-                       borderRadius: '5px 5px 0 0',
-                       backgroundColor: '#fff'
-                     }}
-                   />
-                 )}
-               />
-              
-            </Grid>
-            <Grid className="botoes-relatorio-cliente" item xs={12} sm={6} style={{ display: 'flex', justifyContent: 'center', paddingTop: '20px' }}>
-              <Button
-                type="submit"
-                variant="contained"
-                style={salvarButtonStyle}
-                onClick={handleReport}
-              >
-                AVANÇAR
-              </Button>
-
-              <Button
-                type="reset"
-                variant="contained"
-                style={cancelarButtonStyle}
-                onClick={handleCancel}
-              >
-                CANCELAR
-              </Button>
+            <Grid container justifyContent='center' spacing={2}>
+              <Grid item xs={12}>
+                <Autocomplete
+                  options={clientes}
+                  getOptionLabel={(option) => option.codigo + ' - ' + option.nome}
+                  style={estiloCampo}
+                  value={cliente}
+                  onChange={handleClienteChange}
+                  isOptionEqualToValue={(option, value) => option.codigo === value.codigo}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Cliente"
+                      variant="filled"
+                      required
+                      sx={{
+                        borderRadius: '5px',
+                        backgroundColor: '#fff',
+                      }}
+                      onChange={(event) => {
+                        setFilterName(event.target.value);
+                      }}
+                    />
+                  )}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <Grid container justifyContent='center'>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    style={salvarButtonStyle}
+                  >
+                    AVANÇAR
+                  </Button>
+                  <Button
+                    type="reset"
+                    variant="contained"
+                    style={cancelarButtonStyle}
+                    onClick={handleCancel}
+                  >
+                    CANCELAR
+                  </Button>
+                </Grid>
+              </Grid>
             </Grid>
           </form>
         </Container>

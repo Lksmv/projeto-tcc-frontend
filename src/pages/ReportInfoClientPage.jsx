@@ -1,6 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import mammoth from 'mammoth';
+import { saveAs } from 'file-saver';
+import { useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
+import { formatOutputDate, formatInputDate } from '../utils/formatTime';
 import {
   Table,
   TableRow,
@@ -18,8 +23,13 @@ import {
 } from '@mui/material';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import { BACKEND_URL } from '../utils/backEndUrl';
+import ReportDownloadButton from '../components/downloadReport/donwloadReport';
 
 export default function ReportInfoClientPage() {
+  const [aluguelList, setAluguelList] = useState([]);
+  const { codigo } = useParams();
+  const navigate = useNavigate();
+
 
   const buttonStyle = {
     fontFamily: 'Roboto, sans-serif',
@@ -27,57 +37,16 @@ export default function ReportInfoClientPage() {
     boxSizing: 'border-box',
     textTransform: 'none',
   };
-
-  const imprimirButtonStyle = {
-    ...buttonStyle,
-    marginTop: '-25px',
-    backgroundColor: '#808080',
-    color: '#fff',
-    width: '90px',
-    height: '36px',
-    marginRight: '8px',
-    transition: 'background-color 0.3s',
-    '&:hover': {
-      backgroundColor: '#1565C0',
-    },
-    '&:active': {
-      backgroundColor: '#0D47A1',
-    },
-  };
-
-  const [clientList, setClientList] = useState([]);
-  const [totalItems, setTotalItems] = useState(0);
-
-  const [rows, setRows] = useState([
-    { codigo: 1, nome: 'Produto A', telefone: 10, codAluguel: '1', aluguelFinalizado: true, dataDevolucao: '', dataDevolvido: '' },
-    { codigo: 2, nome: 'Produto B', telefone: 20, codAluguel: '1', aluguelFinalizado: true, dataDevolucao: '', dataDevolvido: '' },
-    { codigo: 3, nome: 'Produto C', telefone: 30, codAluguel: '1', aluguelFinalizado: true, dataDevolucao: '', dataDevolvido: '' },
-    { codigo: 4, nome: 'Produto D', telefone: 30, codAluguel: '1', aluguelFinalizado: true, dataDevolucao: '', dataDevolvido: '' },
-    { codigo: 5, nome: 'Produto E', telefone: 30, codAluguel: '1', aluguelFinalizado: true, dataDevolucao: '', dataDevolvido: '' },
-    { codigo: 6, nome: 'Produto F', telefone: 30, codAluguel: '1', aluguelFinalizado: true, dataDevolucao: '', dataDevolvido: '' },
-  ]);
-
-  const fetchClientList = async () => {
-    try {
-      const response = await axios.get(BACKEND_URL + 'cliente', {
-        params: {
-          size: rows,
-        },
-      });
-      setClientList(response.data.content);
-      setTotalItems(response.data.totalElements);
-    } catch (error) {
-      console.error('Erro ao buscar a lista de clientes:', error);
-    }
-  };
-
+  
   useEffect(() => {
-  }, [rows]);
+    console.log('Código do cliente:', codigo);
+    axios
+      .get(BACKEND_URL + `aluguel/por-cliente/${codigo}`)
+      .then((response) => {
+        setAluguelList(response.data)
+      })
+  }, [codigo]);
 
-  const handlePrint = () => {
-    // Handle the print action here, for example, by opening the print dialog.
-    window.print();
-  };
 
 
   return (
@@ -100,7 +69,7 @@ export default function ReportInfoClientPage() {
               </Breadcrumbs>
             </Grid>
             <Grid item xs={6} style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-              <Button variant="filled" onClick={handlePrint} style={imprimirButtonStyle}>Imprimir</Button>
+              <ReportDownloadButton url={BACKEND_URL + `aluguel/relatorio/${codigo}/download`} />
             </Grid>
           </Grid>
         </Container>
@@ -110,25 +79,33 @@ export default function ReportInfoClientPage() {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>Código</TableCell>
-                  <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>Nome</TableCell>
+                  <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>Código Aluguel</TableCell>
+                  <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>Nome Cliente</TableCell>
                   <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>Telefone</TableCell>
-                  <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>Cód. Aluguel</TableCell>
-                  <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>Aluguel Finalizado</TableCell>
+                  <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>valor</TableCell>
+                  <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>Aluguel Status</TableCell>
                   <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>Data Devolução</TableCell>
-                  <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>Data Devolvido</TableCell>
+                  <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>Data Retirada</TableCell>
+                  <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>Data Contrato</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {rows.map((row) => (
-                  <TableRow key={row.codigo}>
+                {aluguelList && aluguelList.map((row) => (
+                  <TableRow
+                    key={row.codigo}
+                    style={{ cursor: 'pointer', background: row.statusAluguel === 'FECHADO' ? '#c6f68d' : row.status === 'CANCELADO' ? '#ffc8b9' : '#fddeb1' }}
+                    onClick={() => {
+                      navigate(`/aluguel/detalhes/${codigo}`);
+                    }}
+                  >
                     <TableCell>{row.codigo}</TableCell>
-                    <TableCell>{row.nome}</TableCell>
-                    <TableCell>{row.telefone}</TableCell>
-                    <TableCell>{row.codAluguel}</TableCell>
-                    <TableCell>{row.aluguelFinalizado ? "Sim" : "Não"}</TableCell>
-                    <TableCell>{row.dataDevolucao}</TableCell>
-                    <TableCell>{row.dataDevolvido}</TableCell>
+                    <TableCell>{row.clienteDTO.nome}</TableCell>
+                    <TableCell>{row.clienteDTO.telefone}</TableCell>
+                    <TableCell>{row.valor}</TableCell>
+                    <TableCell>{row.statusAluguel}</TableCell>
+                    <TableCell>{formatOutputDate(row.dataDevolucao)}</TableCell>
+                    <TableCell>{formatOutputDate(row.dataSaida)}</TableCell>
+                    <TableCell>{formatOutputDate(row.dataEmissao)}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

@@ -151,7 +151,7 @@ export default function Router() {
       ]
     },
     {
-      path: '/filtro/clientes',
+      path: '/cliente/relatorio',
       element: isAuthenticated ? (
         <DashboardLayout>
         </DashboardLayout>
@@ -164,13 +164,13 @@ export default function Router() {
           element: <ReportClientPage />
         },
         {
-          path: '/filtro/clientes/relatorio',
+          path: '/cliente/relatorio/:codigo',
           element: <ReportInfoClientPage />
         },
       ]
     },
     {
-      path: '/filtro/produtos',
+      path: '/produto/relatorio',
       element: isAuthenticated ? (
         <DashboardLayout>
         </DashboardLayout>
@@ -183,13 +183,13 @@ export default function Router() {
           element: <ReportProductPage />
         },
         {
-          path: '/filtro/produtos/relatorio',
+          path: '/produto/relatorio/:codigo',
           element: <ReportInfoProductPage />
         },
       ]
     },
     {
-      path: '/filtro/aluguel',
+      path: '/aluguel/relatorio',
       element: isAuthenticated ? (
         <DashboardLayout>
         </DashboardLayout>
@@ -202,7 +202,7 @@ export default function Router() {
           element: <ReportRentalPage />
         },
         {
-          path: '/filtro/aluguel/relatorio',
+          path: '/aluguel/relatorio/:codigo',
           element: <ReportInfoRentalPage />
         },
       ]

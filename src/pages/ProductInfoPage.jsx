@@ -104,7 +104,7 @@ export default function ProductInfoPage() {
   const [formValues, setFormValues] = useState({
     codigo: parseInt(codigo, 10),
     nome: '',
-    codigoCategoria: 1,
+    codigoCategoria: '',
     marca: '',
     tamanho: '',
     cor: '',

@@ -1,82 +1,82 @@
-import React from 'react';
-import { Helmet } from 'react-helmet-async';
-import { useState } from 'react';
-import {
-  Container,
-  Grid,
-  Divider,
-  Typography,
-  useMediaQuery,
-  Breadcrumbs,
-  Link,
-  Button
-} from '@mui/material';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Container, Grid, Typography, Breadcrumbs, Link, FormControlLabel, Checkbox, Button, IconButton } from '@mui/material';
+import axios from 'axios';
+import { BACKEND_URL } from '../utils/backEndUrl';
+import imagemMostragem from '../assets/ft.png';
 import ProductList from '../sections/@dashboard/products/ProductList';
-import ProductFilter from '../sections/@dashboard/products/ProductFilter';
-import ReactPaginate from 'react-paginate'; // Importe a biblioteca de paginação
-import PRODUCTS from '../__mock/products';
-import '../utils/pagination.css';
-import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
-import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import { useParams } from 'react-router-dom';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
+import '../utils/CatalogPage.css';
 
 export default function CatalogPage() {
-  const [currentPage, setCurrentPage] = useState(0);
-  const itemsPerPage = 12;
-  const [filterVisible, setFilterVisible] = useState(false);
-  const isMobile = useMediaQuery((theme) => theme.breakpoints.down('sm'));
   const { genero } = useParams();
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(8);
+  const [filterName, setFilterName] = useState('');
+  const [productList, setProductList] = useState([]);
+  const [totalItems, setTotalItems] = useState(0);
+  const navigate = useNavigate();
+
+  const fetchProductList = async () => {
+    try {
+      const response = await axios.get(BACKEND_URL + 'produto/com-imagem', {
+        params: {
+          page: page,
+          size: rowsPerPage,
+          filtro: filterName,
+        },
+      });
+
+      // Se for a primeira página, substitua a lista, senão, adicione à lista atual.
+      setProductList((prevProductList) => (page === 0 ? response.data.content : [...prevProductList, ...response.data.content]));
+      setTotalItems(response.data.totalElements);
+    } catch (error) {
+      console.error('Erro ao buscar a lista de produtos:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchProductList();
+  }, [page, rowsPerPage, filterName]);
 
   const filterOptions = [
     {
-      category: 'Gênero',
+      area: 'Gênero',
       options: ['Masculino', 'Feminino'],
     },
     {
-      category: 'Tamanho',
+      area: 'Tamanho',
       options: ['Pequeno', 'Médio', 'Grande'],
     },
     {
-      category: 'Cores',
+      area: 'Cores',
       options: ['Preto', 'Branco', 'Vermelho'],
     },
   ];
 
-  const handlePageChange = ({ selected }) => {
+  const [filterState, setFilterState] = useState({});
 
-    setCurrentPage(selected);
+  const handleShowMore = () => {
+    setPage(page + 1);
   };
 
-  const toggleFilter = () => {
-    setFilterVisible(!filterVisible);
+  const toggleFilterArea = (area) => {
+    setFilterState((prevState) => ({
+      ...prevState,
+      [area]: !prevState[area],
+    }));
   };
-
-  const startIndex = currentPage * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-
-  const productsOnPage = PRODUCTS.slice(startIndex, endIndex);
 
   return (
-    <Container sx={{ marginTop: "100px", padding: "20px", marginBottom: "100px" }}>
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={3} sx={{ borderRight: '1px solid #fff', marginTop: isMobile ? '0' : '50px', marginBottom: isMobile ? '0' : '200px', padding: '25px' }}>
-          {isMobile ? (
-            <>
-              <Button
-                variant="contained"
-                onClick={toggleFilter}
-                sx={{ color: '#fff' }}
-              >
-                {filterVisible ? 'Fechar Filtro' : 'Abrir Filtro'}
-              </Button>
-              {filterVisible && <ProductFilter filterOptions={filterOptions} />}
-            </>
-          ) : (
-            <ProductFilter filterOptions={filterOptions} genero={genero} />
-          )}
-        </Grid>
-        <Grid item xs={12} md={9}>
+    <Grid className="catalog-page">
+      <Grid className="image-container">
+        <img src={imagemMostragem} alt="Imagem de Mostragem" className="featured-image" />
+      </Grid>
+      <Container sx={{ marginTop: "50px", marginBottom: "100px" }}>
+        <Grid item xs={12} paddingBottom='26px'>
           <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />} aria-label="breadcrumb" sx={{ mb: 2 }}>
             <Link color="inherit" href="/">
               Home
@@ -86,28 +86,67 @@ export default function CatalogPage() {
             </Link>
             <Typography variant="subtitle1" color="text.primary">Vestidos</Typography>
           </Breadcrumbs>
-          <Divider sx={{ backgroundColor: '#C61C4A', mb: 3 }} />
-          
-          <ProductList products={productsOnPage} />
-
-          {/* Adicione a paginação aqui */}
-          <ReactPaginate
-            pageCount={Math.ceil(PRODUCTS.length / itemsPerPage)}
-            pageRangeDisplayed={5}
-            marginPagesDisplayed={2}
-            onPageChange={handlePageChange}
-            containerClassName="pagination"
-            pageClassName="page-number"
-            activeClassName="active"
-            previousLabel={
-              <ArrowBackIosIcon sx={{ fontSize: 30 }} /> // Ícone de setinha esquerda
-            }
-            nextLabel={
-              <ArrowForwardIosIcon sx={{ fontSize: 30 }} /> // Ícone de setinha direita
-            }
-          />
         </Grid>
-      </Grid>
-    </Container>
+
+        <Grid container spacing={3}>
+          <Grid item xs={12} md={3} sx={{ padding: '25px' }}>
+            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>Filtros:</Typography>
+            {filterOptions.map((optionGroup, index) => (
+              <div key={index}>
+                <Grid container alignItems="center">
+                  <Grid item xs={10}>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>{optionGroup.area}:</Typography>
+                  </Grid>
+                  <Grid item xs={2}>
+                    <IconButton
+                      onClick={() => toggleFilterArea(optionGroup.area)}
+                      sx={{ p: 0, ml: 1 }}
+                    >
+                      {filterState[optionGroup.area] ? (
+                        <ExpandLessIcon />
+                      ) : (
+                        <ExpandMoreIcon />
+                      )}
+                    </IconButton>
+                  </Grid>
+                </Grid>
+                {filterState[optionGroup.area] && (
+                  optionGroup.options.map((option, i) => (
+                    <div key={i}>
+                      <FormControlLabel
+                        control={<Checkbox />}
+                        label={option}
+                      />
+                    </div>
+                  ))
+                )}
+              </div>
+            ))}
+            <Button
+              variant="contained"
+              sx={{ color: '#fff', marginTop: '20px' }}
+            >
+              Aplicar Filtros
+            </Button>
+          </Grid>
+          <Grid item xs={12} md={9} className="product-list-container">
+            <ProductList products={productList} />
+
+            {totalItems > productList.length && (
+              <div className="show-more-container">
+                <Button
+                  variant="contained"
+                  onClick={handleShowMore}
+                  sx={{ color: '#fff' }}
+                  className="show-more-button"
+                >
+                  Mostrar Mais
+                </Button>
+              </div>
+            )}
+          </Grid>
+        </Grid>
+      </Container>
+    </Grid>
   );
 }

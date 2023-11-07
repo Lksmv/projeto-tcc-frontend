@@ -50,15 +50,15 @@ export const navConfig = [
     subitems: [
       {
         title: 'Clientes',
-        path: '/filtro/clientes',
+        path: '/cliente/relatorio',
       },
       {
         title: 'Produtos',
-        path: '/filtro/produtos',
+        path: '/produto/relatorio',
       },
       {
         title: 'Aluguel',
-        path: '/filtro/aluguel',
+        path: '/aluguel/relatorio',
       },
     ],
   },

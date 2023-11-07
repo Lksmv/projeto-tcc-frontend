@@ -10,8 +10,23 @@ import {
   Button,
   Breadcrumbs,
   Link,
+  IconButton,
+  InputAdornment,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Autocomplete,
-  Checkbox,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Select,
+  MenuItem,
 } from '@mui/material';
 import axios from 'axios';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
@@ -19,10 +34,8 @@ import InputMask from 'react-input-mask';
 import { BACKEND_URL } from '../utils/backEndUrl';
 import { formatOutputDate, formatInputDate } from '../utils/formatTime';
 import { NumericFormat } from 'react-number-format';
-import CheckBoxIcon from '@mui/icons-material/CheckBox';
-import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import ProductTable from '../components/table/ProductTable';
+import AddIcon from '@mui/icons-material/Add';
+
 
 export default function RentalInfoPage() {
   const estiloCampo = {
@@ -90,20 +103,50 @@ export default function RentalInfoPage() {
     formaPagamento: 0,
     utilizarCredito: false,
     patrocinio: false,
-    statusAluguel: ""
+    statusAluguel: "",
+    observacoes: ""
   });
 
 
   const [cliente, setCliente] = useState([]);
+  const [novoValorAdicional, setValorAdicional] = useState(0);
   const [funcionario, setFuncionario] = useState([]);
   const [formasPagamento, setformasPagamento] = useState([]);
-  const [funcionarios, setFuncionarios] = useState([]);
-  const [desabilitar, setDesabilitar] = useState(!!false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
-  const [selectedProducts, setSelectedProducts] = useState([]);
+  const [isAddValueDialogOpen, setAddValueDialogOpen] = useState(false);
+  const [isAddNewPaymentDialogOpen, setAddNewPaymentOpen] = useState(false);
+  const [novosPagamentos] = useState([]);
+  const [selectedRow, setSelectedRow] = useState(null);
+  const [valorPagamento, setValorPagamento] = useState(0);
+  const [idFormaPagamento, setIdFormaPagamento] = useState(0);
+  const { codigo } = useParams();
 
+  const handleValorAdicionalFieldChange = (e) => {
+    setValorAdicional(e);
+  };
+
+  const handlePagamentoFieldChange = (e) => {
+    setValorPagamento(e);
+  };
+
+  const addValor = async () => {
+    setFormValues((formValues) => ({
+      ...formValues,
+      valorAdicional: novoValorAdicional + formValues.valorAdicional
+    }));
+  }
+
+  const handleStatusChange = (event) => {
+    if (selectedRow !== null) {
+      const updatedProducts = [...formValues.listaProdutos];
+      if (updatedProducts[selectedRow]) {
+        updatedProducts[selectedRow].status = event.target.value;
+        setFormValues({ ...formValues, listaProdutos: updatedProducts });
+      }
+    }
+  };
 
 
   const fetchData = async () => {
@@ -122,34 +165,21 @@ export default function RentalInfoPage() {
   };
 
 
-  const fetchEmployees = async () => {
-    try {
-      const response = await axios.get(BACKEND_URL + 'funcionario', {
-        params: {
-          page: 0,
-          size: 100,
-          filtro: "",
-        },
-      });
-      setFuncionarios(response.data.content);
-    } catch (error) {
-      console.error('Erro ao buscar funcionários:', error);
-    }
-  };
-
   const navigate = useNavigate()
 
   const handleFieldChange = (e) => {
-    const { name, value } = e.target;
-    setFormValues({ ...formValues, [name]: value });
+    const { name, value } = e.target || e.currentTarget;
+    if (name) {
+      setFormValues({ ...formValues, [name]: value });
+    }
   };
 
-  const handleCheckboxChange = (e) => {
-    const { name, checked } = e.target;
-    setFormValues((prevFormValues) => ({
-      ...prevFormValues,
-      [name]: checked,
-    }));
+  const handleFormaPagamentoChange = (event, newValue) => {
+    if (newValue) {
+      setIdFormaPagamento(newValue.idFormaDePagamento);
+    } else {
+      setIdFormaPagamento(0);
+    }
   };
 
   const handleCancel = () => {
@@ -162,24 +192,113 @@ export default function RentalInfoPage() {
     const codigoAsInteger = parseInt(formValues.codigo, 10);
     const formatedDataSaida = formatInputDate(formValues.dataSaida);
     const formatedDataDevolucao = formatInputDate(formValues.dataDevolucao);
+    const formatedDataEmissao = formatInputDate(formValues.dataEmissao);
 
     const requestData = {
       ...formValues,
       codigo: codigoAsInteger,
       dataSaida: formatedDataSaida,
       dataDevolucao: formatedDataDevolucao,
+      dataEmissao: formatedDataEmissao
     };
 
+    if (novosPagamentos.length > 0) {
+      try {
+        const responseArray = await Promise.all(novosPagamentos.map(async (pagamento) => {
+          return axios.post(BACKEND_URL + 'pagamento', pagamento);
+        }));
+
+        responseArray.forEach((response, index) => {
+          console.log(`Pagamento ${index + 1} atualizado com sucesso:`, response.data);
+        });
+      } catch (error) {
+        console.error('Erro ao salvar os pagamentos:', error);
+      }
+    };
     try {
-      const response = await axios.post(BACKEND_URL + 'aluguel', requestData);
-      const aluguelId = response.data.idAluguel
-      navigate(`/aluguel/detalhes/${aluguelId}`);
+      const responseArray = await Promise.all(formValues.listaProdutos.map(async (produtos) => {
+        const aluguelProduto = {codigoProduto: produtos.produtoDTO.codigo, codigoAluguel: formValues.codigo, status: produtos.status}
+        return axios.put(BACKEND_URL + 'aluguel/update-status', aluguelProduto);
+      }));
+
+      responseArray.forEach((response, index) => {
+        console.log(`Produto aluguel status ${index + 1} atualizado com sucesso:`, response.data);
+      });
+    } catch (error) {
+      console.error('Erro ao salvar os Produto aluguel status:', error);
+    }
+    try {
+      const response = await axios.put(BACKEND_URL + `aluguel/${codigoAsInteger}`, requestData);
+      console.log('Aluguel atualizado com sucesso:', response.data);
     } catch (error) {
       console.error('Erro ao salvar o aluguel:', error);
     }
+  }
+
+  const showSnackbar = (message, severity) => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
+    setSnackbarOpen(true);
   };
 
-  const { codigo } = useParams();
+  const handleOpenAddValorAdicionalDialog = () => {
+    setAddValueDialogOpen(true);
+  };
+
+  const handleCloseAddValueDialog = () => {
+    setAddValueDialogOpen(false);
+  };
+
+  const handleOpenAddPagamentoDialog = () => {
+    setValorPagamento(0);
+    setIdFormaPagamento(0);
+    setAddNewPaymentOpen(true);
+  };
+
+  const handleCloseAddPagamentoDialog = () => {
+    setAddNewPaymentOpen(false);
+  };
+
+  const addNewPayment = () => {
+    if (idFormaPagamento > 0 && valorPagamento > 0) {
+      setFormValues((formValues) => ({
+        ...formValues,
+        listaPagamentos: [
+          ...formValues.listaPagamentos,
+          {
+            codigoAluguel: formValues.codigo,
+            idFormaPagamento: idFormaPagamento,
+            valor: valorPagamento,
+          },
+        ],
+      }));
+      novosPagamentos.push(
+        {
+          codigoAluguel: formValues.codigo,
+          idFormaPagamento: idFormaPagamento,
+          valor: valorPagamento,
+        }
+      )
+      handleCloseAddPagamentoDialog();
+    } else {
+    }
+  };
+
+  const calculateAllValues = () => {
+    const array = Object.values(formValues.listaPagamentos);
+    const pagamentos = array.reduce((total, pagamento) => total + pagamento.valor, 0);
+    setFormValues((formValues) => ({
+      ...formValues,
+      valorPago: pagamentos,
+      valor: formValues.valorOriginal + formValues.valorAdicional,
+      total: formValues.valorOriginal + formValues.valorAdicional - pagamentos,
+    }));
+
+  }
+
+  useEffect(() => {
+    calculateAllValues();
+  }, [formValues.listaPagamentos, formValues.valorAdicional]);
 
   useEffect(() => {
     const codigoRental = codigo;
@@ -189,22 +308,26 @@ export default function RentalInfoPage() {
         const rentalDetails = response.data;
         setCliente(rentalDetails.clienteDTO)
         setFuncionario(rentalDetails.funcionarioDTO)
+
+        const array = Object.values(rentalDetails.listaPagamentos);
+        const pagamentos = array.reduce((total, pagamento) => total + pagamento.valor, 0);
         setFormValues({
           ...rentalDetails,
           cliente: cliente.codigo,
           funcionario: funcionario.codigo,
           patrocinio: rentalDetails.patrocinio == 'S' ? true : false,
           utilizarCredito: rentalDetails.utilizarCredito == 'S' ? true : false,
+          dataDevolucao: formatOutputDate(rentalDetails.dataDevolucao),
+          dataEmissao: formatOutputDate(rentalDetails.dataEmissao),
+          dataSaida: formatOutputDate(rentalDetails.dataSaida),
+          valorOriginal: rentalDetails.valor
         });
-        console.log(formValues)
       })
       .catch((error) => {
         setError(error);
       });
     fetchData();
-    fetchEmployees()
   }, [codigo]);
-
 
   return (
     <>
@@ -248,7 +371,6 @@ export default function RentalInfoPage() {
                   fullWidth
                   style={estiloCampo}
                   value={formValues.codigo}
-                  onChange={handleFieldChange}
                   sx={{
                     backgroundColor: '#fff'
                   }}
@@ -258,7 +380,7 @@ export default function RentalInfoPage() {
                 />
                 <TextField
                   fullWidth
-                  value={formValues.cliente}
+                  value={cliente.codigo + " - " + cliente.nome}
                   style={estiloCampo}
                   label="Cliente"
                   variant="filled"
@@ -267,117 +389,147 @@ export default function RentalInfoPage() {
                     borderRadius: '5px 5px 0 0',
                     backgroundColor: '#fff'
                   }}
-                />
-                <Autocomplete
-                  options={funcionarios}
-                  getOptionLabel={(option) => option}
-                  value={formValues.funcionario}
-                  onChange={(event, newValue) => {
-                    setFormValues({ ...formValues, funcionario: newValue });
+                  inputProps={{
+                    readOnly: true,
                   }}
+                />
+                <TextField
                   fullWidth
+                  value={funcionario.codigo + " - " + funcionario.nome}
                   style={estiloCampo}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Funcionário"
-                      variant="filled"
-                      required
-                      sx={{
-                        borderRadius: '5px 5px 0 0',
-                        backgroundColor: '#fff'
-                      }}
-                    />
-                  )}
+                  label="Funcionário"
+                  variant="filled"
+                  required
+                  sx={{
+                    borderRadius: '5px 5px 0 0',
+                    backgroundColor: '#fff'
+                  }}
+                  inputProps={{
+                    readOnly: true,
+                  }}
                 />
 
                 <Grid item xs={12} sm={12} style={{ display: 'flex', width: '90%', alignItems: 'center', margin: '8px' }}>
-                  <ProductTable
-                    products={formValues.listaProdutos}
-                    selectedProducts={selectedProducts}
-                    onProductSelect={(selectedProducts) => setSelectedProducts(selectedProducts)}
-                  />
+                  <div style={{ width: '100%' }}>
+                    <TableContainer component={Paper} style={{ maxHeight: '220px', overflowY: 'auto' }}>
+                      <Table>
+                        <TableHead>
+                          <TableRow>
+                            <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>Codigo</TableCell>
+                            <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>Nome</TableCell>
+                            <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>Valor</TableCell>
+                            <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>Status</TableCell>
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {formValues.listaProdutos.map((row, index) => (
+                            <TableRow
+                              key={row.produtoDTO.codigo}
+                              hover
+                              style={{ background: row.status === 'ALUGADO' ? '#c6f68d' : row.status === 'CANCELADO' ? '#ffc8b9' : '#fddeb1' }}
+                              onClick={() => setSelectedRow(index)}
+                            >
+                              <TableCell>{row.produtoDTO.codigo}</TableCell>
+                              <TableCell>{row.produtoDTO.nome}</TableCell>
+                              <TableCell>{row.produtoDTO.valor}</TableCell>
+                              <TableCell>
+                                <Select
+                                  value={row.status}
+                                  onChange={handleStatusChange}
+                                >
+                                  <MenuItem value="ALUGADO">ALUGADO</MenuItem>
+                                  <MenuItem value="CANCELADO">CANCELADO</MenuItem>
+                                  <MenuItem value="DEVOLVIDO">DEVOLVIDO</MenuItem>
+                                </Select>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+                  </div>
                 </Grid>
-
-                <Grid container className='grid-utilizarCredito' alignItems="center">
-                  <Grid style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                    <Checkbox
-                      name="patrocinio"
-                      checked={formValues.patrocinio}
-                      onChange={handleCheckboxChange}
-                      style={estiloCheckbox}
-                    />
-                    <span>Aluguel patrocinado</span>
-                  </Grid>
-                </Grid>
+                <TextField
+                  name="observacoes"
+                  label="Observações"
+                  variant="filled"
+                  multiline
+                  rows={2}
+                  fullWidth
+                  style={estiloCampo}
+                  value={formValues.observacoes || ''}
+                  onChange={handleFieldChange}
+                  sx={{
+                    backgroundColor: '#fff'
+                  }}
+                />
 
               </Grid>
 
               <Grid item className='grid-direita' xs={12} sm={6} flexDirection="column" sx={{ alignItems: 'center' }}>
 
                 <Grid className='grid-datas' item xs={12} sm={12} style={{ display: 'flex', width: '93%', alignItems: 'center' }}>
-                  <Grid container>
-                    <Grid item xs={6}>
-                      <InputMask
-                        mask="99-99-9999"
-                        value={formValues.dataSaida}
-                        onChange={handleFieldChange}
-                      >
-                        {() => (
-                          <TextField
-                            name="dataSaida"
-                            label="Data Saída"
-                            variant="filled"
-                            fullWidth
-                            style={estiloCampo}
-                            sx={{
-                              backgroundColor: '#fff',
-                            }}
-                          />
-                        )}
-                      </InputMask>
-                    </Grid>
-                    <Grid item xs={6} style={{ textAlign: 'right' }}>
-                      <InputMask
-                        mask="99-99-9999"
-                        value={formValues.dataDevolucao}
-                        onChange={handleFieldChange}
-                      >
-                        {() => (
-                          <TextField
-                            name="dataDevolucao"
-                            label="Data Devolução"
-                            variant="filled"
-                            fullWidth
-                            style={estiloCampo}
-                            sx={{
-                              backgroundColor: '#fff'
-                            }}
-                          />
-                        )}
-                      </InputMask>
-                    </Grid>
+                  <Grid item xs={4}>
+                    <InputMask
+                      mask="99-99-9999"
+                      value={formValues.dataSaida}
+                      onChange={handleFieldChange}
+                    >
+                      {() => (
+                        <TextField
+                          name="dataSaida"
+                          label="Data Saída"
+                          variant="filled"
+                          fullWidth
+                          style={estiloCampo}
+                          sx={{
+                            backgroundColor: '#fff',
+                          }}
+                        />
+                      )}
+                    </InputMask>
+                  </Grid>
+                  <Grid item xs={4} style={{ textAlign: 'right' }}>
+                    <InputMask
+                      mask="99-99-9999"
+                      value={formValues.dataDevolucao}
+                      onChange={handleFieldChange}
+                    >
+                      {() => (
+                        <TextField
+                          name="dataDevolucao"
+                          label="Data Devolução"
+                          variant="filled"
+                          fullWidth
+                          style={estiloCampo}
+                          sx={{
+                            backgroundColor: '#fff'
+                          }}
+                        />
+                      )}
+                    </InputMask>
+                  </Grid>
+                  <Grid item xs={4} style={{ textAlign: 'right' }}>
+                    <InputMask
+                      mask="99-99-9999"
+                      value={formValues.dataEmissao}
+                      onChange={handleFieldChange}
+                    >
+                      {() => (
+                        <TextField
+                          name="dataEmissao"
+                          label="Data Contrato"
+                          variant="filled"
+                          fullWidth
+                          style={estiloCampo}
+                          sx={{
+                            backgroundColor: '#fff',
+                          }}
+                        />
+                      )}
+                    </InputMask>
                   </Grid>
                 </Grid>
-
-                <InputMask
-                  mask="99-99-9999"
-                  value={formValues.dataContrato}
-                  onChange={handleFieldChange}
-                >
-                  {() => (
-                    <TextField
-                      name="dataContrato"
-                      label="Data Contrato"
-                      variant="filled"
-                      fullWidth
-                      style={estiloCampo}
-                      sx={{
-                        backgroundColor: '#fff',
-                      }}
-                    />
-                  )}
-                </InputMask>
 
                 <Grid className='grid-valor' item xs={12} sm={12} style={{ display: 'flex', width: '93%', alignItems: 'center' }}>
                   <Grid container>
@@ -396,9 +548,18 @@ export default function RentalInfoPage() {
                         fullWidth
                         style={estiloCampo}
                         value={formValues.valor}
-                        onValueChange={handleFieldChange}
                         sx={{
-                          backgroundColor: '#fff'
+                          backgroundColor: '#effbee'
+                        }}
+                        InputProps={{
+                          readOnly: true,
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              <IconButton>
+                                <AddIcon onClick={handleOpenAddValorAdicionalDialog} />
+                              </IconButton>
+                            </InputAdornment>
+                          ),
                         }}
                       />
                     </Grid>
@@ -417,46 +578,24 @@ export default function RentalInfoPage() {
                         fullWidth
                         style={estiloCampo}
                         value={formValues.valorPago}
-                        onValueChange={handleFieldChange}
+                        onValueChange={(values) => {
+                          handleFieldChange({ target: { name: 'valorPago', value: values.floatValue } });
+                        }}
                         sx={{
-                          backgroundColor: '#fff'
+                          backgroundColor: formValues.valorPago < formValues.valor ? '#f6f6c1' : '#effbee'
+                        }}
+                        InputProps={{
+                          readOnly: true,
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              <IconButton>
+                                <AddIcon onClick={handleOpenAddPagamentoDialog} />
+                              </IconButton>
+                            </InputAdornment>
+                          ),
                         }}
                       />
                     </Grid>
-                  </Grid>
-                </Grid>
-
-                <Grid container className='grid-utilizarCredito' alignItems="center" style={{ display: 'flex', width: '93%' }}>
-                  <Grid item xs={12} sm={6}>
-                    <NumericFormat
-                      name="creditoValor"
-                      variant='filled'
-                      customInput={TextField}
-                      thousandSeparator="."
-                      decimalSeparator=","
-                      prefix="R$ "
-                      label="Valor de Crédito"
-                      allowNegative={false}
-                      decimalScale={2}
-                      fixedDecimalScale={true}
-                      fullWidth
-                      style={estiloCampo}
-                      value={formValues.creditoValor}
-                      onValueChange={handleFieldChange}
-                      sx={{
-                        backgroundColor: '#fff'
-                      }}
-                      disabled={!formValues.utilizarCredito}
-                    />
-                  </Grid>
-                  <Grid style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                    <Checkbox
-                      name="utilizarCredito"
-                      checked={formValues.utilizarCredito}
-                      onChange={handleCheckboxChange}
-                      style={estiloCheckbox}
-                    />
-                    <span>Utilizar Crédito</span>
                   </Grid>
                 </Grid>
 
@@ -474,16 +613,18 @@ export default function RentalInfoPage() {
                   fullWidth
                   style={estiloCampo}
                   value={formValues.total}
-                  onValueChange={handleFieldChange}
                   sx={{
-                    backgroundColor: '#fff'
+                    backgroundColor: formValues.total > 0 ? '#f6f6c1' : '#effbee'
+                  }}
+                  inputProps={{
+                    readOnly: true,
                   }}
                 />
               </Grid>
 
             </Grid>
 
-            <Grid className="botoes-cadastro-cliente" item xs={12} sm={6} style={{ display: 'flex', justifyContent: 'end' }}>
+            <Grid className="botoes-cadastro-cliente" item xs={12} sm={6} style={{ display: 'flex', justifyContent: 'end', marginTop: '16px' }}>
               <Button
                 type="submit"
                 variant="contained"
@@ -504,6 +645,107 @@ export default function RentalInfoPage() {
           </form>
         </Container>
       </Container >
+      <Dialog open={isAddValueDialogOpen} onClose={handleCloseAddValueDialog}>
+        <DialogTitle>Adicionar Valor Adicional</DialogTitle>
+        <DialogContent>
+          <NumericFormat
+            name="valorAdicional"
+            variant='filled'
+            customInput={TextField}
+            thousandSeparator="."
+            decimalSeparator=","
+            prefix="R$ "
+            label="Valor adicional"
+            allowNegative={false}
+            decimalScale={2}
+            fixedDecimalScale={true}
+            fullWidth
+            style={estiloCampo}
+            onValueChange={(values) => {
+              handleValorAdicionalFieldChange(values.floatValue);
+            }}
+            sx={{
+              backgroundColor: '#fff'
+            }}
+          />
+          <Button
+            onClick={() => {
+              addValor();
+              handleCloseAddValueDialog();
+            }}
+            style={{
+              marginTop: '10px',
+              backgroundColor: '#1976D2',
+              color: '#fff',
+              width: '90px',
+              height: '36px',
+              marginRight: '8px',
+              transition: 'background-color 0.3s',
+              '&:hover': {
+                backgroundColor: '#1565C0',
+              },
+              '&:active': {
+                backgroundColor: '#0D47A1',
+              },
+            }}
+          >
+            Adicionar
+          </Button>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={isAddNewPaymentDialogOpen} onClose={handleCloseAddPagamentoDialog}>
+        <DialogTitle>Novo Pagamento</DialogTitle>
+        <DialogContent>
+          <Autocomplete
+            options={formasPagamento}
+            getOptionLabel={(option) => option.idFormaDePagamento + ' - ' + option.nome}
+            style={estiloCampo}
+            onChange={handleFormaPagamentoChange}
+            isOptionEqualToValue={(option, value) => option.idFormaDePagamento === value.idFormaDePagamento}
+            fullWidth
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Forma de pagamento"
+                variant="filled"
+                sx={{
+                  borderRadius: '5px 5px 0 0',
+                  backgroundColor: '#fff',
+                }}
+              />
+            )}
+          />
+          <NumericFormat
+            name="valor"
+            variant='filled'
+            customInput={TextField}
+            thousandSeparator="."
+            decimalSeparator=","
+            prefix="R$ "
+            label="Total"
+            allowNegative={false}
+            decimalScale={2}
+            fixedDecimalScale={true}
+            fullWidth
+            style={estiloCampo}
+            value={valorPagamento}
+            sx={{
+              backgroundColor: '#effbee'
+            }}
+            onValueChange={(values) => {
+              handlePagamentoFieldChange(values.floatValue);
+            }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseAddPagamentoDialog} color="primary">
+            Cancelar
+          </Button>
+          <Button onClick={addNewPayment} color="primary">
+            Adicionar
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }

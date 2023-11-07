@@ -12,16 +12,29 @@ const StyledProductImg = styled('img')({
   position: 'absolute',
 });
 
-ShopProductCard.propTypes = {
+const ProductCard = styled(Card)(({ theme }) => ({
+  backgroundColor: '#DDDD', // Define o fundo branco
+  border: '1px solid #ddd', // Adiciona uma borda
+  boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)', // Adiciona uma sombra
+  borderRadius: '8px', // Arredonda as bordas
+  overflow: 'hidden', // Garante que o conteúdo não derrame
+  transition: 'transform 0.2s', // Adiciona uma animação de transformação
+
+  '&:hover': {
+    transform: 'scale(1.02)', // Escala um pouco ao passar o mouse
+  },
+}));
+
+ProductCard.propTypes = {
   product: PropTypes.object,
 };
 
 export default function ShopProductCard({ product }) {
-  const { id, imagem, nome, tamanho, cor, preco } = product;
+  const { codigo, imagens, nome, tamanho, cor, valor } = product;
 
   return (
-    <Link href={`/product/${id}`} style={{ textDecoration: 'none' }}>
-      <Card>
+    <Link style={{ textDecoration: 'none' }}>
+      <ProductCard>
         <Box sx={{ pt: '100%', position: 'relative' }}>
           {nome && (
             <Label
@@ -37,7 +50,7 @@ export default function ShopProductCard({ product }) {
               {nome}
             </Label>
           )}
-          <StyledProductImg alt={nome} src={imagem} />
+          <StyledProductImg alt={nome} src={imagens[0].caminhoImagem} />
         </Box>
 
         <Stack sx={{ p: 2 }}>
@@ -55,10 +68,10 @@ export default function ShopProductCard({ product }) {
               Cor: {cor}
             </Typography>
             <br />
-            {fCurrency(preco)}
+            {fCurrency(valor)}
           </Typography>
         </Stack>
-      </Card>
+      </ProductCard>
     </Link>
   );
 }
