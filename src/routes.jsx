@@ -202,9 +202,9 @@ export default function Router() {
           element: <ReportRentalPage />
         },
         {
-          path: '/aluguel/relatorio/:codigo',
+          path: '/aluguel/relatorio/:dataInicial/:dataFinal/:codigoCategoria/:status',
           element: <ReportInfoRentalPage />
-        },
+        }
       ]
     },
     {

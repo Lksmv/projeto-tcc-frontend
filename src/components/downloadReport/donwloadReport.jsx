@@ -2,7 +2,8 @@ import React from 'react';
 import axios from 'axios';
 import { Button } from '@mui/material';
 
-function ReportDownloadButton({ url }) {
+function ReportDownloadButton({ url, nomeArquivo, params }) {
+
     const imprimirButtonStyle = {
         fontFamily: 'Roboto, sans-serif',
         borderRadius: '4px',
@@ -24,16 +25,28 @@ function ReportDownloadButton({ url }) {
     };
 
     const downloadReport = () => {
-        axios({
-            url: url,
-            method: 'GET',
-            responseType: 'blob',
-        })
+        let request = {};
+        if (params) {
+            request = {
+                url: url,
+                method: 'GET',
+                responseType: 'blob',
+                params: params
+            }
+        } else {
+            request = {
+                url: url,
+                method: 'GET',
+                responseType: 'blob',
+            }
+        }
+        axios(request)
             .then((response) => {
+                console.log(response);
                 const url = window.URL.createObjectURL(new Blob([response.data]));
                 const link = document.createElement('a');
                 link.href = url;
-                link.setAttribute('download', 'relatorio.docx');
+                link.setAttribute('download', nomeArquivo);
                 document.body.appendChild(link);
                 link.click();
             })

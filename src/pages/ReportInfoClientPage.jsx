@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import mammoth from 'mammoth';
-import { saveAs } from 'file-saver';
 import { useNavigate } from 'react-router-dom';
 import { useParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
@@ -18,7 +16,6 @@ import {
   TableContainer,
   Paper,
   TableHead,
-  Button,
   Grid
 } from '@mui/material';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
@@ -27,23 +24,21 @@ import ReportDownloadButton from '../components/downloadReport/donwloadReport';
 
 export default function ReportInfoClientPage() {
   const [aluguelList, setAluguelList] = useState([]);
+  const [cliente, setCliente] = useState({})
   const { codigo } = useParams();
   const navigate = useNavigate();
 
-
-  const buttonStyle = {
-    fontFamily: 'Roboto, sans-serif',
-    borderRadius: '4px',
-    boxSizing: 'border-box',
-    textTransform: 'none',
-  };
-  
   useEffect(() => {
     console.log('Código do cliente:', codigo);
     axios
       .get(BACKEND_URL + `aluguel/por-cliente/${codigo}`)
       .then((response) => {
         setAluguelList(response.data)
+      })
+    axios
+      .get(BACKEND_URL + `cliente/${codigo}`)
+      .then((response) => {
+        setCliente(response.data)
       })
   }, [codigo]);
 
@@ -54,10 +49,10 @@ export default function ReportInfoClientPage() {
       <Helmet>
         <title>Relatório Cliente</title>
       </Helmet>
-      <Container maxWidth="xl" sx={{ marginBottom: "30px" }}>
+      <Container maxWidth="xl" sx={{ marginBottom: "30px", marginTop: '30px' }}>
         <Container maxWidth="100%" style={{ alignContent: 'left' }}>
           <Typography variant="h4" color="text.primary" sx={{ mb: 1 }}>
-            Relatório Cliente
+            Relatório do Cliente com Código: {codigo}
           </Typography>
           <Grid container >
             <Grid item xs={6}>
@@ -65,11 +60,14 @@ export default function ReportInfoClientPage() {
                 <Link color="inherit" href="/dashboard">
                   Dashboard
                 </Link>
-                <Typography variant="subtitle1" color="text.primary">Relatório Cliente</Typography>
+                <Link color="inherit" href="/cliente/relatorio">
+                  Relatório de aluguel por cliente
+                </Link>
+                <Typography variant="subtitle1" color="text.primary">{cliente.nome}</Typography>
               </Breadcrumbs>
             </Grid>
             <Grid item xs={6} style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-              <ReportDownloadButton url={BACKEND_URL + `aluguel/relatorio/${codigo}/download`} />
+              <ReportDownloadButton nomeArquivo={"relatorioClienteCod" + codigo + ".docx"} url={BACKEND_URL + `aluguel/relatorio-por-cliente/${codigo}/download`} />
             </Grid>
           </Grid>
         </Container>
@@ -95,7 +93,7 @@ export default function ReportInfoClientPage() {
                     key={row.codigo}
                     style={{ cursor: 'pointer', background: row.statusAluguel === 'FECHADO' ? '#c6f68d' : row.status === 'CANCELADO' ? '#ffc8b9' : '#fddeb1' }}
                     onClick={() => {
-                      navigate(`/aluguel/detalhes/${codigo}`);
+                      navigate(`/aluguel/detalhes/${row.codigo}`);
                     }}
                   >
                     <TableCell>{row.codigo}</TableCell>

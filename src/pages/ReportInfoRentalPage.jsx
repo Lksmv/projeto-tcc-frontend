@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
+import { formatOutputDate, formatInputDate } from '../utils/formatTime';
 import {
     Table,
     TableRow,
@@ -13,81 +16,43 @@ import {
     TableContainer,
     Paper,
     TableHead,
-    Button,
     Grid
 } from '@mui/material';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import { BACKEND_URL } from '../utils/backEndUrl';
+import ReportDownloadButton from '../components/downloadReport/donwloadReport';
 
 export default function ReportInfoProductPage() {
 
-    const buttonStyle = {
-        fontFamily: 'Roboto, sans-serif',
-        borderRadius: '4px',
-        boxSizing: 'border-box',
-        textTransform: 'none',
-    };
-
-    const imprimirButtonStyle = {
-        ...buttonStyle,
-        marginTop: '-25px',
-        backgroundColor: '#808080',
-        color: '#fff',
-        width: '90px',
-        height: '36px',
-        marginRight: '8px',
-        transition: 'background-color 0.3s',
-        '&:hover': {
-            backgroundColor: '#1565C0',
-        },
-        '&:active': {
-            backgroundColor: '#0D47A1',
-        },
-    };
-
-    const [clientList, setClientList] = useState([]);
-    const [totalItems, setTotalItems] = useState(0);
-
-    const [rows, setRows] = useState([
-        { codigo: 1, cliente: '1 - Luis', produtos: '1 - Vestido, 1 - Terno', dataRetirada: '1', dataDevolucao: '', status: 'Aberto' },
-        { codigo: 2, cliente: '2 - Luis', produtos: '2 - Vestido, 2 - Terno', dataRetirada: '1', dataDevolucao: '', status: 'Aberto' },
-        { codigo: 3, cliente: '3 - Luis', produtos: '3 - Vestido, 3 - Terno', dataRetirada: '1', dataDevolucao: '', status: 'Aberto' },
-        { codigo: 4, cliente: '4 - Luis', produtos: '4 - Vestido, 4 - Terno', dataRetirada: '1', dataDevolucao: '', status: 'Aberto' },
-        { codigo: 5, cliente: '5 - Luis', produtos: '5 - Vestido, 5 - Terno', dataRetirada: '1', dataDevolucao: '', status: 'Aberto' },
-        { codigo: 6, cliente: '6 - Luis', produtos: '6 - Vestido, 6 - Terno', dataRetirada: '1', dataDevolucao: '', status: 'Aberto' },
-    ]);
-
-    const fetchClientList = async () => {
-        try {
-            const response = await axios.get(BACKEND_URL + 'cliente', {
-                params: {
-                    size: rows,
-                },
-            });
-            setClientList(response.data.content);
-            setTotalItems(response.data.totalElements);
-        } catch (error) {
-            console.error('Erro ao buscar a lista de clientes:', error);
-        }
-    };
+    const [aluguelList, setAluguelList] = useState([]);
+    const { dataInicial, dataFinal, codigoCategoria, status } = useParams();
+    const navigate = useNavigate();
 
     useEffect(() => {
-    }, [rows]);
+        const content = {
+            dataInicial: dataInicial,
+            dataFinal: dataFinal,
+            categoria: codigoCategoria == 0 ? 0 : codigoCategoria,
+            status: status === '0' ? "" : status,
+        };
 
-    const handlePrint = () => {
-        // Handle the print action here, for example, by opening the print dialog.
-        window.print();
-    };
+        axios
+            .get(BACKEND_URL + `aluguel/por-data`, { params: content })
+            .then((response) => {
+                setAluguelList(response.data);
+            })
+    }, [dataInicial, dataFinal, codigoCategoria, status]);
+
 
     return (
         <>
             <Helmet>
-                <title>Relatório Produto</title>
+                <title>Relatório Aluguel</title>
             </Helmet>
-            <Container maxWidth="xl" sx={{ marginBottom: "30px" }}>
+            <Container maxWidth="xl" sx={{ marginBottom: "30px", marginTop: '30px' }}>
                 <Container maxWidth="100%" style={{ alignContent: 'left' }}>
                     <Typography variant="h4" color="text.primary" sx={{ mb: 1 }}>
-                        Relatório Produto
+                        Relatório de alugueis de {formatOutputDate(dataInicial)} até {formatOutputDate(dataFinal)}
                     </Typography>
                     <Grid container >
                         <Grid item xs={6}>
@@ -95,11 +60,21 @@ export default function ReportInfoProductPage() {
                                 <Link color="inherit" href="/dashboard">
                                     Dashboard
                                 </Link>
-                                <Typography variant="subtitle1" color="text.primary">Relatório Produto</Typography>
+                                <Link color="inherit" href="/aluguel/relatorio">
+                                    Relatório de alugueis
+                                </Link>
+                                <Typography variant="subtitle1" color="text.primary">
+                                    Relatório de alugueis de {formatOutputDate(dataInicial)} até {formatOutputDate(dataFinal)}
+                                </Typography>
                             </Breadcrumbs>
                         </Grid>
                         <Grid item xs={6} style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-                            <Button variant="filled" onClick={handlePrint} style={imprimirButtonStyle}>Imprimir</Button>
+                            <ReportDownloadButton nomeArquivo={"relatorioAluguel.docx"} url={BACKEND_URL + `aluguel/relatorio-por-data/download`} params={{
+                                dataInicial: dataInicial,
+                                dataFinal: dataFinal,
+                                categoria: codigoCategoria == 0 ? 0 : codigoCategoria,
+                                status: status === '0' ? "" : status,
+                            }} />
                         </Grid>
                     </Grid>
                 </Container>
@@ -109,23 +84,39 @@ export default function ReportInfoProductPage() {
                         <Table>
                             <TableHead>
                                 <TableRow>
-                                    <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>Código</TableCell>
-                                    <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>Cliente</TableCell>
-                                    <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>Produtos</TableCell>
-                                    <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>Data Retirada</TableCell>
+                                    <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>Código Aluguel</TableCell>
+                                    <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>Nome Cliente</TableCell>
+                                    <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>valor</TableCell>
+                                    <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>Aluguel Status</TableCell>
                                     <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>Data Devolução</TableCell>
-                                    <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>Status</TableCell>
+                                    <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>Data Retirada</TableCell>
+                                    <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>Produtos</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {rows.map((row) => (
-                                    <TableRow key={row.codigo}>
+                                {aluguelList && aluguelList.map((row) => (
+                                    <TableRow
+                                        key={row.codigo}
+                                        style={{ cursor: 'pointer', background: row.statusAluguel === 'FECHADO' ? '#c6f68d' : row.status === 'CANCELADO' ? '#ffc8b9' : '#fddeb1' }}
+                                        onClick={() => {
+                                            navigate(`/aluguel/detalhes/${row.codigo}`);
+                                        }}
+                                    >
                                         <TableCell>{row.codigo}</TableCell>
-                                        <TableCell>{row.cliente}</TableCell>
-                                        <TableCell>{row.produtos}</TableCell>
-                                        <TableCell>{row.dataRetirada}</TableCell>
-                                        <TableCell>{row.dataDevolucao}</TableCell>
-                                        <TableCell>{row.status}</TableCell>
+                                        <TableCell>{row.clienteDTO.nome}</TableCell>
+                                        <TableCell>{'R$ ' + row.valor}</TableCell>
+                                        <TableCell>{row.statusAluguel}</TableCell>
+                                        <TableCell>{formatOutputDate(row.dataDevolucao)}</TableCell>
+                                        <TableCell>{formatOutputDate(row.dataSaida)}</TableCell>
+                                        <TableCell>
+                                            {row.listaProdutos.map((produto, index) => (
+                                                <span key={produto.produtoDTO.codigo}>
+                                                    {produto.produtoDTO.nome}
+                                                    {index < row.listaProdutos.length - 1 ? ', ' : ''}
+                                                </span>
+                                            ))}
+                                        </TableCell>
+
                                     </TableRow>
                                 ))}
                             </TableBody>
