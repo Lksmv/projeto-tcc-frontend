@@ -276,23 +276,21 @@ export default function RentalCreatePage() {
 
     try {
       const response = await axios.post(BACKEND_URL + 'aluguel', requestData);
-      const codigo = response.data.codigo
-      console.log(formValues)
+      const codigo = response.data.codigo;
       showSnackbar('Aluguel criado com sucesso', 'success');
       navigate(`/aluguel/detalhes/${codigo}`);
     } catch (error) {
       if (error.response) {
-        setSnackbarMessage(error.response.data.errors[0]);
-        console.log(error)
+        const errorMessage = error.response.data.message;
+        showSnackbar(`${errorMessage}`, 'error');
       } else if (error.request) {
-        setSnackbarMessage('Erro de requisição: ' + error.request);
+        showSnackbar(`Erro de requisição: ${error.request}`, 'error');
       } else {
-        setSnackbarMessage('Erro ao salvar o Aluguel: ' + error.message);
+        showSnackbar(`Erro ao salvar o Aluguel: ${error.message}`, 'error');
       }
-      setSnackbarSeverity('error');
-      setSnackbarOpen(true);
     }
   };
+
 
   const handleClienteChange = (event, newValue) => {
     if (newValue) {

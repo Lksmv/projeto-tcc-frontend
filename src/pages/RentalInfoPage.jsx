@@ -2,6 +2,7 @@ import { Helmet } from 'react-helmet-async';
 import React, { useCallback, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useParams } from 'react-router-dom';
+import ReportDownloadButton from '../components/downloadReport/donwloadReport';
 import {
   Container,
   Typography,
@@ -335,19 +336,26 @@ export default function RentalInfoPage() {
         <title>Cadastro de aluguel</title>
       </Helmet>
       <Container>
-        <Container maxWidth="lg" style={{ paddingLeft: '20px', paddingRight: '20px' }}>
+      <Container maxWidth="100%" style={{ alignContent: 'left' }}>
           <Typography variant="h4" color="text.primary" sx={{ mb: 1 }}>
-            Cadastro de aluguel
+          Informações do aluguel com Código: {codigo}
           </Typography>
-          <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />} aria-label="breadcrumb" sx={{ mb: 2 }}>
-            <Link color="inherit" href="/dashboard">
-              Dashboard
-            </Link>
-            <Link color="inherit" href="/aluguel">
-              Aluguel
-            </Link>
-            <Typography variant="subtitle1" color="text.primary">Novo Aluguel</Typography>
-          </Breadcrumbs>
+          <Grid container >
+            <Grid item xs={6}>
+              <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />} aria-label="breadcrumb" sx={{ mb: 2 }}>
+                <Link color="inherit" href="/dashboard">
+                  Dashboard
+                </Link>
+                <Link color="inherit" href="/aluguel">
+                  Aluguel
+                </Link>
+                <Typography variant="subtitle1" color="text.primary">{cliente.nome}</Typography>
+              </Breadcrumbs>
+            </Grid>
+            <Grid item xs={6} style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+              <ReportDownloadButton nomeArquivo={"relatorioClienteCod" + codigo + ".docx"} txt={'Baixar Contrato'} url={BACKEND_URL + `aluguel/contrato/${codigo}`} />
+            </Grid>
+          </Grid>
         </Container>
         <Container style={{
           backgroundColor: '#c4c4c4',

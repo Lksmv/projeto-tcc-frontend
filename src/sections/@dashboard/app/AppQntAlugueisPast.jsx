@@ -1,14 +1,9 @@
 import PropTypes from 'prop-types';
 import ReactApexChart from 'react-apexcharts';
-// @mui
 import { useTheme, styled } from '@mui/material/styles';
 import { Card, CardHeader } from '@mui/material';
-// utils
 import { fNumber } from '../../../utils/formatNumber';
-// components
 import { useChart } from '../../../components/chart';
-
-// ----------------------------------------------------------------------
 
 const CHART_HEIGHT = 372;
 const LEGEND_HEIGHT = 72;
@@ -29,16 +24,15 @@ const StyledChartWrapper = styled('div')(({ theme }) => ({
   },
 }));
 
-// ----------------------------------------------------------------------
 
-AppCurrentVisits.propTypes = {
+AppQntAlugueisPast.propTypes = {
   title: PropTypes.string,
   subheader: PropTypes.string,
   chartColors: PropTypes.arrayOf(PropTypes.string),
   chartData: PropTypes.array,
 };
 
-export default function AppCurrentVisits({ title, subheader, chartColors, chartData, ...other }) {
+export default function AppQntAlugueisPast({ title, subheader, chartColors, chartData, ...other }) {
   const theme = useTheme();
 
   const chartLabels = chartData.map((i) => i.label);
@@ -68,7 +62,6 @@ export default function AppCurrentVisits({ title, subheader, chartColors, chartD
   return (
     <Card {...other}>
       <CardHeader title={title} subheader={subheader} />
-
       <StyledChartWrapper dir="ltr">
         <ReactApexChart type="pie" series={chartSeries} options={chartOptions} height={280} />
       </StyledChartWrapper>

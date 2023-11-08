@@ -9,7 +9,6 @@ import Footer from '../../components/footer'
 const StyledRoot = styled('div')({
   display: 'flex',
   flexDirection: 'column',
-  minHeight: '100vh',
   overflow: 'hidden',
   backgroundColor: '#fff',
 });

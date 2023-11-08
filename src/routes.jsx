@@ -251,7 +251,7 @@ export default function Router() {
       ],
     },
     {
-      path: '/catalogo/:genero?',
+      path: '/catalogo/:param?',
       element: (
         <CatalogoLayout catalogo={true} >
         </CatalogoLayout>),

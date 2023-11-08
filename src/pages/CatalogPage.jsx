@@ -12,25 +12,34 @@ import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import '../utils/CatalogPage.css';
 
 export default function CatalogPage() {
-  const { genero } = useParams();
+  const { param } = useParams();
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(8);
   const [filterName, setFilterName] = useState('');
   const [productList, setProductList] = useState([]);
+  const [categoryList, setCategoryList] = useState([]);
+  const [colorList, setColorList] = useState([]);
   const [totalItems, setTotalItems] = useState(0);
+  const [selectedCategoriaFilter, setSelectedCategoriaFilter] = useState(param == null ? null : param == 'masculino' ? null : param == 'feminino' ? null : param);
+  const [selectedGenderFilter, setSelectedGenderFilter] = useState(param == null ? null : param == 'masculino' ? param : param == 'feminino' ? param : null);
+  const [filterState, setFilterState] = useState(selectedCategoriaFilter != null ? { Categoria: true } : selectedGenderFilter != null ? { Gênero: true } : {});
+  const [selectedSizeFilter, setSelectedSizeFilter] = useState(null);
+  const [selectedColorFilter, setSelectedColorFilter] = useState(null);
+
   const navigate = useNavigate();
 
   const fetchProductList = async () => {
-    try {
-      const response = await axios.get(BACKEND_URL + 'produto/com-imagem', {
-        params: {
-          page: page,
-          size: rowsPerPage,
-          filtro: filterName,
-        },
-      });
+    const params = {
+      page: page,
+      size: rowsPerPage,
+      categoria: selectedCategoriaFilter,
+      cor: selectedColorFilter,
+      genero: selectedGenderFilter.toLowerCase() == 'masculino' ? 'M' : selectedGenderFilter.toLowerCase() == 'feminino' ? 'F' : null,
+      tamanho: selectedSizeFilter,
+    };
 
-      // Se for a primeira página, substitua a lista, senão, adicione à lista atual.
+    try {
+      const response = await axios.get(BACKEND_URL + 'produto/com-imagem-filtro', { params });
       setProductList((prevProductList) => (page === 0 ? response.data.content : [...prevProductList, ...response.data.content]));
       setTotalItems(response.data.totalElements);
     } catch (error) {
@@ -38,36 +47,107 @@ export default function CatalogPage() {
     }
   };
 
+  const fetchColors = async () => {
+    try {
+      const response = await axios.get(BACKEND_URL + 'cor');
+      setColorList(response.data);
+    } catch (error) {
+      console.error('Erro ao buscar sugestões de cores:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchColors();
+  }, []);
+
+  const fetchCategoryList = async () => {
+    try {
+      const response = await axios.get(BACKEND_URL + 'categoria', {
+        params: {
+          page: 0,
+          size: 100,
+          filtro: '',
+        },
+      });
+      setCategoryList(response.data.content);
+    } catch (error) {
+      console.error('Erro ao buscar a lista de categorias:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchCategoryList();
+  }, []);
+
   useEffect(() => {
     fetchProductList();
-  }, [page, rowsPerPage, filterName]);
+  }, [page, rowsPerPage, filterName, selectedCategoriaFilter, selectedColorFilter, selectedGenderFilter, selectedSizeFilter]);
 
   const filterOptions = [
     {
       area: 'Gênero',
-      options: ['Masculino', 'Feminino'],
+      options: [{ nome: 'Masculino' }, { nome: 'Feminino' }],
     },
     {
       area: 'Tamanho',
-      options: ['Pequeno', 'Médio', 'Grande'],
+      options: [{ nome: 'PP' }, { nome: 'P' }, { nome: 'M' }, { nome: 'G' }, { nome: 'GG' }],
     },
     {
       area: 'Cores',
-      options: ['Preto', 'Branco', 'Vermelho'],
+      options: colorList,
     },
+    {
+      area: 'Categoria',
+      options: categoryList,
+    },
+
   ];
 
-  const [filterState, setFilterState] = useState({});
-
-  const handleShowMore = () => {
-    setPage(page + 1);
+  const handleCategoriaChange = (categoria) => {
+    if (selectedCategoriaFilter === categoria) {
+      setSelectedCategoriaFilter(null);
+    } else {
+      setSelectedCategoriaFilter(categoria);
+    }
   };
+
+
+  const handleSizeChange = (size) => {
+    if (selectedSizeFilter === size) {
+      setSelectedSizeFilter(null);
+    } else {
+      setSelectedSizeFilter(size);
+    }
+  };
+
+  const handleColorChange = (color) => {
+    if (selectedColorFilter === color) {
+      setSelectedColorFilter(null);
+    } else {
+      setSelectedColorFilter(color);
+    }
+  };
+
+  const handleGenderChange = (gender) => {
+    if (selectedGenderFilter === gender) {
+      setSelectedGenderFilter('');
+    } else {
+      setSelectedGenderFilter(gender);
+    }
+  };
+
 
   const toggleFilterArea = (area) => {
     setFilterState((prevState) => ({
       ...prevState,
       [area]: !prevState[area],
     }));
+    console.log(area)
+    console.log(filterState)
+  };
+
+  const handleShowMore = () => {
+    setPage(page + 1);
   };
 
   return (
@@ -92,7 +172,7 @@ export default function CatalogPage() {
           <Grid item xs={12} md={3} sx={{ padding: '25px' }}>
             <Typography variant="h6" sx={{ fontWeight: 'bold' }}>Filtros:</Typography>
             {filterOptions.map((optionGroup, index) => (
-              <div key={index}>
+              <div key={optionGroup.area}>
                 <Grid container alignItems="center">
                   <Grid item xs={10}>
                     <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>{optionGroup.area}:</Typography>
@@ -111,23 +191,35 @@ export default function CatalogPage() {
                   </Grid>
                 </Grid>
                 {filterState[optionGroup.area] && (
-                  optionGroup.options.map((option, i) => (
-                    <div key={i}>
+                  optionGroup.options.map((option) => (
+                    <div key={option.nome}>
                       <FormControlLabel
-                        control={<Checkbox />}
-                        label={option}
+                        control={
+                          <Checkbox
+                            onChange={() => {
+                              if (optionGroup.area === 'Gênero') {
+                                handleGenderChange(option.nome);
+                              } else if (optionGroup.area === 'Tamanho') {
+                                handleSizeChange(option.nome);
+                              } else if (optionGroup.area === 'Cores') {
+                                handleColorChange(option.nome);
+                              } else if (optionGroup.area === 'Categoria') {
+                                handleCategoriaChange(option.codigo);
+                              }
+                            }}
+                            checked={optionGroup.area === 'Gênero' && option.nome.toLowerCase() == selectedGenderFilter.toLowerCase()
+                              || optionGroup.area === 'Tamanho' && option.nome.toLowerCase() == selectedSizeFilter.toLowerCase()
+                              || optionGroup.area === 'Cores' && option.nome.toLowerCase() == selectedColorFilter.toLowerCase()
+                              || optionGroup.area === 'Categoria' && option.codigo == selectedCategoriaFilter}
+                          />
+                        }
+                        label={option.nome}
                       />
                     </div>
                   ))
                 )}
               </div>
             ))}
-            <Button
-              variant="contained"
-              sx={{ color: '#fff', marginTop: '20px' }}
-            >
-              Aplicar Filtros
-            </Button>
           </Grid>
           <Grid item xs={12} md={9} className="product-list-container">
             <ProductList products={productList} />
@@ -136,17 +228,16 @@ export default function CatalogPage() {
               <div className="show-more-container">
                 <Button
                   variant="contained"
+                  sx={{ color: '#fff', marginTop: '20px' }}
                   onClick={handleShowMore}
-                  sx={{ color: '#fff' }}
-                  className="show-more-button"
                 >
-                  Mostrar Mais
+                  Carregar Mais
                 </Button>
               </div>
             )}
           </Grid>
         </Grid>
-      </Container>
-    </Grid>
+      </Container >
+    </Grid >
   );
 }

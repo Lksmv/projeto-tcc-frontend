@@ -2,7 +2,7 @@ import React from 'react';
 import axios from 'axios';
 import { Button } from '@mui/material';
 
-function ReportDownloadButton({ url, nomeArquivo, params }) {
+function ReportDownloadButton({ url, nomeArquivo, params, txt }) {
 
     const imprimirButtonStyle = {
         fontFamily: 'Roboto, sans-serif',
@@ -57,7 +57,7 @@ function ReportDownloadButton({ url, nomeArquivo, params }) {
 
     return (
         <Button variant='contained' style={imprimirButtonStyle} onClick={downloadReport}>
-            Baixar Relatório
+            {txt == null ? 'Baixar Relatório' : txt}
         </Button>
     );
 }

@@ -20,6 +20,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Autocomplete
 } from '@mui/material';
 import axios from 'axios';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
@@ -50,42 +51,42 @@ export default function ProductInfoPage() {
 
   const salvarButtonStyle = {
     ...buttonStyle,
-    backgroundColor: '#1976D2',     
-    color: '#fff', 
-    width: '117px', 
-    height: '36px', 
+    backgroundColor: '#1976D2',
+    color: '#fff',
+    width: '117px',
+    height: '36px',
     marginRight: '8px',
     transition: 'background-color 0.3s',
     '&:hover': {
-      backgroundColor: '#1565C0', 
+      backgroundColor: '#1565C0',
     },
     '&:active': {
-      backgroundColor: '#0D47A1', 
+      backgroundColor: '#0D47A1',
     },
   };
 
   const cancelarButtonStyle = {
     ...buttonStyle,
-    backgroundColor: '#E91E63', 
-    color: '#fff', 
-    width: '117px', 
-    height: '36px', 
+    backgroundColor: '#E91E63',
+    color: '#fff',
+    width: '117px',
+    height: '36px',
     transition: 'background-color 0.3s',
     '&:hover': {
-      backgroundColor: '#D81B60', 
+      backgroundColor: '#D81B60',
     },
   };
 
   const deleteButtonStyle = {
     ...buttonStyle,
-    backgroundColor: '#F44336', 
-    color: '#fff', 
-    width: '117px', 
-    height: '36px', 
+    backgroundColor: '#F44336',
+    color: '#fff',
+    width: '117px',
+    height: '36px',
     marginLeft: '8px',
     transition: 'background-color 0.3s',
     '&:hover': {
-      backgroundColor: '#D32F2F', 
+      backgroundColor: '#D32F2F',
     },
   };
 
@@ -123,6 +124,7 @@ export default function ProductInfoPage() {
   const [snackbarSeverity, setSnackbarSeverity] = useState('error');
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [corSuggestions, setCorSuggestions] = useState([]);
 
   const handleDeleteProduct = () => {
     setDeleteDialogOpen(true);
@@ -211,6 +213,25 @@ export default function ProductInfoPage() {
     setFormValues({ ...originalProductDetails });
     setHasChanges(false);
   };
+
+  const handleCorChange = (event, newValue) => {
+    setFormValues({ ...formValues, cor: newValue });
+  };
+
+  const handleCorInputChange = (event, newInputValue) => {
+    setFormValues({ ...formValues, cor: newInputValue });
+  };
+
+  useEffect(() => {
+    axios.get(BACKEND_URL + 'cor')
+      .then((response) => {
+        const cores = response.data.map((cor) => cor.nome);
+        setCorSuggestions(cores);
+      })
+      .catch((error) => {
+        console.error('Erro ao buscar sugestões de cores:', error);
+      });
+  }, [formValues.cor]);
 
   useEffect(() => {
     const codigoProduct = codigo;
@@ -403,14 +424,26 @@ export default function ProductInfoPage() {
                     </MenuItem>
                   ))}
                 </TextField>
-                <TextField
-                  name="cor"
-                  label="Cor"
-                  variant="filled"
-                  fullWidth
-                  style={estiloCampo}
+                <Autocomplete
+                  options={corSuggestions}
                   value={formValues.cor}
-                  onChange={handleFieldChange}
+                  onChange={handleCorChange}
+                  onInputChange={handleCorInputChange}                  
+                  isOptionEqualToValue={(option, value) => option.nome === value.nome}
+                  style={estiloCampo}
+                  fullWidth
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Cor"
+                      variant="filled"
+                      required
+                      sx={{
+                        borderRadius: '5px 5px 0 0',
+                        backgroundColor: '#fff',
+                      }}
+                    />
+                  )}
                 />
                 <TextField
                   name="genero"

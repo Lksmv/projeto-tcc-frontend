@@ -9,7 +9,7 @@ import AssignmentIcon from '@mui/icons-material/Assignment';
 import AssignmentLateIcon from '@mui/icons-material/AssignmentLate';
 import { BACKEND_URL } from '../utils/backEndUrl';
 
-import { AppCurrentVisits, AppWebsiteVisits, AppWidgetSummary } from '../sections/@dashboard/app';
+import { AppQntAlugueisPast, AppQntAlugueisFut, AppWidget } from '../sections/@dashboard/app';
 
 export default function DashboardAppPage() {
   const theme = useTheme();
@@ -84,23 +84,23 @@ export default function DashboardAppPage() {
           backgroundColor: '#aaa',
         }}>
           <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="Aluguel semanal" total={aluguelSemanal} color="success" icon={<CurrencyExchangeIcon />} />
+            <AppWidget title="Aluguel semanal" total={aluguelSemanal} color="success" icon={<CurrencyExchangeIcon />} />
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="Aguardando retirada" total={aguardandoRetirada} color="info" icon={<HourglassEmptyIcon />} />
+            <AppWidget title="Aguardando retirada" total={aguardandoRetirada} color="info" icon={<HourglassEmptyIcon />} />
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="Produtos alugados" total={produtosAlugados} color="warning" icon={<AssignmentIcon />} />
+            <AppWidget title="Produtos alugados" total={produtosAlugados} color="warning" icon={<AssignmentIcon />} />
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="Pedidos atrasados" total={pedidosAtrasados} color="error" icon={<AssignmentLateIcon />} />
+            <AppWidget title="Pedidos atrasados" total={pedidosAtrasados} color="error" icon={<AssignmentLateIcon />} />
           </Grid>
 
           <Grid item xs={12} md={6} lg={8}>
-            <AppWebsiteVisits
+            <AppQntAlugueisFut
               title="Aluguéis dos próximos Sete Dias."
               chartLabels={labels}
               chartData={[
@@ -115,7 +115,7 @@ export default function DashboardAppPage() {
           </Grid>
 
           <Grid item xs={12} md={6} lg={4}>
-            <AppCurrentVisits
+            <AppQntAlugueisPast
               title="Quantidade de aluguéis dos ultimos Sete dias."
               chartData={cData}
               chartColors={[

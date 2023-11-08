@@ -1,3 +1,3 @@
-export { default as AppCurrentVisits } from './AppCurrentVisits';
-export { default as AppWebsiteVisits } from './AppWebsiteVisits';
-export { default as AppWidgetSummary } from './AppWidgetSummary';
+export { default as AppQntAlugueisPast } from './AppQntAlugueisPast';
+export { default as AppQntAlugueisFut } from './AppQntAlugueisFut';
+export { default as AppWidget } from './AppWidget';

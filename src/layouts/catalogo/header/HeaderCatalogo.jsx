@@ -71,7 +71,6 @@ const CategoryTypography = styled(Typography)(({ theme }) => ({
   fontWeight: 'bold',
   fontSize: '14px',
   mb: 1,
-  maxWidth: '100px',
 }));
 
 export default function Header() {
@@ -130,7 +129,7 @@ export default function Header() {
               <CategoriesContainer>
                 {categories.map((category, index) => (
                   <React.Fragment key={index}>
-                    <CategoryLink href={`/catalogo/${category.nome}`}>
+                    <CategoryLink href={`/catalogo/${category.codigo}`}>
                       <CategoryTypography variant="subtitle">
                         {category.nome}
                       </CategoryTypography>

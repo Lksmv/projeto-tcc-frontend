@@ -14,6 +14,7 @@ import {
   ImageListItem,
   IconButton,
   Snackbar,
+  Autocomplete
 } from '@mui/material';
 import axios from 'axios';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
@@ -26,6 +27,7 @@ import MuiAlert from '@mui/material/Alert';
 
 export default function ProductCreatePage() {
   const [categorias, setCategorias] = useState([]);
+  const [corSuggestions, setCorSuggestions] = useState([]);
   const [errors, setErrors] = useState({
     codigo: '',
     nome: '',
@@ -122,12 +124,12 @@ export default function ProductCreatePage() {
 
   const onDrop = useCallback((acceptedFiles) => {
     if (acceptedFiles.length) {
-        setImagens((previousFiles) => [
-          ...previousFiles,
-          ...acceptedFiles.map((imagem) =>
-            Object.assign(imagem, { preview: URL.createObjectURL(imagem) })
-          ),
-        ]);
+      setImagens((previousFiles) => [
+        ...previousFiles,
+        ...acceptedFiles.map((imagem) =>
+          Object.assign(imagem, { preview: URL.createObjectURL(imagem) })
+        ),
+      ]);
     }
   }, [imagens]);
 
@@ -149,7 +151,27 @@ export default function ProductCreatePage() {
   const handleSnackbarClose = () => {
     setOpenSnackbar(false);
   };
-  
+
+  const handleCorChange = (event, newValue) => {
+    setFormValues({ ...formValues, cor: newValue });
+  };
+
+  const handleCorInputChange = (event, newInputValue) => {
+    setFormValues({ ...formValues, cor: newInputValue });
+  };
+
+  useEffect(() => {
+    axios.get(BACKEND_URL + 'cor')
+      .then((response) => {
+        const cores = response.data.map((cor) => cor.nome);
+        setCorSuggestions(cores);
+      })
+      .catch((error) => {
+        console.error('Erro ao buscar sugestões de cores:', error);
+      });
+  }, [formValues.cor]);
+
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -326,18 +348,26 @@ export default function ProductCreatePage() {
                     </MenuItem>
                   ))}
                 </TextField>
-                <TextField
-                  name="cor"
-                  label="Cor"
-                  variant="filled"
-                  fullWidth
-                  required
-                  style={estiloCampo}
+                <Autocomplete
+                  options={corSuggestions}
                   value={formValues.cor}
-                  onChange={handleFieldChange}
-                  sx={{
-                    backgroundColor: '#fff',
-                  }}
+                  onChange={handleCorChange}
+                  onInputChange={handleCorInputChange}
+                  isOptionEqualToValue={(option, value) => option.nome === value.nome}
+                  style={estiloCampo}
+                  fullWidth
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Cor"
+                      variant="filled"
+                      required
+                      sx={{
+                        borderRadius: '5px 5px 0 0',
+                        backgroundColor: '#fff',
+                      }}
+                    />
+                  )}
                 />
                 <TextField
                   name="genero"

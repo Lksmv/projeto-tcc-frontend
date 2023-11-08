@@ -34,7 +34,6 @@ export default function ProductFilter({ filterOptions, onFilterChange, genero })
   }, [genero]);
 
   const applyFilters = () => {
-    // Você pode adicionar mais lógica aqui para aplicar os filtros
     onFilterChange(selectedFilters);
   };
 
