@@ -86,7 +86,7 @@ export default function CatalogPage() {
   const filterOptions = [
     {
       area: 'Gênero',
-      options: [{ nome: 'Masculino' }, { nome: 'Feminino' }],
+      options: [{ nome: 'masculino' }, { nome: 'feminino' }],
     },
     {
       area: 'Tamanho',
@@ -207,7 +207,7 @@ export default function CatalogPage() {
                                 handleCategoriaChange(option.codigo);
                               }
                             }}
-                            checked={optionGroup.area === 'Gênero' && option.nome.toLowerCase() == selectedGenderFilter.toLowerCase()
+                            checked={optionGroup.area === 'Gênero' && option.nome == selectedGenderFilter.toLowerCase()
                               || optionGroup.area === 'Tamanho' && option.nome == selectedSizeFilter
                               || optionGroup.area === 'Cores' && option.nome == selectedColorFilter
                               || optionGroup.area === 'Categoria' && option.codigo == selectedCategoriaFilter}
