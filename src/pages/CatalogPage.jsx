@@ -208,8 +208,8 @@ export default function CatalogPage() {
                               }
                             }}
                             checked={optionGroup.area === 'Gênero' && option.nome.toLowerCase() == selectedGenderFilter.toLowerCase()
-                              || optionGroup.area === 'Tamanho' && option.nome.toLowerCase() == selectedSizeFilter.toLowerCase()
-                              || optionGroup.area === 'Cores' && option.nome.toLowerCase() == selectedColorFilter.toLowerCase()
+                              || optionGroup.area === 'Tamanho' && option.nome == selectedSizeFilter
+                              || optionGroup.area === 'Cores' && option.nome == selectedColorFilter
                               || optionGroup.area === 'Categoria' && option.codigo == selectedCategoriaFilter}
                           />
                         }

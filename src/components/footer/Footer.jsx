@@ -44,21 +44,21 @@ const MiddleSection = () => (
 
 const RightSection = () => (
   <Box width="100%">
-    <Box marginLeft={"65px"} display={'flex'} alignItems={'center'}>
+    <Box marginLeft={"65px"} marginBottom={"5px"} display={'flex'} alignItems={'center'}>
       <Typography variant="h6">
         Redes sociais:
       </Typography>
-      <Link href="#">
+      <Link href="https://www.facebook.com/robertatrajes" target="_blank" rel="noopener noreferrer">
         <IconButton>
           <FacebookIcon fontSize='large' sx={{ color: "#4267B2" }} />
         </IconButton>
       </Link>
-      <Link href="#" >
+      <Link href="https://www.instagram.com/robertatrajes/" target="_blank" rel="noopener noreferrer">
         <IconButton>
           <InstagramIcon fontSize='large' sx={{ color: "#C13584" }} />
         </IconButton>
       </Link>
-      <Link href="#" >
+      <Link href="https://api.whatsapp.com/send?phone=5547999631565&text=Olá,%20Roberta%20Trajes!%20Tudo%20bem%3F" target="_blank" rel="noopener noreferrer">
         <IconButton>
           <WhatsAppIcon fontSize='large' sx={{ color: "#25D366" }} />
         </IconButton>
