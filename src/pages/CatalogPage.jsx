@@ -34,7 +34,7 @@ export default function CatalogPage() {
       size: rowsPerPage,
       categoria: selectedCategoriaFilter,
       cor: selectedColorFilter,
-      genero: selectedGenderFilter.toLowerCase() == 'masculino' ? 'M' : selectedGenderFilter.toLowerCase() == 'feminino' ? 'F' : null,
+      genero: selectedGenderFilter == 'masculino' ? 'M' : selectedGenderFilter == 'feminino' ? 'F' : null,
       tamanho: selectedSizeFilter,
     };
 
@@ -207,7 +207,7 @@ export default function CatalogPage() {
                                 handleCategoriaChange(option.codigo);
                               }
                             }}
-                            checked={optionGroup.area === 'Gênero' && option.nome == selectedGenderFilter.toLowerCase()
+                            checked={optionGroup.area === 'Gênero' && option.nome == selectedGenderFilter
                               || optionGroup.area === 'Tamanho' && option.nome == selectedSizeFilter
                               || optionGroup.area === 'Cores' && option.nome == selectedColorFilter
                               || optionGroup.area === 'Categoria' && option.codigo == selectedCategoriaFilter}
