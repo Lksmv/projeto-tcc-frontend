@@ -35,6 +35,42 @@ import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
 
 export default function ProductInfoPage() {
+
+  const { codigo } = useParams();
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
+  const [categorias, setCategorias] = useState([]);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [corSuggestions, setCorSuggestions] = useState([]);
+  const navigate = useNavigate();
+
+  const tamanhos = ['Nenhum', 'PP', 'P', 'M', 'G', 'GG'];
+
+  const generos = [
+    { char: 'N', nome: 'Nenhum' },
+    { char: 'M', nome: 'Masculino' },
+    { char: 'F', nome: 'Feminino' },
+  ];
+
+  const [formValues, setFormValues] = useState({
+    codigo: parseInt(codigo, 10),
+    nome: '',
+    codigoCategoria: '',
+    marca: '',
+    tamanho: '',
+    cor: '',
+    genero: '',
+    valor: '',
+    observacoes: '',
+    imagens: [],
+    trajeVendido: ''
+  });
+
+  const [originalProductDetails, setOriginalProductDetails] = useState({ ...formValues });
+
   const estiloCampo = {
     margin: '8px',
     borderRadius: '5px 5px 0 0',
@@ -90,52 +126,48 @@ export default function ProductInfoPage() {
     },
   };
 
-  const navigate = useNavigate()
-
-  const tamanhos = ['Nenhum', 'PP', 'P', 'M', 'G', 'GG'];
-
-  const generos = [
-    { char: 'N', nome: 'Nenhum' },
-    { char: 'M', nome: 'Masculino' },
-    { char: 'F', nome: 'Feminino' },
-  ];
-
-  const { codigo } = useParams();
-
-  const [formValues, setFormValues] = useState({
-    codigo: parseInt(codigo, 10),
-    nome: '',
-    codigoCategoria: '',
-    marca: '',
-    tamanho: '',
-    cor: '',
-    genero: '',
-    valor: '',
-    observacoes: '',
-    imagens: [],
-    trajeVendido: ''
-  });
-
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(false);
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [originalProductDetails, setOriginalProductDetails] = useState({ ...formValues });
-  const [categorias, setCategorias] = useState([]);
-  const [snackbarSeverity, setSnackbarSeverity] = useState('error');
-  const [snackbarMessage, setSnackbarMessage] = useState('');
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [corSuggestions, setCorSuggestions] = useState([]);
-
   const handleDeleteProduct = () => {
     setDeleteDialogOpen(true);
+  };
+
+  const showSnackbar = (message, severity) => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
+    setSnackbarOpen(true);
+  };
+
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setSnackbarOpen(false);
   };
 
   const handleConfirmDelete = async () => {
     try {
       await axios.delete(BACKEND_URL + `produto/${formValues.codigo}`);
-      navigate(`/produto`);
+      showSnackbar('Produto deletado com sucesso', 'success');
+      setTimeout(() => {
+        navigate(`/produto`);
+      }, 1000);
     } catch (error) {
-      console.error('Erro ao excluir o produto:', error);
+      if (error.response) {
+        if (error.response.data.message) {
+          const errorMessage = error.response.data.message;
+          showSnackbar(`${errorMessage}`, 'error');
+        } else {
+          let errorMessage = error.response.data.errors[0];
+          const colonIndex = errorMessage.indexOf(':');
+          if (colonIndex !== -1) {
+            errorMessage = errorMessage.substring(colonIndex + 1).trim();
+          }
+          showSnackbar(`${errorMessage}`, 'error');
+        }
+      } else if (error.request) {
+        showSnackbar(`Erro de requisição: ${error.request}`, 'error');
+      } else {
+        showSnackbar(`Erro ao salvar o Aluguel: ${error.message}`, 'error');
+      }
     }
   };
 
@@ -164,15 +196,25 @@ export default function ProductInfoPage() {
           ...prevFormValues,
           imagens: [...prevFormValues.imagens, ...uploadedImages],
         }));
-
-        setSuccess(true);
-        setSnackbarSeverity('success');
-        setSnackbarMessage('Imagem(s) salva(s) com sucesso');
+        showSnackbar('Imagem Salva com sucesso', 'success');
       } catch (error) {
-        console.error('Erro ao fazer o upload das imagens:', error);
-        setSuccess(false);
-        setSnackbarSeverity('error');
-        setSnackbarMessage('Erro ao fazer o upload das imagens');
+        if (error.response) {
+          if (error.response.data.message) {
+            const errorMessage = error.response.data.message;
+            showSnackbar(`${errorMessage}`, 'error');
+          } else {
+            let errorMessage = error.response.data.errors[0];
+            const colonIndex = errorMessage.indexOf(':');
+            if (colonIndex !== -1) {
+              errorMessage = errorMessage.substring(colonIndex + 1).trim();
+            }
+            showSnackbar(`${errorMessage}`, 'error');
+          }
+        } else if (error.request) {
+          showSnackbar(`Erro de requisição: ${error.request}`, 'error');
+        } else {
+          showSnackbar(`Erro ao salvar o Cliente: ${error.message}`, 'error');
+        }
       }
     }
   }, [formValues, codigo]);
@@ -212,6 +254,7 @@ export default function ProductInfoPage() {
   const handleCancel = () => {
     setFormValues({ ...originalProductDetails });
     setHasChanges(false);
+    navigate(`/produto`);
   };
 
   const handleCorChange = (event, newValue) => {
@@ -286,13 +329,25 @@ export default function ProductInfoPage() {
     try {
       const response = await axios.put(BACKEND_URL + `produto/${codigoAsInteger}`, requestData);
       console.log('Produto atualizado com sucesso:', response.data);
-      setSuccess(true);
-      setOpenSnackbar(true);
-      setHasChanges(false);
+      showSnackbar(`Produto Salvo com Sucesso`, 'success');
     } catch (error) {
-      console.error('Erro ao atualizar o produto:', error);
-      setSuccess(false);
-      setOpenSnackbar(true);
+      if (error.response) {
+        if (error.response.data.message) {
+          const errorMessage = error.response.data.message;
+          showSnackbar(`${errorMessage}`, 'error');
+        } else {
+          let errorMessage = error.response.data.errors[0];
+          const colonIndex = errorMessage.indexOf(':');
+          if (colonIndex !== -1) {
+            errorMessage = errorMessage.substring(colonIndex + 1).trim();
+          }
+          showSnackbar(`${errorMessage}`, 'error');
+        }
+      } else if (error.request) {
+        showSnackbar(`Erro de requisição: ${error.request}`, 'error');
+      } else {
+        showSnackbar(`Erro ao salvar o Aluguel: ${error.message}`, 'error');
+      }
     }
   };
 
@@ -302,13 +357,7 @@ export default function ProductInfoPage() {
         <title>Informações de produto</title>
       </Helmet>
       <Container>
-        <Container
-          maxWidth="lg"
-          style={{ paddingLeft: '20px', paddingRight: '20px' }}
-        >
-          <Typography variant="h4" color="text.primary" sx={{ mb: 1 }}>
-            Informações de produto
-          </Typography>
+        <Container maxWidth="100%" style={{ alignContent: 'left', marginTop: '30px' }}>
           <Breadcrumbs
             separator={<NavigateNextIcon fontSize="small" />}
             aria-label="breadcrumb"
@@ -428,7 +477,7 @@ export default function ProductInfoPage() {
                   options={corSuggestions}
                   value={formValues.cor}
                   onChange={handleCorChange}
-                  onInputChange={handleCorInputChange}                  
+                  onInputChange={handleCorInputChange}
                   isOptionEqualToValue={(option, value) => option.nome === value.nome}
                   style={estiloCampo}
                   fullWidth
@@ -599,15 +648,15 @@ export default function ProductInfoPage() {
         </DialogActions>
       </Dialog>
       <Snackbar
-        open={openSnackbar}
+        open={snackbarOpen}
         autoHideDuration={6000}
-        onClose={handleSnackbarClose}
+        onClose={handleCloseSnackbar}
       >
         <MuiAlert
           elevation={6}
           variant="filled"
+          onClose={handleCloseSnackbar}
           severity={snackbarSeverity}
-          onClose={handleSnackbarClose}
         >
           {snackbarMessage}
         </MuiAlert>

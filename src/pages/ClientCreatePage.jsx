@@ -22,7 +22,7 @@ import { formatOutputDate, formatInputDate } from '../utils/formatTime';
 export default function ClientCreatePage() {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
-  const [snackbarSeverity, setSnackbarSeverity] = useState('error');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
 
   const estiloCampo = {
     margin: '8px',
@@ -67,8 +67,33 @@ export default function ClientCreatePage() {
   };
 
   const estados = [
-    'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG',
-    'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
+    { sigla: 'AC', nome: 'Acre' },
+    { sigla: 'AL', nome: 'Alagoas' },
+    { sigla: 'AP', nome: 'Amapá' },
+    { sigla: 'AM', nome: 'Amazonas' },
+    { sigla: 'BA', nome: 'Bahia' },
+    { sigla: 'CE', nome: 'Ceará' },
+    { sigla: 'DF', nome: 'Distrito Federal' },
+    { sigla: 'ES', nome: 'Espírito Santo' },
+    { sigla: 'GO', nome: 'Goiás' },
+    { sigla: 'MA', nome: 'Maranhão' },
+    { sigla: 'MT', nome: 'Mato Grosso' },
+    { sigla: 'MS', nome: 'Mato Grosso do Sul' },
+    { sigla: 'MG', nome: 'Minas Gerais' },
+    { sigla: 'PA', nome: 'Pará' },
+    { sigla: 'PB', nome: 'Paraíba' },
+    { sigla: 'PR', nome: 'Paraná' },
+    { sigla: 'PE', nome: 'Pernambuco' },
+    { sigla: 'PI', nome: 'Piauí' },
+    { sigla: 'RJ', nome: 'Rio de Janeiro' },
+    { sigla: 'RN', nome: 'Rio Grande do Norte' },
+    { sigla: 'RS', nome: 'Rio Grande do Sul' },
+    { sigla: 'RO', nome: 'Rondônia' },
+    { sigla: 'RR', nome: 'Roraima' },
+    { sigla: 'SC', nome: 'Santa Catarina' },
+    { sigla: 'SP', nome: 'São Paulo' },
+    { sigla: 'SE', nome: 'Sergipe' },
+    { sigla: 'TO', nome: 'Tocantins' }
   ];
 
   const [formValues, setFormValues] = useState({
@@ -92,6 +117,7 @@ export default function ClientCreatePage() {
   const navigate = useNavigate()
 
   const handleFieldChange = (e) => {
+    console.log(e)
     const { name, value } = e.target;
     setFormValues({ ...formValues, [name]: value });
   };
@@ -115,26 +141,39 @@ export default function ClientCreatePage() {
     try {
       response = await axios.post(BACKEND_URL + 'cliente', requestData);
       const codigo = response.data.codigo;
-      navigate(`/cliente/detalhes/${codigo}`);
+      showSnackbar('Cliente criado com sucesso', 'success');
+      setTimeout(() => {
+        navigate(`/cliente/detalhes/${codigo}`);
+      }, 1000);
     } catch (error) {
       if (error.response) {
-        setSnackbarMessage(error.response.data.errors[0]);
+        if (error.response.data.message) {
+          const errorMessage = error.response.data.message;
+          showSnackbar(`${errorMessage}`, 'error');
+        } else {
+          let errorMessage = error.response.data.errors[0];
+          const colonIndex = errorMessage.indexOf(':');
+          if (colonIndex !== -1) {
+            errorMessage = errorMessage.substring(colonIndex + 1).trim();
+          }
+          showSnackbar(`${errorMessage}`, 'error');
+        }
       } else if (error.request) {
-        setSnackbarMessage('Erro de requisição: ' + error.request);
+        showSnackbar(`Erro de requisição: ${error.request}`, 'error');
       } else {
-        setSnackbarMessage('Erro ao salvar o cliente: ' + error.message);
+        showSnackbar(`Erro ao salvar o Cliente: ${error.message}`, 'error');
       }
-      setSnackbarSeverity('error');
-      setSnackbarOpen(true);
     }
   };
 
-  const handleSnackbarClose = (event, reason) => {
-    if (reason === 'clickaway') {
-      return;
-    }
+  const showSnackbar = (message, severity) => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
+    setSnackbarOpen(true);
+  };
 
-    setSnackbarOpen(false);
+  const handleSnackbarClose = () => {
+    setOpenSnackbar(false);
   };
 
   return (
@@ -143,10 +182,7 @@ export default function ClientCreatePage() {
         <title>Cadastro de cliente</title>
       </Helmet>
       <Container>
-        <Container maxWidth="lg" style={{ paddingLeft: '20px', paddingRight: '20px' }}>
-          <Typography variant="h4" color="text.primary" sx={{ mb: 1 }}>
-            Cadastro de cliente
-          </Typography>
+        <Container maxWidth="100%" style={{ alignContent: 'left', marginTop: '30px' }}>
           <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />} aria-label="breadcrumb" sx={{ mb: 2 }}>
             <Link color="inherit" href="/dashboard">
               Dashboard
@@ -350,8 +386,8 @@ export default function ClientCreatePage() {
                   }}
                 >
                   {estados.map((estado) => (
-                    <MenuItem key={estado} value={estado}>
-                      {estado}
+                    <MenuItem key={estado.sigla} value={estado.sigla}>
+                      {estado.sigla + ' - ' + estado.nome}
                     </MenuItem>
                   ))}
                 </TextField>
@@ -407,13 +443,13 @@ export default function ClientCreatePage() {
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={6000}
-        onClose={handleSnackbarClose}
+        onClose={() => setSnackbarOpen(false)}
       >
         <MuiAlert
           elevation={6}
           variant="filled"
+          onClose={() => setSnackbarOpen(false)}
           severity={snackbarSeverity}
-          onClose={handleSnackbarClose}
         >
           {snackbarMessage}
         </MuiAlert>

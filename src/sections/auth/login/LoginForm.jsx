@@ -37,19 +37,22 @@ export default function LoginForm() {
 
   const handleLogin = async () => {
     try {
-      const response = await axios.post(BACKEND_URL + 'auth/login', loginData);
-
+      const trimmedLogin = loginData.login.trim();
+      const trimmedPass = loginData.senha.trim();
+  
+      const response = await axios.post(BACKEND_URL + 'auth/login', { login: trimmedLogin, senha: trimmedPass });
+  
       if (response.status === 200) {
         login(response.data);
-
+  
         if (rememberMe) {
-          localStorage.setItem('login', loginData.login);
-          localStorage.setItem('senha', loginData.senha);
+          localStorage.setItem('login', trimmedLogin);
+          localStorage.setItem('senha', trimmedPass);
         } else {
           localStorage.removeItem('login');
           localStorage.removeItem('senha');
         }
-
+  
         navigate('/dashboard', { replace: true });
       } else {
         setLoginError(true);
@@ -60,6 +63,7 @@ export default function LoginForm() {
       console.error('Erro ao fazer a solicitação de login:', error);
     }
   };
+  
 
 
 
@@ -73,7 +77,7 @@ export default function LoginForm() {
       <Stack spacing={2}>
         <TextField
           name="login"
-          label="Login"
+          label="Usuário"
           value={loginData.login}
           onChange={handleChange}
           error={loginError}

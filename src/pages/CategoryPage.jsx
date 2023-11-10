@@ -167,13 +167,7 @@ export default function CategoryPage() {
         <title>Categoria</title>
       </Helmet>
       <Container maxWidth="xl" sx={{ marginBottom: '30px' }}>
-        <Container
-          maxWidth="100%"
-          style={{ marginTop: '16px', alignContent: 'left' }}
-        >
-          <Typography variant="h4" color="text.primary" sx={{ mb: 1 }}>
-            Categoria
-          </Typography>
+        <Container maxWidth="100%" style={{ alignContent: 'left', marginTop: '30px' }}>
           <Breadcrumbs
             separator={<NavigateNextIcon fontSize="small" />}
             aria-label="breadcrumb"

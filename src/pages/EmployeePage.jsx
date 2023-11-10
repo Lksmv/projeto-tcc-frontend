@@ -167,12 +167,7 @@ export default function EmployeePage() {
         <title>Categoria</title>
       </Helmet>
       <Container sx={{ marginBottom: '30px' }}>
-        <Container
-          style={{ marginTop: '16px', alignContent: 'left' }}
-        >
-          <Typography variant="h4" color="text.primary" sx={{ mb: 1 }}>
-            Funcionário
-          </Typography>
+        <Container maxWidth="100%" style={{ alignContent: 'left', marginTop: '30px' }}>
           <Breadcrumbs
             separator={<NavigateNextIcon fontSize="small" />}
             aria-label="breadcrumb"
@@ -233,6 +228,7 @@ export default function EmployeePage() {
             page={page}
             onPageChange={handleChangePage}
             onRowsPerPageChange={handleChangeRowsPerPage}
+            labelRowsPerPage="Funcionários por página"
           />
         </Card>
 

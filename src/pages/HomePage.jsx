@@ -80,6 +80,7 @@ export default function HomePage() {
       <Helmet>
         <title>Roberta aluguel</title>
       </Helmet>
+      
       <Container style={containerStyle} maxWidth="1080px">
         <img src={pageBackground} style={imageStyle} alt="Background" />
         <div

@@ -28,9 +28,6 @@ export default function ListHead({
   headLabel,
   onRequestSort,
 }) {
-  const createSortHandler = (property) => (event) => {
-    onRequestSort(event, property);
-  };
 
   return (
     <TableHead>
@@ -40,21 +37,9 @@ export default function ListHead({
             padding="normal"
             key={headCell.id}
             align={headCell.alignRight ? 'right' : 'left'}
-            sortDirection={orderBy === headCell.id ? order : false}
-            sx={{backgroundColor:'#3c3c3c', color: '#dedede'}}
+            sx={{ backgroundColor: '#3c3c3c', color: '#dedede' }}
           >
-            <TableSortLabel
-              hideSortIcon
-              active={orderBy === headCell.id}
-              direction={orderBy === headCell.id ? order : 'asc'}
-              onClick={createSortHandler(headCell.id)}
-              
-            >
-              {headCell.label}
-              {orderBy === headCell.id ? (
-                <Box sx={{ ...visuallyHidden }}>{order === 'desc' ? 'sorted descending' : 'sorted ascending'}</Box>
-              ) : null}
-            </TableSortLabel>
+            {headCell.label}
           </TableCell>
         ))}
       </TableRow>

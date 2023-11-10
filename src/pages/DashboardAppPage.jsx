@@ -18,13 +18,13 @@ export default function DashboardAppPage() {
   const [produtosAlugados, setProdutosAlugados] = useState(0);
   const [pedidosAtrasados, setPedidosAtrasados] = useState(0);
   const [labels, setLabels] = useState([]);
-  const [dados, setDados] = useState([]); 
-  const [cData, setCData] = useState([]); 
+  const [dados, setDados] = useState([]);
+  const [cData, setCData] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [aluguelResponse, atrasadosResponse, produtosAlugadosResponse, aguardandoRetiradaResponse, relatorioUltimosResponse,relatorioProximoResponse] = await Promise.all([
+        const [aluguelResponse, atrasadosResponse, produtosAlugadosResponse, aguardandoRetiradaResponse, relatorioUltimosResponse, relatorioProximoResponse] = await Promise.all([
           axios.get(BACKEND_URL + 'aluguel/ultimos-sete-dias'),
           axios.get(BACKEND_URL + 'aluguel/quantidade-atrasados'),
           axios.get(BACKEND_URL + 'produto/quantidade-alugados'),
@@ -45,7 +45,7 @@ export default function DashboardAppPage() {
         const newCData = [];
 
         relatorioUData.forEach((data) => {
-          newCData.push({label: data.diaDaSemana, value: data.quantidade})
+          newCData.push({ label: data.diaDaSemana, value: data.quantidade })
         });
         setCData(newCData);
         relatorioPData.forEach((data) => {

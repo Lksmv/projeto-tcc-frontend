@@ -28,11 +28,6 @@ import MuiAlert from '@mui/material/Alert';
 export default function ProductCreatePage() {
   const [categorias, setCategorias] = useState([]);
   const [corSuggestions, setCorSuggestions] = useState([]);
-  const [errors, setErrors] = useState({
-    codigo: '',
-    nome: '',
-    imagens: '',
-  });
   const navigate = useNavigate()
 
   const estiloCampo = {
@@ -116,10 +111,9 @@ export default function ProductCreatePage() {
     observacoes: '',
   });
 
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarSeverity, setSnackbarSeverity] = useState('error');
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
-  const [success, setSuccess] = useState(false);
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
   const [imagens, setImagens] = useState([]);
 
   const onDrop = useCallback((acceptedFiles) => {
@@ -146,6 +140,12 @@ export default function ProductCreatePage() {
     if (name) {
       setFormValues({ ...formValues, [name]: value });
     }
+  };
+
+  const showSnackbar = (message, severity) => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
+    setSnackbarOpen(true);
   };
 
   const handleSnackbarClose = () => {
@@ -205,16 +205,28 @@ export default function ProductCreatePage() {
         });
         await Promise.all(uploadPromises);
       }
-      setSuccess(true);
-      setSnackbarSeverity('success');
-      setSnackbarMessage('Produto salvo com sucesso');
-      setOpenSnackbar(true);
-      navigate(`/produto/detalhes/${codigo}`);
+      showSnackbar('Produto criado com sucesso', 'success');
+      setTimeout(() => {
+        navigate(`/produto/detalhes/${codigo}`);
+      }, 1000);
     } catch (error) {
-      console.error('Erro ao salvar o produto:', error);
-      setSnackbarSeverity('error');
-      setSnackbarMessage('Erro ao salvar o produto');
-      setOpenSnackbar(true);
+      if (error.response) {
+        if (error.response.data.message) {
+          const errorMessage = error.response.data.message;
+          showSnackbar(`${errorMessage}`, 'error');
+        } else {
+          let errorMessage = error.response.data.errors[0];
+          const colonIndex = errorMessage.indexOf(':');
+          if (colonIndex !== -1) {
+            errorMessage = errorMessage.substring(colonIndex + 1).trim();
+          }
+          showSnackbar(`${errorMessage}`, 'error');
+        }
+      } else if (error.request) {
+        showSnackbar(`Erro de requisição: ${error.request}`, 'error');
+      } else {
+        showSnackbar(`Erro ao salvar o Aluguel: ${error.message}`, 'error');
+      }
     }
   };
 
@@ -224,10 +236,7 @@ export default function ProductCreatePage() {
         <title>Cadastro de produto</title>
       </Helmet>
       <Container>
-        <Container maxWidth="lg" style={{ paddingLeft: '20px', paddingRight: '20px' }}>
-          <Typography variant="h4" color="text.primary" sx={{ mb: 1 }}>
-            Cadastro de produto
-          </Typography>
+        <Container maxWidth="100%" style={{ alignContent: 'left', marginTop: '30px' }}>
           <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />} aria-label="breadcrumb" sx={{ mb: 2 }}>
             <Link color="inherit" href="/dashboard">
               Dashboard
@@ -499,15 +508,15 @@ export default function ProductCreatePage() {
         </Container>
       </Container>
       <Snackbar
-        open={openSnackbar}
+        open={snackbarOpen}
         autoHideDuration={6000}
-        onClose={handleSnackbarClose}
+        onClose={() => setSnackbarOpen(false)}
       >
         <MuiAlert
           elevation={6}
           variant="filled"
+          onClose={() => setSnackbarOpen(false)}
           severity={snackbarSeverity}
-          onClose={handleSnackbarClose}
         >
           {snackbarMessage}
         </MuiAlert>

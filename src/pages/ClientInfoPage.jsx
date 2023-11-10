@@ -33,7 +33,7 @@ export default function ClienInfoPage() {
     const { codigo } = useParams();
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
-    const [snackbarSeverity, setSnackbarSeverity] = useState('error');
+    const [snackbarSeverity, setSnackbarSeverity] = useState('success');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isAddCreditDialogOpen, setAddCreditDialogOpen] = useState(false);
@@ -121,31 +121,49 @@ export default function ClienInfoPage() {
 
     const addCredit = async () => {
         try {
-            const valorConvertido = convertCurrencyToNumber(creditoValues.valor);
-            const newCreditoValues = {
-                ...creditoValues,
-                valor: valorConvertido,
-            };
-            const response = await axios.post(BACKEND_URL + 'credito', newCreditoValues);
-            const novaListaDeCreditos = [...formValues.creditos, response.data];
+            if (creditoValues.valor > 0) {
+                const valorConvertido = convertCurrencyToNumber(creditoValues.valor);
+                const newCreditoValues = {
+                    ...creditoValues,
+                    valor: valorConvertido,
+                };
+                const response = await axios.post(BACKEND_URL + 'credito', newCreditoValues);
+                const novaListaDeCreditos = [...formValues.creditos, response.data];
 
-            setFormValues((prevFormValues) => ({
-                ...prevFormValues,
-                creditos: novaListaDeCreditos,
-            }));
 
-            setCreditoValues({
-                codigoCliente: formValues.codigo,
-                data: new Date().toISOString(),
-                valor: 0,
-                observacoes: '',
-            });
-
-            setHasChanges(true);
-
-            calculateCreditAndObservations();
+                setFormValues((prevFormValues) => ({
+                    ...prevFormValues,
+                    creditos: novaListaDeCreditos,
+                }));
+                setCreditoValues({
+                    codigoCliente: formValues.codigo,
+                    data: new Date().toISOString(),
+                    valor: 0,
+                    observacoes: '',
+                });
+                setHasChanges(true);
+                calculateCreditAndObservations();
+            } else {
+                showSnackbar('Crédito precisa ser maior que 0.', 'error');
+            }
         } catch (error) {
-            console.error('Erro ao adicionar crédito:', error);
+            if (error.response) {
+                if (error.response.data.message) {
+                    const errorMessage = error.response.data.message;
+                    showSnackbar(`${errorMessage}`, 'error');
+                } else {
+                    let errorMessage = error.response.data.errors[0];
+                    const colonIndex = errorMessage.indexOf(':');
+                    if (colonIndex !== -1) {
+                        errorMessage = errorMessage.substring(colonIndex + 1).trim();
+                    }
+                    showSnackbar(`${errorMessage}`, 'error');
+                }
+            } else if (error.request) {
+                showSnackbar(`Erro de requisição: ${error.request}`, 'error');
+            } else {
+                showSnackbar(`Erro ao adicionar crédito: ${error.message}`, 'error');
+            }
         }
     };
 
@@ -207,8 +225,33 @@ export default function ClienInfoPage() {
 
 
     const estados = [
-        'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG',
-        'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
+        { sigla: 'AC', nome: 'Acre' },
+        { sigla: 'AL', nome: 'Alagoas' },
+        { sigla: 'AP', nome: 'Amapá' },
+        { sigla: 'AM', nome: 'Amazonas' },
+        { sigla: 'BA', nome: 'Bahia' },
+        { sigla: 'CE', nome: 'Ceará' },
+        { sigla: 'DF', nome: 'Distrito Federal' },
+        { sigla: 'ES', nome: 'Espírito Santo' },
+        { sigla: 'GO', nome: 'Goiás' },
+        { sigla: 'MA', nome: 'Maranhão' },
+        { sigla: 'MT', nome: 'Mato Grosso' },
+        { sigla: 'MS', nome: 'Mato Grosso do Sul' },
+        { sigla: 'MG', nome: 'Minas Gerais' },
+        { sigla: 'PA', nome: 'Pará' },
+        { sigla: 'PB', nome: 'Paraíba' },
+        { sigla: 'PR', nome: 'Paraná' },
+        { sigla: 'PE', nome: 'Pernambuco' },
+        { sigla: 'PI', nome: 'Piauí' },
+        { sigla: 'RJ', nome: 'Rio de Janeiro' },
+        { sigla: 'RN', nome: 'Rio Grande do Norte' },
+        { sigla: 'RS', nome: 'Rio Grande do Sul' },
+        { sigla: 'RO', nome: 'Rondônia' },
+        { sigla: 'RR', nome: 'Roraima' },
+        { sigla: 'SC', nome: 'Santa Catarina' },
+        { sigla: 'SP', nome: 'São Paulo' },
+        { sigla: 'SE', nome: 'Sergipe' },
+        { sigla: 'TO', nome: 'Tocantins' }
     ];
 
 
@@ -263,14 +306,18 @@ export default function ClienInfoPage() {
 
     const handleCancel = () => {
         setFormValues({ ...originalClientDetails });
+        navigate(`/cliente`);
         setHasChanges(false);
     };
 
-    const handleSnackbarClose = (event, reason) => {
-        if (reason === 'clickaway') {
-            return;
-        }
-        setSnackbarOpen(false);
+    const showSnackbar = (message, severity) => {
+        setSnackbarMessage(message);
+        setSnackbarSeverity(severity);
+        setSnackbarOpen(true);
+    };
+
+    const handleSnackbarClose = () => {
+        setOpenSnackbar(false);
     };
 
     const handleSubmit = async (e) => {
@@ -290,20 +337,26 @@ export default function ClienInfoPage() {
                 ...formValues,
                 dataNascimento: formatOutputDate(formValues.dataNascimento),
             });
-            setSnackbarMessage('Cliente atualizado com sucesso');
-            setSnackbarSeverity('success');
-            setSnackbarOpen(true);
+            showSnackbar('Cliente atualizado com sucesso', 'success');
             setHasChanges(false);
         } catch (error) {
             if (error.response) {
-                setSnackbarMessage(error.response.data.errors[0]);
+                if (error.response.data.message) {
+                    const errorMessage = error.response.data.message;
+                    showSnackbar(`${errorMessage}`, 'error');
+                } else {
+                    let errorMessage = error.response.data.errors[0];
+                    const colonIndex = errorMessage.indexOf(':');
+                    if (colonIndex !== -1) {
+                        errorMessage = errorMessage.substring(colonIndex + 1).trim();
+                    }
+                    showSnackbar(`${errorMessage}`, 'error');
+                }
             } else if (error.request) {
-                setSnackbarMessage('Erro de requisição: ' + error.request);
+                showSnackbar(`Erro de requisição: ${error.request}`, 'error');
             } else {
-                setSnackbarMessage('Erro ao salvar o cliente: ' + error.message);
+                showSnackbar(`Erro ao salvar o Cliente: ${error.message}`, 'error');
             }
-            setSnackbarSeverity('error');
-            setSnackbarOpen(true);
         }
     };
 
@@ -314,10 +367,7 @@ export default function ClienInfoPage() {
                 <title>Informações de cliente</title>
             </Helmet>
             <Container>
-                <Container maxWidth="lg" style={{ paddingLeft: '20px', paddingRight: '20px' }}>
-                    <Typography variant="h4" color="text.primary" sx={{ mb: 1 }}>
-                        Informações de cliente
-                    </Typography>
+                <Container maxWidth="100%" style={{ alignContent: 'left', marginTop: '30px' }}>
                     <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />} aria-label="breadcrumb" sx={{ mb: 2 }}>
                         <Link color="inherit" href="/dashboard">
                             Dashboard
@@ -526,8 +576,8 @@ export default function ClienInfoPage() {
                                         }}
                                     >
                                         {estados.map((estado) => (
-                                            <MenuItem key={estado} value={estado}>
-                                                {estado}
+                                            <MenuItem key={estado.sigla} value={estado.sigla}>
+                                                {estado.sigla + ' - ' + estado.nome}
                                             </MenuItem>
                                         ))}
                                     </TextField>
@@ -717,13 +767,13 @@ export default function ClienInfoPage() {
             <Snackbar
                 open={snackbarOpen}
                 autoHideDuration={6000}
-                onClose={handleSnackbarClose}
+                onClose={() => setSnackbarOpen(false)}
             >
                 <MuiAlert
                     elevation={6}
                     variant="filled"
+                    onClose={() => setSnackbarOpen(false)}
                     severity={snackbarSeverity}
-                    onClose={handleSnackbarClose}
                 >
                     {snackbarMessage}
                 </MuiAlert>

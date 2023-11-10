@@ -27,7 +27,7 @@ const TABLE_HEAD = [
   { id: 'nome', label: 'Nome', alignRight: false },
   { id: 'tamanho', label: 'Tamanho', alignRight: false },
   { id: 'cor', label: 'Cores', alignRight: false },
-  { id: 'valor', label: 'valor', alignRight: false }
+  { id: 'valor', label: 'Valor', alignRight: false }
 ];
 
 // ----------------------------------------------------------------------
@@ -81,10 +81,7 @@ export default function ProductPage() {
         <title>Produto</title>
       </Helmet>
       <Container maxWidth="xl" sx={{ marginBottom: "30px" }}>
-        <Container maxWidth="100%" style={{ alignContent: 'left' }}>
-          <Typography variant="h4" color="text.primary" sx={{ mb: 1 }}>
-            Produto
-          </Typography>
+        <Container maxWidth="100%" style={{ alignContent: 'left', marginTop: '30px' }}>
           <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />} aria-label="breadcrumb" sx={{ mb: 2 }}>
             <Link color="inherit" href="/dashboard">
               Dashboard
@@ -95,13 +92,12 @@ export default function ProductPage() {
 
         <Card>
           <ListToolBar
-            filterName={filterName}
-            onFilterName={handleFilterByName}
+            filtro={filterName}
+            onfiltro={handleFilterByName}
             placeHolder={'Procurar por Código ou Nome'}
             buttonText={'Adicionar Produto'}
             toPage={"/produto/cadastro"}
           />
-
           <TableContainer>
             <Table>
               <ListHead headLabel={TABLE_HEAD} rowCount={totalItems} />
@@ -109,7 +105,7 @@ export default function ProductPage() {
                 {productList.map((row) => {
                   const { codigo, nome, imagens, tamanho, cor, valor } = row;
                   let img = {}
-                  if(imagens.length > 0) {
+                  if (imagens.length > 0) {
                     img = imagens[0]
                   }
 
@@ -129,7 +125,7 @@ export default function ProductPage() {
                       <TableCell align="left">{nome}</TableCell>
                       <TableCell align="left">{tamanho}</TableCell>
                       <TableCell align="left">{cor}</TableCell>
-                      <TableCell align="left">{valor}</TableCell>
+                      <TableCell align="left">{'R$ ' + valor}</TableCell>
                     </TableRow>
                   );
                 })}
@@ -145,6 +141,7 @@ export default function ProductPage() {
             page={page}
             onPageChange={handleChangePage}
             onRowsPerPageChange={handleChangeRowsPerPage}
+            labelRowsPerPage="Produtos por página"
           />
         </Card>
       </Container>

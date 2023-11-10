@@ -11,7 +11,7 @@ export const navConfig = [
   {
     title: (
       <Typography variant="body1" sx={{ color: '#FFF' }}>
-        Home
+        Dasboard
       </Typography>
     ),
     path: '/dashboard',
@@ -20,7 +20,7 @@ export const navConfig = [
   {
     title: (
       <Typography variant="body1" sx={{ color: '#FFF' }}>
-        Cliente
+        Clientes
       </Typography>
     ),
     path: '/cliente',
@@ -29,7 +29,7 @@ export const navConfig = [
   {
     title: (
       <Typography variant="body1" sx={{ color: '#FFF' }}>
-        Produto
+        Produtos
       </Typography>
     ),
     path: '/produto',
@@ -38,14 +38,14 @@ export const navConfig = [
   {
     title: (
       <Typography variant="body1" sx={{ color: '#FFF' }}>
-        Aluguel
+        Aluguéis
       </Typography>
     ),
     path: '/aluguel',
     icon: <CurrencyExchangeIcon sx={{ color: '#fff' }} />,
   },
   {
-    title: 'Relatório',
+    title: 'Relatórios',
     icon: <SummarizeIcon />,
     subitems: [
       {
@@ -70,7 +70,7 @@ export const navConfigAdmin = [
   {
     title: (
       <Typography variant="body1" sx={{ color: '#FFF' }}>
-        Forma de Pagamento
+        Formas de Pagamento
       </Typography>
     ),
     path: '/formaPagamento',
@@ -79,7 +79,7 @@ export const navConfigAdmin = [
   {
     title: (
       <Typography variant="body1" sx={{ color: '#FFF' }}>
-        Categoria
+        Categorias
       </Typography>
     ),
     path: '/categoria',

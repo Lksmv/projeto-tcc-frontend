@@ -164,7 +164,15 @@ export default function CatalogPage() {
             <Link color="inherit" href="/catalogo">
               Catálogo
             </Link>
-            <Typography variant="subtitle1" color="text.primary">Vestidos</Typography>
+            <Typography variant="subtitle1" color="text.primary">
+              {selectedCategoriaFilter
+                ? categoryList.find(category => category.codigo === selectedCategoriaFilter)?.nome
+                : selectedGenderFilter
+                  ? selectedGenderFilter.charAt(0).toUpperCase() + selectedGenderFilter.slice(1)
+                  : 'Trajes'}
+            </Typography>
+
+
           </Breadcrumbs>
         </Grid>
 

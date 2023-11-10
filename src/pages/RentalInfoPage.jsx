@@ -36,9 +36,28 @@ import { BACKEND_URL } from '../utils/backEndUrl';
 import { formatOutputDate, formatInputDate } from '../utils/formatTime';
 import { NumericFormat } from 'react-number-format';
 import AddIcon from '@mui/icons-material/Add';
+import Snackbar from '@mui/material/Snackbar';
+import MuiAlert from '@mui/material/Alert';
 
 
 export default function RentalInfoPage() {
+
+  const [cliente, setCliente] = useState([]);
+  const [novoValorAdicional, setValorAdicional] = useState(0);
+  const [funcionario, setFuncionario] = useState([]);
+  const [formasPagamento, setformasPagamento] = useState([]);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+  const [isAddValueDialogOpen, setAddValueDialogOpen] = useState(false);
+  const [isAddNewPaymentDialogOpen, setAddNewPaymentOpen] = useState(false);
+  const [novosPagamentos] = useState([]);
+  const [selectedRow, setSelectedRow] = useState(null);
+  const [valorPagamento, setValorPagamento] = useState(0);
+  const [idFormaPagamento, setIdFormaPagamento] = useState(0);
+  const { codigo } = useParams();
+
+
   const estiloCampo = {
     margin: '8px',
     borderRadius: '5px 5px 0 0',
@@ -108,21 +127,6 @@ export default function RentalInfoPage() {
     observacoes: ""
   });
 
-
-  const [cliente, setCliente] = useState([]);
-  const [novoValorAdicional, setValorAdicional] = useState(0);
-  const [funcionario, setFuncionario] = useState([]);
-  const [formasPagamento, setformasPagamento] = useState([]);
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
-  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
-  const [isAddValueDialogOpen, setAddValueDialogOpen] = useState(false);
-  const [isAddNewPaymentDialogOpen, setAddNewPaymentOpen] = useState(false);
-  const [novosPagamentos] = useState([]);
-  const [selectedRow, setSelectedRow] = useState(null);
-  const [valorPagamento, setValorPagamento] = useState(0);
-  const [idFormaPagamento, setIdFormaPagamento] = useState(0);
-  const { codigo } = useParams();
 
   const handleValorAdicionalFieldChange = (e) => {
     setValorAdicional(e);
@@ -213,26 +217,76 @@ export default function RentalInfoPage() {
           console.log(`Pagamento ${index + 1} atualizado com sucesso:`, response.data);
         });
       } catch (error) {
-        console.error('Erro ao salvar os pagamentos:', error);
+        if (error.response) {
+          if (error.response.data.message) {
+            const errorMessage = error.response.data.message;
+            showSnackbar(`${errorMessage}`, 'error');
+          } else {
+            let errorMessage = error.response.data.errors[0];
+            const colonIndex = errorMessage.indexOf(':');
+            if (colonIndex !== -1) {
+              errorMessage = errorMessage.substring(colonIndex + 1).trim();
+            }
+            showSnackbar(`${errorMessage}`, 'error');
+          }
+        } else if (error.request) {
+          showSnackbar(`Erro de requisição: ${error.request}`, 'error');
+        } else {
+          showSnackbar(`Erro ao salvar os Pagamentos: ${error.message}`, 'error');
+        }
       }
     };
     try {
       const responseArray = await Promise.all(formValues.listaProdutos.map(async (produtos) => {
-        const aluguelProduto = {codigoProduto: produtos.produtoDTO.codigo, codigoAluguel: formValues.codigo, status: produtos.status}
+        const aluguelProduto = { codigoProduto: produtos.produtoDTO.codigo, codigoAluguel: formValues.codigo, status: produtos.status }
         return axios.put(BACKEND_URL + 'aluguel/update-status', aluguelProduto);
       }));
 
       responseArray.forEach((response, index) => {
         console.log(`Produto aluguel status ${index + 1} atualizado com sucesso:`, response.data);
       });
+
     } catch (error) {
-      console.error('Erro ao salvar os Produto aluguel status:', error);
+      if (error.response) {
+        if (error.response.data.message) {
+          const errorMessage = error.response.data.message;
+          showSnackbar(`${errorMessage}`, 'error');
+        } else {
+          let errorMessage = error.response.data.errors[0];
+          const colonIndex = errorMessage.indexOf(':');
+          if (colonIndex !== -1) {
+            errorMessage = errorMessage.substring(colonIndex + 1).trim();
+          }
+          showSnackbar(`${errorMessage}`, 'error');
+        }
+      } else if (error.request) {
+        showSnackbar(`Erro de requisição: ${error.request}`, 'error');
+      } else {
+        showSnackbar(`Erro ao alterar o status do Produto(s): ${error.message}`, 'error');
+      }
     }
     try {
       const response = await axios.put(BACKEND_URL + `aluguel/${codigoAsInteger}`, requestData);
       console.log('Aluguel atualizado com sucesso:', response.data);
+      showSnackbar(`Aluguel Salvo com Sucesso`, 'success');
     } catch (error) {
-      console.error('Erro ao salvar o aluguel:', error);
+      if (error.response) {
+        if (error.response.data.message) {
+          const errorMessage = error.response.data.message;
+          showSnackbar(`${errorMessage}`, 'error');
+        } else {
+          let errorMessage = error.response.data.errors[0];
+          const colonIndex = errorMessage.indexOf(':');
+          if (colonIndex !== -1) {
+            errorMessage = errorMessage.substring(colonIndex + 1).trim();
+          }
+          showSnackbar(`${errorMessage}`, 'error');
+        }
+      } else if (error.request) {
+        showSnackbar(`Erro de requisição: ${error.request}`, 'error');
+      } else {
+        showSnackbar(`Erro ao salvar o Aluguel: ${error.message}`, 'error');
+      }
     }
   }
 
@@ -240,6 +294,13 @@ export default function RentalInfoPage() {
     setSnackbarMessage(message);
     setSnackbarSeverity(severity);
     setSnackbarOpen(true);
+  };
+
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setSnackbarOpen(false);
   };
 
   const handleOpenAddValorAdicionalDialog = () => {
@@ -261,7 +322,10 @@ export default function RentalInfoPage() {
   };
 
   const addNewPayment = () => {
-    if (idFormaPagamento > 0 && valorPagamento > 0) {
+    if (valorPagamento > (formValues.total)) {
+      showSnackbar(`Valor do pagamento não pode ser maior que o valor a pagar!`, 'error');
+      handleCloseAddPagamentoDialog();
+    } else if (idFormaPagamento > 0 && valorPagamento > 0) {
       setFormValues((formValues) => ({
         ...formValues,
         listaPagamentos: [
@@ -284,6 +348,38 @@ export default function RentalInfoPage() {
     } else {
     }
   };
+
+  const handleConcluir = async (event) => {
+    event.preventDefault();
+    const updatedProducts = formValues.listaProdutos.map((produto) => ({
+      ...produto,
+      status: produto.status == 'ALUGADO' ? 'DEVOLVIDO' : 'CANCELADO',
+      statusAluguel: 'FECHADO'
+    }));
+
+    setFormValues({
+      ...formValues,
+      listaProdutos: updatedProducts,
+    });
+    await handleSubmit(event);
+  };
+
+  const handleCancelar = async (event) => {
+    event.preventDefault();
+    const updatedProducts = formValues.listaProdutos.map((produto) => ({
+      ...produto,
+      status: 'CANCELADO',
+      statusAluguel: 'CANCELADO'
+    }));
+
+    setFormValues({
+      ...formValues,
+      listaProdutos: updatedProducts,
+    });
+
+    await handleSubmit(event);
+  }
+
 
   const calculateAllValues = () => {
     const array = Object.values(formValues.listaPagamentos);
@@ -336,10 +432,7 @@ export default function RentalInfoPage() {
         <title>Cadastro de aluguel</title>
       </Helmet>
       <Container>
-      <Container maxWidth="100%" style={{ alignContent: 'left' }}>
-          <Typography variant="h4" color="text.primary" sx={{ mb: 1 }}>
-          Informações do aluguel com Código: {codigo}
-          </Typography>
+        <Container maxWidth="100%" style={{ alignContent: 'left', marginTop: '30px' }}>
           <Grid container >
             <Grid item xs={6}>
               <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />} aria-label="breadcrumb" sx={{ mb: 2 }}>
@@ -368,7 +461,7 @@ export default function RentalInfoPage() {
           marginBottom: '20px'
         }}>
 
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={(e) => handleSubmit(e)}>
 
             <Grid container spacing={2}>
               <Grid item className='grid-esquerda' xs={12} sm={6} display="flex" flexDirection="column" alignItems='center'>
@@ -439,7 +532,7 @@ export default function RentalInfoPage() {
                             >
                               <TableCell>{row.produtoDTO.codigo}</TableCell>
                               <TableCell>{row.produtoDTO.nome}</TableCell>
-                              <TableCell>{row.produtoDTO.valor}</TableCell>
+                              <TableCell>{'R$ ' + row.produtoDTO.valor}</TableCell>
                               <TableCell>
                                 <Select
                                   value={row.status}
@@ -615,7 +708,6 @@ export default function RentalInfoPage() {
                   decimalSeparator=","
                   prefix="R$ "
                   label="Total"
-                  allowNegative={false}
                   decimalScale={2}
                   fixedDecimalScale={true}
                   fullWidth
@@ -637,22 +729,95 @@ export default function RentalInfoPage() {
                 type="submit"
                 variant="contained"
                 style={salvarButtonStyle}
+                submit
               >
                 SALVAR
               </Button>
 
               <Button
+                variant="contained"
+                style={{
+                  ...buttonStyle,
+                  backgroundColor: '#4CAF50', // Cor verde (ou a cor desejada para o botão "Concluir")
+                  color: '#fff',
+                  width: '90px',
+                  height: '36px',
+                  marginRight: '8px',
+                  transition: 'background-color 0.3s',
+                  '&:hover': {
+                    backgroundColor: '#45a049', // Cor hover
+                  },
+                  '&:active': {
+                    backgroundColor: '#367738', // Cor quando pressionado
+                  },
+                }}
+                onClick={handleConcluir}
+              >
+                CONCLUIR
+              </Button>
+
+              <Button
                 type="reset"
                 variant="contained"
-                style={cancelarButtonStyle}
-                onClick={handleCancel}
+                style={{
+                  ...buttonStyle,
+                  backgroundColor: '#E91E63', // Cor vermelha (ou a cor desejada para o botão "Cancelar")
+                  color: '#fff',
+                  width: '185px',
+                  height: '36px',
+                  marginRight: '8px',
+                  transition: 'background-color 0.3s',
+                  '&:hover': {
+                    backgroundColor: '#D81B60', // Cor hover
+                  },
+                }}
+                onClick={handleCancelar}
               >
-                CANCELAR
+                CANCELAR ALUGUEL
               </Button>
+
+              <Button
+                type="reset"
+                variant="contained"
+                style={{
+                  ...buttonStyle,
+                  backgroundColor: '#FFA500', // Laranja
+                  color: '#fff',
+                  width: '90px',
+                  height: '36px',
+                  marginRight: '8px',
+                  transition: 'background-color 0.3s',
+                  '&:hover': {
+                    backgroundColor: '#FF8C00', // Laranja mais escuro no hover
+                  },
+                  '&:active': {
+                    backgroundColor: '#FF6347', // Tom de vermelho mais forte quando pressionado
+                  },
+                }}
+                onClick={handleCancel}  // Ou a função que você deseja chamar ao voltar
+              >
+                VOLTAR
+              </Button>
+
+
             </Grid>
           </form>
         </Container>
       </Container >
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+      >
+        <MuiAlert
+          elevation={6}
+          variant="filled"
+          onClose={handleCloseSnackbar}
+          severity={snackbarSeverity}
+        >
+          {snackbarMessage}
+        </MuiAlert>
+      </Snackbar>
       <Dialog open={isAddValueDialogOpen} onClose={handleCloseAddValueDialog}>
         <DialogTitle>Adicionar Valor Adicional</DialogTitle>
         <DialogContent>

@@ -68,7 +68,7 @@ const AccountPopover = () => {
   return (
     <>
       <IconButton onClick={handleOpen} sx={{ padding: 0 }}>
-        <Avatar alt="avatar" sx={{ bgcolor: 'transparent', color: '#000' }} />
+        <Avatar alt="avatar" sx={{ bgcolor: 'transparent', color: '#fff' }} />
       </IconButton>
 
       <Popover

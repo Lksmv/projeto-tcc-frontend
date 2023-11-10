@@ -103,10 +103,10 @@ export default function ReportClientPage() {
         <title>Relatório de Clientes</title>
       </Helmet>
       <Container>
-        <Container maxWidth="xl" sx={{ marginBottom: "30px", marginTop: '30px' }}>
-          <Typography variant="h4" color="textPrimary" sx={{ mb: 1 }}>
-            Relatório de Aluguel por cliente
-          </Typography>
+        <Container maxWidth="xl" sx={{
+          marginTop: '30px',
+          width: '700px',
+        }}>
           <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />} aria-label="breadcrumb" sx={{ mb: 2 }}>
             <Link color="inherit" href="/dashboard">
               Dashboard

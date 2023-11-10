@@ -123,6 +123,10 @@ export default function RentalCreatePage() {
     setSnackbarOpen(true);
   };
 
+  const handleSnackbarClose = () => {
+    setOpenSnackbar(false);
+  };
+
   const fetchClientes = async () => {
     try {
       const response = await axios.get(BACKEND_URL + 'cliente', {
@@ -278,11 +282,22 @@ export default function RentalCreatePage() {
       const response = await axios.post(BACKEND_URL + 'aluguel', requestData);
       const codigo = response.data.codigo;
       showSnackbar('Aluguel criado com sucesso', 'success');
-      navigate(`/aluguel/detalhes/${codigo}`);
+      setTimeout(() => {
+        navigate(`/aluguel/detalhes/${codigo}`);
+      }, 1000);
     } catch (error) {
       if (error.response) {
-        const errorMessage = error.response.data.message;
-        showSnackbar(`${errorMessage}`, 'error');
+        if (error.response.data.message) {
+          const errorMessage = error.response.data.message;
+          showSnackbar(`${errorMessage}`, 'error');
+        } else {
+          let errorMessage = error.response.data.errors[0];
+          const colonIndex = errorMessage.indexOf(':');
+          if (colonIndex !== -1) {
+            errorMessage = errorMessage.substring(colonIndex + 1).trim();
+          }
+          showSnackbar(`${errorMessage}`, 'error');
+        }
       } else if (error.request) {
         showSnackbar(`Erro de requisição: ${error.request}`, 'error');
       } else {
@@ -362,10 +377,7 @@ export default function RentalCreatePage() {
         <title>Cadastro de aluguel</title>
       </Helmet>
       <Container>
-        <Container maxWidth="lg" style={{ paddingLeft: '20px', paddingRight: '20px' }}>
-          <Typography variant="h4" color="text.primary" sx={{ mb: 1 }}>
-            Cadastro de aluguel
-          </Typography>
+        <Container maxWidth="100%" style={{ alignContent: 'left', marginTop: '30px' }}>
           <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />} aria-label="breadcrumb" sx={{ mb: 2 }}>
             <Link color="inherit" href="/dashboard">
               Dashboard

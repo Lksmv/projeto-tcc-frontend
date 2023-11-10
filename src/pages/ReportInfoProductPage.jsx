@@ -48,10 +48,7 @@ export default function ReportInfoProductPage() {
         <title>Relatório Produto</title>
       </Helmet>
       <Container maxWidth="xl" sx={{ marginBottom: "30px", marginTop: '30px' }}>
-        <Container maxWidth="100%" style={{ alignContent: 'left' }}>
-          <Typography variant="h4" color="text.primary" sx={{ mb: 1 }}>
-            Relatório do Produto com Código: {codigo}
-          </Typography>
+        <Container maxWidth="100%" style={{ alignContent: 'left', marginTop: '30px' }}>
           <Grid container >
             <Grid item xs={6}>
               <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />} aria-label="breadcrumb" sx={{ mb: 2 }}>
@@ -59,7 +56,7 @@ export default function ReportInfoProductPage() {
                   Dashboard
                 </Link>
                 <Link color="inherit" href="/produto/relatorio">
-                  Relatório de aluguel por produto
+                  Relatório do Produto com Código: {codigo}
                 </Link>
                 <Typography variant="subtitle1" color="text.primary">{produto.nome}</Typography>
               </Breadcrumbs>
@@ -77,8 +74,8 @@ export default function ReportInfoProductPage() {
                 <TableRow>
                   <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>Código Aluguel</TableCell>
                   <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>Nome Cliente</TableCell>
-                  <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>valor</TableCell>
-                  <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>Aluguel Status</TableCell>
+                  <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>Valor</TableCell>
+                  <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>Status</TableCell>
                   <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>Data Devolução</TableCell>
                   <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>Data Retirada</TableCell>
                 </TableRow>
@@ -94,7 +91,7 @@ export default function ReportInfoProductPage() {
                   >
                     <TableCell>{row.codigo}</TableCell>
                     <TableCell>{row.clienteDTO.nome}</TableCell>
-                    <TableCell>{row.valor}</TableCell>
+                    <TableCell>{'R$ ' + row.valor}</TableCell>
                     <TableCell>{row.statusAluguel}</TableCell>
                     <TableCell>{formatOutputDate(row.dataDevolucao)}</TableCell>
                     <TableCell>{formatOutputDate(row.dataSaida)}</TableCell>

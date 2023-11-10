@@ -17,18 +17,24 @@ import {
 import InputMask from 'react-input-mask';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import { BACKEND_URL } from '../utils/backEndUrl';
+import { isValid, parseISO } from 'date-fns';
+import Snackbar from '@mui/material/Snackbar';
+import MuiAlert from '@mui/material/Alert';
 
 export default function ReportPage() {
     const navigate = useNavigate()
     const [categorias, setCategorias] = useState([]);
     const [page, setPage] = useState(0);
     const [rowsPerPage] = useState(10);
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
+    const [snackbarSeverity, setSnackbarSeverity] = useState('success');
     const [filterName, setFilterName] = useState('');
 
     const statusLista = [
-        { codigo: '1', nome: 'Aberto', value: 'ABERTO' },
-        { codigo: '2', nome: 'Fechado', value: 'FECHADO' },
-        { codigo: '3', nome: 'Cancelado', value: 'CANCELADO' },
+        { codigo: '1', nome: 'Aberto', value: 1 },
+        { codigo: '2', nome: 'Fechado', value: 2 },
+        { codigo: '3', nome: 'Cancelado', value: 3 },
     ];
     const [formValues, setFormValues] = useState({
         dataInicial: "",
@@ -80,6 +86,17 @@ export default function ReportPage() {
         },
     };
 
+
+    const showSnackbar = (message, severity) => {
+        setSnackbarMessage(message);
+        setSnackbarSeverity(severity);
+        setSnackbarOpen(true);
+    };
+
+    const handleSnackbarClose = () => {
+        setOpenSnackbar(false);
+    };
+
     const handleFieldChange = (e) => {
         const { name, value } = e.target;
         setFormValues({ ...formValues, [name]: value });
@@ -95,7 +112,15 @@ export default function ReportPage() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        navigate(`/aluguel/relatorio/${formatInputDateWithouTS(formValues.dataInicial)}/${formatInputDateWithouTS(formValues.dataFinal)}/${formValues.codigoCategoria == "" ? 0 : formValues.codigoCategoria}/${formValues.status == "" ? 0 : formValues.status}`);
+
+        const dataInicialValida = isValid(parseISO(formatInputDateWithouTS(formValues.dataInicial)));
+        const dataFinalValida = isValid(parseISO(formatInputDateWithouTS(formValues.dataFinal)));
+
+        if (!dataInicialValida || !dataFinalValida) {
+            showSnackbar('Data inicial ou final inválida!', 'error');
+        } else {
+            navigate(`/aluguel/relatorio/${formatInputDateWithouTS(formValues.dataInicial)}/${formatInputDateWithouTS(formValues.dataFinal)}/${formValues.codigoCategoria == "" ? 0 : formValues.codigoCategoria}/${formValues.status == "" ? 4 : formValues.status}`);
+        }
     };
 
 
@@ -124,10 +149,10 @@ export default function ReportPage() {
                 <title>Relatório de Aluguel</title>
             </Helmet>
             <Container>
-                <Container maxWidth="xl" sx={{ marginBottom: "30px", marginTop: '30px' }}>
-                    <Typography variant="h4" color="text.primary" sx={{ mb: 1 }}>
-                        Relatório de Aluguel
-                    </Typography>
+                <Container maxWidth="xl" sx={{
+                    marginTop: '30px',
+                    width: '700px',
+                }}>
                     <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />} aria-label="breadcrumb" sx={{ mb: 2 }}>
                         <Link color="inherit" href="/dashboard">
                             Dashboard
@@ -258,7 +283,7 @@ export default function ReportPage() {
                                 }}
                             >
                                 {statusLista.map((status) => (
-                                    <MenuItem key={status.codigo} value={status.codigo}>
+                                    <MenuItem key={status.codigo} value={status.value}>
                                         {status.nome}
                                     </MenuItem>
                                 ))}
@@ -287,6 +312,20 @@ export default function ReportPage() {
                     </form>
                 </Container>
             </Container >
+            <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={6000}
+                onClose={() => setSnackbarOpen(false)}
+            >
+                <MuiAlert
+                    elevation={6}
+                    variant="filled"
+                    onClose={() => setSnackbarOpen(false)}
+                    severity={snackbarSeverity}
+                >
+                    {snackbarMessage}
+                </MuiAlert>
+            </Snackbar>
         </>
     );
 }

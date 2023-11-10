@@ -32,8 +32,8 @@ export default function ReportInfoProductPage() {
         const content = {
             dataInicial: dataInicial,
             dataFinal: dataFinal,
-            categoria: codigoCategoria == 0 ? 0 : codigoCategoria,
-            status: status === '0' ? "" : status,
+            codigoCategoria: codigoCategoria == 0 ? "" : codigoCategoria,
+            status: status == 4 ? "" : status,
         };
 
         axios
@@ -50,10 +50,7 @@ export default function ReportInfoProductPage() {
                 <title>Relatório Aluguel</title>
             </Helmet>
             <Container maxWidth="xl" sx={{ marginBottom: "30px", marginTop: '30px' }}>
-                <Container maxWidth="100%" style={{ alignContent: 'left' }}>
-                    <Typography variant="h4" color="text.primary" sx={{ mb: 1 }}>
-                        Relatório de alugueis de {formatOutputDate(dataInicial)} até {formatOutputDate(dataFinal)}
-                    </Typography>
+                <Container maxWidth="100%" style={{ alignContent: 'left', marginTop: '30px' }}>
                     <Grid container >
                         <Grid item xs={6}>
                             <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />} aria-label="breadcrumb" sx={{ mb: 2 }}>
@@ -72,8 +69,8 @@ export default function ReportInfoProductPage() {
                             <ReportDownloadButton nomeArquivo={"relatorioAluguel.docx"} url={BACKEND_URL + `aluguel/relatorio-por-data/download`} params={{
                                 dataInicial: dataInicial,
                                 dataFinal: dataFinal,
-                                categoria: codigoCategoria == 0 ? 0 : codigoCategoria,
-                                status: status === '0' ? "" : status,
+                                codigoCategoria: codigoCategoria == 0 ? "" : codigoCategoria,
+                                status: status == 4 ? "" : status,
                             }} />
                         </Grid>
                     </Grid>
@@ -86,11 +83,11 @@ export default function ReportInfoProductPage() {
                                 <TableRow>
                                     <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>Código Aluguel</TableCell>
                                     <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>Nome Cliente</TableCell>
-                                    <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>valor</TableCell>
-                                    <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>Aluguel Status</TableCell>
+                                    <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>Valor</TableCell>
+                                    <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>Status</TableCell>
                                     <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>Data Devolução</TableCell>
                                     <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>Data Retirada</TableCell>
-                                    <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>Produtos</TableCell>
+                                    <TableCell style={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>Produto(s)</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>

@@ -68,18 +68,13 @@ export default function ClientPage() {
     setPage(0);
   };
 
-  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - totalItems) : 0;
-
   return (
     <>
       <Helmet>
         <title>Cliente</title>
       </Helmet>
       <Container maxWidth="xl" sx={{ marginBottom: "30px" }}>
-        <Container maxWidth="100%" style={{ alignContent: 'left' }}>
-          <Typography variant="h4" color="text.primary" sx={{ mb: 1 }}>
-            Cliente
-          </Typography>
+        <Container maxWidth="100%" style={{ alignContent: 'left', marginTop: '30px'}}>
           <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />} aria-label="breadcrumb" sx={{ mb: 2 }}>
             <Link color="inherit" href="/dashboard">
               Dashboard
@@ -131,6 +126,7 @@ export default function ClientPage() {
             page={page}
             onPageChange={handleChangePage}
             onRowsPerPageChange={handleChangeRowsPerPage}
+            labelRowsPerPage="Clientes por página"
           />
         </Card>
       </Container>

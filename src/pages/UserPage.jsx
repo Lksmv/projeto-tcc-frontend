@@ -218,9 +218,6 @@ export default function UserPage() {
           maxWidth="100%"
           style={{ marginTop: '16px', alignContent: 'left' }}
         >
-          <Typography variant="h4" color="text.primary" sx={{ mb: 1 }}>
-            Usuário
-          </Typography>
           <Breadcrumbs
             separator={<NavigateNextIcon fontSize="small" />}
             aria-label="breadcrumb"
@@ -289,6 +286,7 @@ export default function UserPage() {
             page={page}
             onPageChange={handleChangePage}
             onRowsPerPageChange={handleChangeRowsPerPage}
+            labelRowsPerPage="usuários por página"
           />
         </Card>
 

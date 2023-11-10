@@ -81,10 +81,7 @@ export default function RentalPage() {
         <title>Aluguel</title>
       </Helmet>
       <Container maxWidth="xl" sx={{ marginBottom: "30px" }}>
-        <Container maxWidth="100%" style={{ alignContent: 'left' }}>
-          <Typography variant="h4" color="text.primary" sx={{ mb: 1 }}>
-            Aluguel
-          </Typography>
+        <Container maxWidth="100%" style={{ alignContent: 'left', marginTop: '30px' }}>
           <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />} aria-label="breadcrumb" sx={{ mb: 2 }}>
             <Link color="inherit" href="/dashboard">
               Dashboard
@@ -110,7 +107,7 @@ export default function RentalPage() {
                   const listaProdutos = row.listaProdutos;
                   const produtos = row.listaProdutos.map((rowData) => {
                     return rowData.produtoDTO.codigo + " - " + rowData.produtoDTO.nome;
-                  }).join(', '); 
+                  }).join(', ');
 
                   const cliente = row.clienteDTO.nome;
 
@@ -145,6 +142,7 @@ export default function RentalPage() {
             page={page}
             onPageChange={handleChangePage}
             onRowsPerPageChange={handleChangeRowsPerPage}
+            labelRowsPerPage="Aluguéis por página"
           />
         </Card>
       </Container>
