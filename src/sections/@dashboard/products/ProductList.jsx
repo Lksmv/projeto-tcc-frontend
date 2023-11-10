@@ -92,7 +92,7 @@ export default function ProductList({ products, ...other }) {
                     <strong>Cor:</strong> {selectedProduct.cor}
                   </Typography>
                   <Typography variant="body1">
-                    <strong>Valor:</strong> {selectedProduct.valor}
+                    <strong>Valor:</strong> {"R$ " + selectedProduct.valor}
                   </Typography>
                   <Button
                     startIcon={<WhatsAppIcon />}

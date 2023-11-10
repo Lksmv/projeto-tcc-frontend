@@ -147,6 +147,15 @@ export default function EmployeePage() {
     setEmployeeValues({ ...employeeValues, [name]: value });
   };
 
+  const handleCodigoFieldChange = (e) => {
+    const inputValue = e.target.value;
+
+    const numericValue = inputValue.replace(/\D/g, '');
+    const { name, value } = e.target;
+    
+    setUserValues({ ...userValues, [name]: numericValue });
+  };
+
   const handleCreateOrUpdateEmployee = async () => {
     const requestData = {
       ...employeeValues,
@@ -274,7 +283,7 @@ export default function EmployeePage() {
                 fullWidth
                 style={estiloCampo}
                 value={employeeValues.codigo}
-                onChange={handleFieldChange}
+                onChange={handleCodigoFieldChange}
                 sx={{
                   backgroundColor: '#fff',
                 }}

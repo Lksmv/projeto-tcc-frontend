@@ -195,7 +195,17 @@ export default function UserPage() {
 
   const handleFieldChange = (e) => {
     const { name, value } = e.target;
+
     setUserValues({ ...userValues, [name]: value });
+  };
+
+  const handleCodigoFieldChange = (e) => {
+    const inputValue = e.target.value;
+
+    const numericValue = inputValue.replace(/\D/g, '');
+    const { name, value } = e.target;
+
+    setUserValues({ ...userValues, [name]: numericValue });
   };
 
   const handleCreateOrUpdateUser = async () => {
@@ -340,7 +350,7 @@ export default function UserPage() {
                     fullWidth
                     style={estiloCampo}
                     value={userValues.codigo}
-                    onChange={handleFieldChange}
+                    onChange={handleCodigoFieldChange}
                     sx={{
                       backgroundColor: '#fff',
                     }}

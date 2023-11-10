@@ -304,6 +304,15 @@ export default function ClienInfoPage() {
         setHasChanges(true);
     };
 
+    const handleCodigoFieldChange = (e) => {
+        const inputValue = e.target.value;
+    
+        const numericValue = inputValue.replace(/\D/g, '');
+        const { name, value } = e.target;
+        
+        setUserValues({ ...userValues, [name]: numericValue });
+      };
+
     const handleCancel = () => {
         setFormValues({ ...originalClientDetails });
         navigate(`/cliente`);
@@ -405,7 +414,7 @@ export default function ClienInfoPage() {
                                         fullWidth
                                         style={estiloCampo}
                                         value={formValues.codigo}
-                                        onChange={handleFieldChange}
+                                        onChange={handleCodigoFieldChange}
                                         sx={{
                                             backgroundColor: '#fff'
                                         }}

@@ -141,6 +141,15 @@ export default function CategoryPage() {
     setCategoryValues({ ...categoryValues, [name]: value });
   };
 
+  const handleCodigoFieldChange = (e) => {
+    const inputValue = e.target.value;
+
+    const numericValue = inputValue.replace(/\D/g, '');
+    const { name, value } = e.target;
+    
+    setUserValues({ ...userValues, [name]: numericValue });
+  };
+
   const handleCreateOrUpdateCategory = async () => {
     const requestData = {
       ...categoryValues,
@@ -269,7 +278,7 @@ export default function CategoryPage() {
                 fullWidth
                 style={estiloCampo}
                 value={categoryValues.codigo}
-                onChange={handleFieldChange}
+                onChange={handleCodigoFieldChange}
                 sx={{
                   backgroundColor: '#fff',
                 }}
