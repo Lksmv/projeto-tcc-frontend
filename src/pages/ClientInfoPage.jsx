@@ -761,7 +761,7 @@ export default function ClienInfoPage() {
                 <DialogTitle>Confirmação de Exclusão</DialogTitle>
                 <DialogContent>
                     <DialogContentText>
-                        Tem certeza de que deseja excluir este produto?
+                        Tem certeza de que deseja excluir este Cliente?
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>
