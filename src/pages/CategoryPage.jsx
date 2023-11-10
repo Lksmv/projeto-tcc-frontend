@@ -19,11 +19,9 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  Snackbar,
-  IconButton,
-  SnackbarContent,
+  Snackbar
 } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
+import MuiAlert from '@mui/material/Alert';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import { BACKEND_URL } from '../utils/backEndUrl';
 import { ListHead, ListToolBar } from '../sections/@dashboard/list';
@@ -46,8 +44,9 @@ export default function CategoryPage() {
   const [categoryList, setCategoryList] = useState([]);
   const [totalItems, setTotalItems] = useState(0);
   const [isAddCategoryDialogOpen, setAddCategoryDialogOpen] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
-  const [isSnackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
 
   const [categoryValues, setCategoryValues] = useState({
     codigo: 0,
@@ -55,17 +54,28 @@ export default function CategoryPage() {
     update: ''
   });
 
-  const handleSnackbarClose = (event, reason) => {
-    if (reason === 'clickaway') {
-      return;
-    }
-    setSnackbarOpen(false);
-  };
-
-  const showSnackbar = (message) => {
+  const showSnackbar = (message, severity) => {
     setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
     setSnackbarOpen(true);
   };
+
+  const handleSnackbarClose = () => {
+    setOpenSnackbar(false);
+  };
+
+  const handleDeleteCategory = async (codigo) => {
+    try {
+      await axios.delete(`${BACKEND_URL}categoria/${codigo}`);
+      showSnackbar('Categoria excluída com sucesso', 'success');
+      handleCloseAddCategoryDialog();
+      fetchCategoryList();
+    } catch (error) {
+      console.error('Erro ao excluir a categoria:', error);
+      showSnackbar(`Erro ao excluir a categoria: ${error.message}`, 'error');
+    }
+  };
+
 
   const handleEditCategory = (category) => {
     setCategoryValues({
@@ -142,19 +152,35 @@ export default function CategoryPage() {
           `${BACKEND_URL}categoria/${categoryValues.update}`,
           requestData
         );
-        showSnackbar('Categoria atualizada com sucesso.');
+
+        showSnackbar('Categoria atualizada com sucesso', 'success');
       } else {
         const response = await axios.post(
           BACKEND_URL + 'categoria',
           requestData
         );
-        showSnackbar('Categoria criada com sucesso.');
+        showSnackbar('Categoria criada com sucesso', 'success');
       }
       handleCloseAddCategoryDialog();
       fetchCategoryList();
     } catch (error) {
-      showSnackbar('Erro ao salvar a Categoria.');
-      console.error('Erro ao salvar a Categoria:', error);
+      if (error.response) {
+        if (error.response.data.message) {
+          const errorMessage = error.response.data.message;
+          showSnackbar(`${errorMessage}`, 'error');
+        } else {
+          let errorMessage = error.response.data.errors[0];
+          const colonIndex = errorMessage.indexOf(':');
+          if (colonIndex !== -1) {
+            errorMessage = errorMessage.substring(colonIndex + 1).trim();
+          }
+          showSnackbar(`${errorMessage}`, 'error');
+        }
+      } else if (error.request) {
+        showSnackbar(`Erro de requisição: ${error.request}`, 'error');
+      } else {
+        showSnackbar(`Erro ao salvar a categoria: ${error.message}`, 'error');
+      }
     }
   };
 
@@ -228,6 +254,7 @@ export default function CategoryPage() {
             page={page}
             onPageChange={handleChangePage}
             onRowsPerPageChange={handleChangeRowsPerPage}
+            labelRowsPerPage="Categorias por página"
           />
         </Card>
 
@@ -282,34 +309,46 @@ export default function CategoryPage() {
                   },
                 }}
               >
-                Adicionar
+                {categoryValues.update ? 'Salvar' : 'Adicionar'}
               </Button>
+              {categoryValues.update && (
+                <Button
+                  onClick={() => handleDeleteCategory(categoryValues.update)}
+                  style={{
+                    marginTop: '10px',
+                    backgroundColor: '#D32F2F',
+                    color: '#fff',
+                    width: '90px',
+                    height: '36px',
+                    transition: 'background-color 0.3s',
+                    '&:hover': {
+                      backgroundColor: '#B71C1C',
+                    },
+                    '&:active': {
+                      backgroundColor: '#801414',
+                    },
+                  }}
+                >
+                  Excluir
+                </Button>
+              )}
             </div>
           </DialogContent>
         </Dialog>
       </Container>
       <Snackbar
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'left',
-        }}
-        open={isSnackbarOpen}
+        open={snackbarOpen}
         autoHideDuration={6000}
-        onClose={handleSnackbarClose}
+        onClose={() => setSnackbarOpen(false)}
       >
-        <SnackbarContent
-          message={snackbarMessage}
-          action={
-            <IconButton
-              size="small"
-              aria-label="close"
-              color="inherit"
-              onClick={handleSnackbarClose}
-            >
-              <CloseIcon fontSize="small" />
-            </IconButton>
-          }
-        />
+        <MuiAlert
+          elevation={6}
+          variant="filled"
+          onClose={() => setSnackbarOpen(false)}
+          severity={snackbarSeverity}
+        >
+          {snackbarMessage}
+        </MuiAlert>
       </Snackbar>
     </>
   );

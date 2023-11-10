@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { styled } from '@mui/material/styles';
-import { Box, AppBar, Toolbar, Grid, Link, InputBase, IconButton, Typography } from '@mui/material';
+import { Box, AppBar, Toolbar, Grid, Link, Typography } from '@mui/material';
 import axios from 'axios';
 import { BACKEND_URL } from '../../../utils/backEndUrl';
-import SearchIcon from '@mui/icons-material/Search';
 import logoTexto from '../../../assets/logo.png';
 import logoImg from '../../../assets/logoimg.png';
 
@@ -27,21 +26,6 @@ const StyledToolbar = styled(Toolbar)(({ theme }) => ({
     paddingLeft: '10px',
   },
   padding: theme.spacing(0, 2),
-}));
-
-const SearchBar = styled('div')(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  borderRadius: '24px',
-  backgroundColor: 'white',
-  paddingLeft: '20px',
-  width: '100%',
-}));
-
-const SearchInput = styled(InputBase)(({ theme }) => ({
-  borderRadius: '24px',
-  textIndent: '15px',
-  flex: 1,
 }));
 
 const CategoriesContainer = styled('div')(({ theme }) => ({
@@ -104,27 +88,16 @@ export default function Header() {
     <>
       <StyledRoot>
         <StyledToolbar>
-          <Grid container style={{ paddingTop: '16px' }}>
-            <Grid item xs={3} style={{ paddingBottom: '10px' }}>
+          <Grid container style={{ paddingTop: '16px', width: '100%',justifyContent: 'center' }}>
+            <Grid item xs={3} style={{ paddingBottom: '10px'}}>
               <Link color="inherit" href="/">
-                <Box sx={{ display: 'flex', alignItems: 'left' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
                   <img src={logoImg} alt="Logo" height='45px' />
                   <img src={logoTexto} alt="LogoTxt" height="45px" style={{ paddingLeft: '10px' }} />
                 </Box>
               </Link>
             </Grid>
-            <Grid item xs={9} style={{ paddingBottom: '10px' }}>
-              <SearchBar>
-                <SearchInput
-                  placeholder="Pesquisar"
-                  value={searchInput}
-                  onChange={handleSearchInputChange}
-                />
-                <IconButton>
-                  <SearchIcon />
-                </IconButton>
-              </SearchBar>
-            </Grid>
+
             <Grid item xs={12}>
               <CategoriesContainer>
                 {categories.map((category, index) => (

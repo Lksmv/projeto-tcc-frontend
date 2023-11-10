@@ -63,6 +63,19 @@ export default function PaymentPage() {
     setSnackbarOpen(true);
   };
 
+  const handleDeletePayment = async (paymentId) => {
+    try {
+      await axios.delete(`${BACKEND_URL}forma-de-pagamento/${paymentId}`);
+      showSnackbar(`Forma de pagamento excluída com sucesso`, 'success');
+      handleCloseAddPaymentDialog();
+      fetchPaymentList();
+    } catch (error) {
+      console.error('Erro ao excluir a forma de pagamento:', error);
+      showSnackbar(`Erro ao excluir a forma de pagamento: ${error.message}`, 'error');
+    }
+  };
+
+
   const handleCloseSnackbar = (event, reason) => {
     if (reason === 'clickaway') {
       return;
@@ -179,7 +192,6 @@ export default function PaymentPage() {
     setPaymentValues({ ...paymentValues, [name]: value });
   };
 
-  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - totalItems) : 0;
 
   return (
     <>
@@ -284,25 +296,48 @@ export default function PaymentPage() {
             <div style={{
               display: 'flex',
               justifyContent: 'center',
+              marginTop: '10px',
             }}>
-              <Button onClick={() => {
-                handleCreateOrUpdatePayment();
-                handleCloseAddPaymentDialog();
-              }} style={{
-                marginTop: '10px',
-                backgroundColor: '#1976D2',
-                color: '#fff',
-                width: '90px',
-                height: '36px',
-                marginRight: '8px',
-                transition: 'background-color 0.3s',
-                '&:hover': {
-                  backgroundColor: '#1565C0',
-                },
-                '&:active': {
-                  backgroundColor: '#0D47A1',
-                },
-              }}> Adicionar</Button>
+              <Button
+                onClick={() => {
+                  handleCreateOrUpdatePayment();
+                  handleCloseAddPaymentDialog();
+                }}
+                style={{
+                  backgroundColor: '#1976D2',
+                  color: '#fff',
+                  width: '90px',
+                  height: '36px',
+                  marginRight: '8px',
+                  transition: 'background-color 0.3s',
+                  '&:hover': {
+                    backgroundColor: '#1565C0',
+                  },
+                  '&:active': {
+                    backgroundColor: '#0D47A1',
+                  },
+                }}>
+                Adicionar
+              </Button>
+              {paymentValues.idFormaDePagamento && (
+                <Button
+                  onClick={() => handleDeletePayment(paymentValues.idFormaDePagamento)}
+                  style={{
+                    backgroundColor: '#FF1744',
+                    color: '#fff',
+                    width: '90px',
+                    height: '36px',
+                    transition: 'background-color 0.3s',
+                    '&:hover': {
+                      backgroundColor: '#D50000',
+                    },
+                    '&:active': {
+                      backgroundColor: '#B71C1C',
+                    },
+                  }}>
+                  Excluir
+                </Button>
+              )}
             </div>
           </DialogContent>
         </Dialog>

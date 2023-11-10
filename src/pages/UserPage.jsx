@@ -22,13 +22,11 @@ import {
   DialogTitle,
   DialogContent,
   Snackbar,
-  IconButton,
-  SnackbarContent,
 } from '@mui/material';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
-import CloseIcon from '@mui/icons-material/Close';
 import { BACKEND_URL } from '../utils/backEndUrl';
 import { ListHead, ListToolBar } from '../sections/@dashboard/list';
+import MuiAlert from '@mui/material/Alert';
 
 const TABLE_HEAD = [
   { id: 'codigo', label: 'Código', alignRight: false },
@@ -67,18 +65,24 @@ export default function UserPage() {
     },
   };
 
-  const cancelarButtonStyle = {
+
+  const excluirButtonStyle = {
     ...buttonStyle,
     backgroundColor: '#E91E63',
     color: '#fff',
-    width: '117px',
+    width: '90px',
     height: '36px',
-    marginLeft: '8px',
+    marginRight: '8px',
+    marginLeft: '8px',  // Adicionando margem à esquerda
     transition: 'background-color 0.3s',
     '&:hover': {
       backgroundColor: '#D81B60',
     },
+    '&:active': {
+      backgroundColor: '#C2185B',
+    },
   };
+
 
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -86,19 +90,25 @@ export default function UserPage() {
   const [userList, setUserList] = useState([]);
   const [totalItems, setTotalItems] = useState(0);
   const [isAddUserDialogOpen, setAddUserDialogOpen] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
-  const [isSnackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
 
-  const cargos = [{ nome: 'Administrador', id: 1 }, { nome: 'Funcionário', id: 2 }];
+  const cargos = [
+    { nome: 'Selecione um cargo', id: 0 },
+    { nome: 'Administrador', id: 1 },
+    { nome: 'Funcionário', id: 2 }
+  ];
 
   const [userValues, setUserValues] = useState({
     codigo: 0,
     nome: '',
-    idCargo: 2,
+    idCargo: 1,
     login: '',
     senha: '',
     update: ''
   });
+
 
   const handleOpenAddUserDialog = () => {
     setAddUserDialogOpen(true);
@@ -125,16 +135,28 @@ export default function UserPage() {
       });
   };
 
-  const handleSnackbarClose = (event, reason) => {
-    if (reason === 'clickaway') {
-      return;
+  const handleDeleteUser = async () => {
+    try {
+      if (userValues.update) {
+        const response = await axios.delete(
+          `${BACKEND_URL}usuario/${userValues.update}`
+        );
+        showSnackbar('Usuário excluído com sucesso.', 'success');
+        fetchUserList();
+      }
+    } catch (error) {
+      showSnackbar('Erro ao excluir o Usuário.', 'error');
     }
-    setSnackbarOpen(false);
   };
 
-  const showSnackbar = (message) => {
+  const showSnackbar = (message, severity) => {
     setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
     setSnackbarOpen(true);
+  };
+
+  const handleSnackbarClose = () => {
+    setOpenSnackbar(false);
   };
 
   const fetchUserList = async () => {
@@ -189,19 +211,34 @@ export default function UserPage() {
           `${BACKEND_URL}usuario/${userValues.update}`,
           requestData
         );
-        showSnackbar('Usuario atualizada com sucesso.');
+        showSnackbar('Usuario atualizada com sucesso.', 'success');
       } else {
         const response = await axios.post(
           BACKEND_URL + 'usuario',
           requestData
         );
-        showSnackbar('Usuario criado com sucesso.');
+        showSnackbar('Usuario criado com sucesso.', 'success');
       }
       handleCloseAddUserDialog();
       fetchUserList();
     } catch (error) {
-      showSnackbar('Erro ao salvar o Usuario.');
-      console.error('Erro ao salvar o Usuario:', error);
+      if (error.response) {
+        if (error.response.data.message) {
+          const errorMessage = error.response.data.message;
+          showSnackbar(`${errorMessage}`, 'error');
+        } else {
+          let errorMessage = error.response.data.errors[0];
+          const colonIndex = errorMessage.indexOf(':');
+          if (colonIndex !== -1) {
+            errorMessage = errorMessage.substring(colonIndex + 1).trim();
+          }
+          showSnackbar(`${errorMessage}`, 'error');
+        }
+      } else if (error.request) {
+        showSnackbar(`Erro de requisição: ${error.request}`, 'error');
+      } else {
+        showSnackbar(`Erro ao salvar usuário: ${error.message}`, 'error');
+      }
     }
   }
 
@@ -286,7 +323,7 @@ export default function UserPage() {
             page={page}
             onPageChange={handleChangePage}
             onRowsPerPageChange={handleChangeRowsPerPage}
-            labelRowsPerPage="usuários por página"
+            labelRowsPerPage="Usuários por página"
           />
         </Card>
 
@@ -321,7 +358,7 @@ export default function UserPage() {
                     }}
                   />
                   <TextField
-                    name="cargo"
+                    name="idCargo"
                     variant="filled"
                     select
                     label="Cargo"
@@ -375,57 +412,45 @@ export default function UserPage() {
                 </Grid>
               </Grid>
             </form>
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px' }}>
               <Button
                 onClick={() => {
                   handleCreateOrUpdateUser();
                   handleCloseAddUserDialog();
                 }}
-                style={{
-                  marginTop: '10px',
-                  backgroundColor: '#1976D2',
-                  color: '#fff',
-                  width: '90px',
-                  height: '36px',
-                  marginRight: '8px',
-                  transition: 'background-color 0.3s',
-                  '&:hover': {
-                    backgroundColor: '#1565C0',
-                  },
-                  '&:active': {
-                    backgroundColor: '#0D47A1',
-                  },
-                }}
+                style={salvarButtonStyle}
               >
                 Adicionar
               </Button>
+              {userValues.update && (
+                <Button
+                  onClick={() => {
+                    handleDeleteUser();
+                    handleCloseAddUserDialog();
+                  }}
+                  style={excluirButtonStyle}
+                >
+                  Excluir
+                </Button>
+              )}
             </div>
           </DialogContent>
         </Dialog>
       </Container>
 
       <Snackbar
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'left',
-        }}
-        open={isSnackbarOpen}
+        open={snackbarOpen}
         autoHideDuration={6000}
         onClose={handleSnackbarClose}
       >
-        <SnackbarContent
-          message={snackbarMessage}
-          action={
-            <IconButton
-              size="small"
-              aria-label="close"
-              color="inherit"
-              onClick={handleSnackbarClose}
-            >
-              <CloseIcon fontSize="small" />
-            </IconButton>
-          }
-        />
+        <MuiAlert
+          elevation={6}
+          variant="filled"
+          onClose={handleSnackbarClose}
+          severity={snackbarSeverity}
+        >
+          {snackbarMessage}
+        </MuiAlert>
       </Snackbar>
     </>
   );

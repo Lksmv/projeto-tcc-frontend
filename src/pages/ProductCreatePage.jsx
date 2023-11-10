@@ -137,9 +137,20 @@ export default function ProductCreatePage() {
 
   const handleFieldChange = (e) => {
     const { name, value } = e.target || e.currentTarget;
+
     if (name) {
       setFormValues({ ...formValues, [name]: value });
     }
+  };
+  const handleCodigoFieldChange = (event) => {
+    const inputValue = event.target.value;
+
+    const numericValue = inputValue.replace(/\D/g, '');
+
+    setFormValues({
+      ...formValues,
+      codigo: numericValue,
+    });
   };
 
   const showSnackbar = (message, severity) => {
@@ -269,7 +280,7 @@ export default function ProductCreatePage() {
                   fullWidth
                   style={estiloCampo}
                   value={formValues.codigo}
-                  onChange={handleFieldChange}
+                  onChange={handleCodigoFieldChange}
                   sx={{
                     backgroundColor: '#fff',
                   }}

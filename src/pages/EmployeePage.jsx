@@ -27,6 +27,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import { BACKEND_URL } from '../utils/backEndUrl';
 import { ListHead, ListToolBar } from '../sections/@dashboard/list';
+import MuiAlert from '@mui/material/Alert';
 
 const TABLE_HEAD = [
   { id: 'codigo', label: 'Código', alignRight: false },
@@ -37,7 +38,7 @@ export default function EmployeePage() {
   const estiloCampo = {
     margin: '8px',
     borderRadius: '5px 5px 0 0',
-    maxWidth: '50%',
+    width: '100%',
   };
 
   const [page, setPage] = useState(0);
@@ -46,8 +47,9 @@ export default function EmployeePage() {
   const [employeeList, setEmployeeList] = useState([]);
   const [totalItems, setTotalItems] = useState(0);
   const [isAddEmployeeDialogOpen, setAddEmployeeDialogOpen] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
-  const [isSnackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
 
   const [employeeValues, setEmployeeValues] = useState({
     codigo: 0,
@@ -55,16 +57,30 @@ export default function EmployeePage() {
     update: ''
   });
 
-  const handleSnackbarClose = (event, reason) => {
-    if (reason === 'clickaway') {
-      return;
-    }
-    setSnackbarOpen(false);
+  const showSnackbar = (message, severity) => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
+    setSnackbarOpen(true);
   };
 
-  const showSnackbar = (message) => {
-    setSnackbarMessage(message);
-    setSnackbarOpen(true);
+  const handleSnackbarClose = () => {
+    setOpenSnackbar(false);
+  };
+
+  const handleDeleteEmployee = async () => {
+    try {
+      if (employeeValues.update) {
+        const response = await axios.delete(
+          `${BACKEND_URL}funcionario/${employeeValues.update}`
+        );
+        showSnackbar('Funcionário excluído com sucesso.', 'success');
+        fetchEmployeeList();
+        handleCloseAddEmployeeDialog();
+      }
+    } catch (error) {
+      showSnackbar('Erro ao excluir o funcionário.', 'error');
+      console.error('Erro ao excluir o funcionário:', error);
+    }
   };
 
   const handleEditEmployee = (employee) => {
@@ -142,19 +158,34 @@ export default function EmployeePage() {
           `${BACKEND_URL}funcionario/${employeeValues.update}`,
           requestData
         );
-        showSnackbar('Funcionario atualizada com sucesso.');
+        showSnackbar('Funcionario atualizada com sucesso.', 'success');
       } else {
         const response = await axios.post(
           BACKEND_URL + 'funcionario',
           requestData
         );
-        showSnackbar('Funcionario criada com sucesso.');
+        showSnackbar('Funcionario criada com sucesso.', 'success');
       }
       handleCloseAddEmployeeDialog();
       fetchEmployeeList();
     } catch (error) {
-      showSnackbar('Erro ao salvar a Funcionario.');
-      console.error('Erro ao salvar a Funcionario:', error);
+      if (error.response) {
+        if (error.response.data.message) {
+          const errorMessage = error.response.data.message;
+          showSnackbar(`${errorMessage}`, 'error');
+        } else {
+          let errorMessage = error.response.data.errors[0];
+          const colonIndex = errorMessage.indexOf(':');
+          if (colonIndex !== -1) {
+            errorMessage = errorMessage.substring(colonIndex + 1).trim();
+          }
+          showSnackbar(`${errorMessage}`, 'error');
+        }
+      } else if (error.request) {
+        showSnackbar(`Erro de requisição: ${error.request}`, 'error');
+      } else {
+        showSnackbar(`Erro ao salvar a categoria: ${error.message}`, 'error');
+      }
     }
   };
 
@@ -235,7 +266,7 @@ export default function EmployeePage() {
         <Dialog open={isAddEmployeeDialogOpen} onClose={handleCloseAddEmployeeDialog}>
           <DialogTitle>Adicionar Funcionário</DialogTitle>
           <DialogContent>
-            <form style={{ display: 'flex', justifyContent: 'center' }}>
+            <form style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'center' }}>
               <TextField
                 name="codigo"
                 label="Código"
@@ -264,17 +295,16 @@ export default function EmployeePage() {
                 }}
               />
             </form>
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '16px' }}>
               <Button
                 onClick={() => {
                   handleCreateOrUpdateEmployee();
                   handleCloseAddEmployeeDialog();
                 }}
                 style={{
-                  marginTop: '10px',
                   backgroundColor: '#1976D2',
                   color: '#fff',
-                  width: '90px',
+                  width: '120px',
                   height: '36px',
                   marginRight: '8px',
                   transition: 'background-color 0.3s',
@@ -286,34 +316,50 @@ export default function EmployeePage() {
                   },
                 }}
               >
-                Adicionar
+                Salvar
               </Button>
+              {employeeValues.update && (
+                <Button
+                  onClick={() => {
+                    handleDeleteEmployee();
+                    handleCloseAddEmployeeDialog();
+                  }}
+                  style={{
+                    backgroundColor: '#E91E63',
+                    color: '#fff',
+                    width: '120px',
+                    height: '36px',
+                    marginRight: '8px',
+                    marginLeft: '8px',
+                    transition: 'background-color 0.3s',
+                    '&:hover': {
+                      backgroundColor: '#D81B60',
+                    },
+                    '&:active': {
+                      backgroundColor: '#C2185B',
+                    },
+                  }}
+                >
+                  Excluir
+                </Button>
+              )}
             </div>
           </DialogContent>
         </Dialog>
       </Container>
       <Snackbar
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'left',
-        }}
-        open={isSnackbarOpen}
+        open={snackbarOpen}
         autoHideDuration={6000}
-        onClose={handleSnackbarClose}
+        onClose={() => setSnackbarOpen(false)}
       >
-        <SnackbarContent
-          message={snackbarMessage}
-          action={
-            <IconButton
-              size="small"
-              aria-label="close"
-              color="inherit"
-              onClick={handleSnackbarClose}
-            >
-              <CloseIcon fontSize="small" />
-            </IconButton>
-          }
-        />
+        <MuiAlert
+          elevation={6}
+          variant="filled"
+          onClose={() => setSnackbarOpen(false)}
+          severity={snackbarSeverity}
+        >
+          {snackbarMessage}
+        </MuiAlert>
       </Snackbar>
     </>
   );

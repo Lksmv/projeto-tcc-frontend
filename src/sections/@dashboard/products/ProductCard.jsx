@@ -29,11 +29,11 @@ ProductCard.propTypes = {
   product: PropTypes.object,
 };
 
-export default function ShopProductCard({ product }) {
+export default function ShopProductCard({ product, onProductClick }) {
   const { codigo, imagens, nome, tamanho, cor, valor } = product;
 
   return (
-    <Link style={{ textDecoration: 'none' }}>
+    <Link onClick={onProductClick} style={{ cursor: 'pointer', textDecoration:'none'}}>
       <ProductCard>
         <Box sx={{ pt: '100%', position: 'relative' }}>
           {nome && (

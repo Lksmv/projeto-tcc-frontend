@@ -87,7 +87,7 @@ export default function ClientPage() {
           <ListToolBar
             filtro={filtro}
             onfiltro={handleFilterByName}
-            placeHolder={'Procurar por Código ou Nome'}
+            placeHolder={'Procurar por Código, Nome ou CPF'}
             buttonText={'Adicionar Cliente'}
             toPage={"/cliente/cadastro"}
           />

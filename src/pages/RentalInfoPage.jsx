@@ -16,7 +16,6 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
-  DialogContentText,
   DialogTitle,
   Autocomplete,
   Table,
@@ -143,15 +142,21 @@ export default function RentalInfoPage() {
     }));
   }
 
-  const handleStatusChange = (event) => {
-    if (selectedRow !== null) {
-      const updatedProducts = [...formValues.listaProdutos];
-      if (updatedProducts[selectedRow]) {
-        updatedProducts[selectedRow].status = event.target.value;
-        setFormValues({ ...formValues, listaProdutos: updatedProducts });
+  const handleStatusChange = (event, rowIndex) => {
+    const updatedProducts = formValues.listaProdutos.map((product, index) => {
+      if (index === rowIndex) {
+        return { ...product, status: event.target.value };
       }
-    }
+      return product;
+    });
+
+    setFormValues((prevFormValues) => ({
+      ...prevFormValues,
+      listaProdutos: [...updatedProducts],
+    }));
   };
+
+
 
 
   const fetchData = async () => {
@@ -353,13 +358,13 @@ export default function RentalInfoPage() {
     event.preventDefault();
     const updatedProducts = formValues.listaProdutos.map((produto) => ({
       ...produto,
-      status: produto.status == 'ALUGADO' ? 'DEVOLVIDO' : 'CANCELADO',
-      statusAluguel: 'FECHADO'
+      status: produto.status == 'ALUGADO' ? 'DEVOLVIDO' : produto.status == 'CANCELADO' ? 'CANCELADO' : produto.status
     }));
 
     setFormValues({
       ...formValues,
       listaProdutos: updatedProducts,
+      statusAluguel: 'FECHADO'
     });
     await handleSubmit(event);
   };
@@ -368,13 +373,13 @@ export default function RentalInfoPage() {
     event.preventDefault();
     const updatedProducts = formValues.listaProdutos.map((produto) => ({
       ...produto,
-      status: 'CANCELADO',
-      statusAluguel: 'CANCELADO'
+      status: produto.status == 'ALUGADO' ? 'CANCELADO' : produto.status == 'DEVOLVIDO' ? 'DEVOLVIDO' : produto.status
     }));
 
     setFormValues({
       ...formValues,
       listaProdutos: updatedProducts,
+      statusAluguel: 'CANCELADO'
     });
 
     await handleSubmit(event);
@@ -536,13 +541,14 @@ export default function RentalInfoPage() {
                               <TableCell>
                                 <Select
                                   value={row.status}
-                                  onChange={handleStatusChange}
+                                  onChange={(event) => handleStatusChange(event, index)}
                                 >
                                   <MenuItem value="ALUGADO">ALUGADO</MenuItem>
                                   <MenuItem value="CANCELADO">CANCELADO</MenuItem>
                                   <MenuItem value="DEVOLVIDO">DEVOLVIDO</MenuItem>
                                 </Select>
                               </TableCell>
+
                             </TableRow>
                           ))}
                         </TableBody>

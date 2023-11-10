@@ -92,13 +92,12 @@ export default function RentalPage() {
 
         <Card>
           <ListToolBar
-            filterName={filterName}
-            onFilterName={handleFilterByName}
+            filtro={filterName}
+            onfiltro={handleFilterByName}
             placeHolder={'Procurar por Código ou Nome'}
             buttonText={'Adicionar Aluguel'}
             toPage={"/aluguel/cadastro"}
           />
-
           <TableContainer>
             <Table>
               <ListHead headLabel={TABLE_HEAD} rowCount={totalItems} />
@@ -119,7 +118,10 @@ export default function RentalPage() {
                       onClick={() => {
                         navigate(`/aluguel/detalhes/${codigo}`);
                       }}
-                      style={{ cursor: 'pointer' }}
+                      style={{
+                        cursor: 'pointer',
+                        background: row.statusAluguel == 'ABERTO' ? '#c6f68d' : row.statusAluguel == 'CANCELADO' ? '#ffc8b9' : '#fddeb1'
+                      }}
                     >
                       <TableCell align="left">{codigo}</TableCell>
                       <TableCell align="left">{cliente}</TableCell>
