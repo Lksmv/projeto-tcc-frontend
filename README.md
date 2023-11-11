@@ -43,7 +43,9 @@ O sistema consiste em um conjunto de funcionalidades, incluindo:
     2. Importe o projeto e as dependências utilizando sua IDE preferida.
     3. Configure o banco de dados PostgresSQL.
     4. Configure as VM args
-    4. Execute a aplicação Spring Boot.
+    5. Crie o arquivo credentials.json na root do projeto e salve suas 
+       credenciais do google cloud
+    6. Execute a aplicação Spring Boot.
 
 3. **Frontend:**
 
