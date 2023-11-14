@@ -18,7 +18,8 @@ import {
   Button,
   Dialog,
   DialogTitle,
-  DialogContent
+  DialogContent,
+  Grid
 } from '@mui/material';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import { BACKEND_URL } from '../utils/backEndUrl';
@@ -37,7 +38,48 @@ export default function PaymentPage() {
   const estiloCampo = {
     margin: '8px',
     borderRadius: '5px 5px 0 0',
-    maxWidth: '50%'
+    maxWidth: '100%'
+  };
+
+  const buttonStyle = {
+    fontFamily: 'Roboto, sans-serif',
+    borderRadius: '4px',
+    boxSizing: 'border-box',
+    textTransform: 'none',
+  };
+
+  const salvarButtonStyle = {
+    ...buttonStyle,
+    backgroundColor: '#1976D2',
+    color: '#fff',
+    width: '90px',
+    height: '36px',
+    marginRight: '8px',
+    transition: 'background-color 0.3s',
+    '&:hover': {
+      backgroundColor: '#1565C0',
+    },
+    '&:active': {
+      backgroundColor: '#0D47A1',
+    },
+  };
+
+
+  const excluirButtonStyle = {
+    ...buttonStyle,
+    backgroundColor: '#E91E63',
+    color: '#fff',
+    width: '90px',
+    height: '36px',
+    marginRight: '8px',
+    marginLeft: '8px',  // Adicionando margem à esquerda
+    transition: 'background-color 0.3s',
+    '&:hover': {
+      backgroundColor: '#D81B60',
+    },
+    '&:active': {
+      backgroundColor: '#C2185B',
+    },
   };
 
   const [page, setPage] = useState(0);
@@ -87,6 +129,11 @@ export default function PaymentPage() {
     setPaymentValues({ ...payment });
     handleOpenEditPaymentDialog();
   };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    handleCreateOrUpdatePayment();
+  }
 
   const handleCreateOrUpdatePayment = async () => {
     const requestData = {
@@ -263,11 +310,7 @@ export default function PaymentPage() {
         <Dialog open={isAddPaymentDialogOpen} onClose={handleCloseAddPaymentDialog}>
           <DialogTitle>Adicionar Forma de Pagamento</DialogTitle>
           <DialogContent>
-
-            <form style={{
-              display: 'flex',
-              justifyContent: 'center',
-            }}>
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column' }}>
               <TextField
                 name="nome"
                 label="Nome"
@@ -279,6 +322,7 @@ export default function PaymentPage() {
                 sx={{
                   backgroundColor: '#fff',
                 }}
+                required
               />
               <TextField
                 name="taxa"
@@ -291,56 +335,25 @@ export default function PaymentPage() {
                 sx={{
                   backgroundColor: '#fff',
                 }}
+                required
               />
-            </form>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'center',
-              marginTop: '10px',
-            }}>
-              <Button
-                onClick={() => {
-                  handleCreateOrUpdatePayment();
-                  handleCloseAddPaymentDialog();
-                }}
-                style={{
-                  backgroundColor: '#1976D2',
-                  color: '#fff',
-                  width: '90px',
-                  height: '36px',
-                  marginRight: '8px',
-                  transition: 'background-color 0.3s',
-                  '&:hover': {
-                    backgroundColor: '#1565C0',
-                  },
-                  '&:active': {
-                    backgroundColor: '#0D47A1',
-                  },
-                }}>
-                Adicionar
-              </Button>
-              {paymentValues.idFormaDePagamento && (
-                <Button
-                  onClick={() => handleDeletePayment(paymentValues.idFormaDePagamento)}
-                  style={{
-                    backgroundColor: '#FF1744',
-                    color: '#fff',
-                    width: '90px',
-                    height: '36px',
-                    transition: 'background-color 0.3s',
-                    '&:hover': {
-                      backgroundColor: '#D50000',
-                    },
-                    '&:active': {
-                      backgroundColor: '#B71C1C',
-                    },
-                  }}>
-                  Excluir
+              <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px', width: '100%' }}>
+                <Button type="submit" style={salvarButtonStyle}>
+                  Adicionar
                 </Button>
-              )}
-            </div>
+                {paymentValues.idFormaDePagamento && (
+                  <Button
+                    onClick={() => handleDeletePayment(paymentValues.idFormaDePagamento)}
+                    style={excluirButtonStyle}
+                  >
+                    Excluir
+                  </Button>
+                )}
+              </div>
+            </form>
           </DialogContent>
         </Dialog>
+
 
       </Container >
       <Snackbar

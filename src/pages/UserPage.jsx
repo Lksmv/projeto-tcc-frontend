@@ -91,6 +91,7 @@ export default function UserPage() {
   const [totalItems, setTotalItems] = useState(0);
   const [isAddUserDialogOpen, setAddUserDialogOpen] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [create, setCreate] = useState(true);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
 
@@ -115,6 +116,7 @@ export default function UserPage() {
   };
   const handleOpenEditUserDialog = (row) => {
     setAddUserDialogOpen(true);
+    setCreate(false)
     setUserValues({
       ...row,
       senha: '',
@@ -133,6 +135,7 @@ export default function UserPage() {
         senha: '',
         update: ''
       });
+      setCreate(true)
   };
 
   const handleDeleteUser = async () => {
@@ -156,7 +159,7 @@ export default function UserPage() {
   };
 
   const handleSnackbarClose = () => {
-    setOpenSnackbar(false);
+    setSnackbarOpen(false);
   };
 
   const fetchUserList = async () => {
@@ -207,6 +210,11 @@ export default function UserPage() {
 
     setUserValues({ ...userValues, [name]: numericValue });
   };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    handleCreateOrUpdateUser();
+  }
 
   const handleCreateOrUpdateUser = async () => {
     const requestData = {
@@ -340,7 +348,7 @@ export default function UserPage() {
         <Dialog open={isAddUserDialogOpen} onClose={handleCloseAddUserDialog}>
           <DialogTitle>Adicionar Usuário</DialogTitle>
           <DialogContent>
-            <form style={{ display: 'flex', justifyContent: 'center' }}>
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <Grid container spacing={2} padding={1}>
                 <Grid item xs={12} sm={6} display="flex" flexDirection="column" alignItems='center'>
                   <TextField
@@ -366,6 +374,7 @@ export default function UserPage() {
                     sx={{
                       backgroundColor: '#fff',
                     }}
+                    required
                   />
                   <TextField
                     name="idCargo"
@@ -386,6 +395,7 @@ export default function UserPage() {
                         },
                       },
                     }}
+                    required
                   >
                     {cargos.map((cargo) => (
                       <MenuItem key={cargo.id} value={cargo.id}>
@@ -406,6 +416,7 @@ export default function UserPage() {
                     sx={{
                       backgroundColor: '#fff'
                     }}
+                    required
                   />
                   <TextField
                     name="senha"
@@ -418,32 +429,29 @@ export default function UserPage() {
                     sx={{
                       backgroundColor: '#fff'
                     }}
+                    required={create}
                   />
                 </Grid>
               </Grid>
+              <Grid item xs={12} sm={6} style={{ display: 'flex', justifyContent: 'end' }}>
+                <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px', width: '100%' }}>
+                  <Button type="submit" style={salvarButtonStyle}>
+                    Adicionar
+                  </Button>
+                  {userValues.update && (
+                    <Button
+                      onClick={() => {
+                        handleDeleteUser();
+                        handleCloseAddUserDialog();
+                      }}
+                      style={excluirButtonStyle}
+                    >
+                      Excluir
+                    </Button>
+                  )}
+                </div>
+              </Grid>
             </form>
-            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px' }}>
-              <Button
-                onClick={() => {
-                  handleCreateOrUpdateUser();
-                  handleCloseAddUserDialog();
-                }}
-                style={salvarButtonStyle}
-              >
-                Adicionar
-              </Button>
-              {userValues.update && (
-                <Button
-                  onClick={() => {
-                    handleDeleteUser();
-                    handleCloseAddUserDialog();
-                  }}
-                  style={excluirButtonStyle}
-                >
-                  Excluir
-                </Button>
-              )}
-            </div>
           </DialogContent>
         </Dialog>
       </Container>

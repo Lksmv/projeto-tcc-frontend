@@ -152,9 +152,14 @@ export default function EmployeePage() {
 
     const numericValue = inputValue.replace(/\D/g, '');
     const { name, value } = e.target;
-    
+
     setUserValues({ ...userValues, [name]: numericValue });
   };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    handleCreateOrUpdateEmployee();
+  }
 
   const handleCreateOrUpdateEmployee = async () => {
     const requestData = {
@@ -275,7 +280,7 @@ export default function EmployeePage() {
         <Dialog open={isAddEmployeeDialogOpen} onClose={handleCloseAddEmployeeDialog}>
           <DialogTitle>Adicionar Funcionário</DialogTitle>
           <DialogContent>
-            <form style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'center' }}>
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'center' }}>
               <TextField
                 name="codigo"
                 label="Código"
@@ -302,57 +307,55 @@ export default function EmployeePage() {
                 sx={{
                   backgroundColor: '#fff',
                 }}
+                required
               />
-            </form>
-            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '16px' }}>
-              <Button
-                onClick={() => {
-                  handleCreateOrUpdateEmployee();
-                  handleCloseAddEmployeeDialog();
-                }}
-                style={{
-                  backgroundColor: '#1976D2',
-                  color: '#fff',
-                  width: '120px',
-                  height: '36px',
-                  marginRight: '8px',
-                  transition: 'background-color 0.3s',
-                  '&:hover': {
-                    backgroundColor: '#1565C0',
-                  },
-                  '&:active': {
-                    backgroundColor: '#0D47A1',
-                  },
-                }}
-              >
-                Salvar
-              </Button>
-              {employeeValues.update && (
+              <div style={{ display: 'flex', justifyContent: 'center', marginTop: '16px' }}>
                 <Button
-                  onClick={() => {
-                    handleDeleteEmployee();
-                    handleCloseAddEmployeeDialog();
-                  }}
+                  type='submit'
                   style={{
-                    backgroundColor: '#E91E63',
+                    backgroundColor: '#1976D2',
                     color: '#fff',
                     width: '120px',
                     height: '36px',
                     marginRight: '8px',
-                    marginLeft: '8px',
                     transition: 'background-color 0.3s',
                     '&:hover': {
-                      backgroundColor: '#D81B60',
+                      backgroundColor: '#1565C0',
                     },
                     '&:active': {
-                      backgroundColor: '#C2185B',
+                      backgroundColor: '#0D47A1',
                     },
                   }}
                 >
-                  Excluir
+                  Salvar
                 </Button>
-              )}
-            </div>
+                {employeeValues.update && (
+                  <Button
+                    onClick={() => {
+                      handleDeleteEmployee();
+                      handleCloseAddEmployeeDialog();
+                    }}
+                    style={{
+                      backgroundColor: '#E91E63',
+                      color: '#fff',
+                      width: '120px',
+                      height: '36px',
+                      marginRight: '8px',
+                      marginLeft: '8px',
+                      transition: 'background-color 0.3s',
+                      '&:hover': {
+                        backgroundColor: '#D81B60',
+                      },
+                      '&:active': {
+                        backgroundColor: '#C2185B',
+                      },
+                    }}
+                  >
+                    Excluir
+                  </Button>
+                )}
+              </div>
+            </form>
           </DialogContent>
         </Dialog>
       </Container>

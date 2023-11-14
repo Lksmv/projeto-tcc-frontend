@@ -35,7 +35,48 @@ export default function CategoryPage() {
   const estiloCampo = {
     margin: '8px',
     borderRadius: '5px 5px 0 0',
-    maxWidth: '50%',
+    maxWidth: '100%',
+  };
+
+  const buttonStyle = {
+    fontFamily: 'Roboto, sans-serif',
+    borderRadius: '4px',
+    boxSizing: 'border-box',
+    textTransform: 'none',
+  };
+
+  const salvarButtonStyle = {
+    ...buttonStyle,
+    backgroundColor: '#1976D2',
+    color: '#fff',
+    width: '90px',
+    height: '36px',
+    marginRight: '8px',
+    transition: 'background-color 0.3s',
+    '&:hover': {
+      backgroundColor: '#1565C0',
+    },
+    '&:active': {
+      backgroundColor: '#0D47A1',
+    },
+  };
+
+
+  const excluirButtonStyle = {
+    ...buttonStyle,
+    backgroundColor: '#E91E63',
+    color: '#fff',
+    width: '90px',
+    height: '36px',
+    marginRight: '8px',
+    marginLeft: '8px',  // Adicionando margem à esquerda
+    transition: 'background-color 0.3s',
+    '&:hover': {
+      backgroundColor: '#D81B60',
+    },
+    '&:active': {
+      backgroundColor: '#C2185B',
+    },
   };
 
   const [page, setPage] = useState(0);
@@ -146,9 +187,14 @@ export default function CategoryPage() {
 
     const numericValue = inputValue.replace(/\D/g, '');
     const { name, value } = e.target;
-    
+
     setUserValues({ ...userValues, [name]: numericValue });
   };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    handleCreateOrUpdateCategory();
+  }
 
   const handleCreateOrUpdateCategory = async () => {
     const requestData = {
@@ -270,7 +316,7 @@ export default function CategoryPage() {
         <Dialog open={isAddCategoryDialogOpen} onClose={handleCloseAddCategoryDialog}>
           <DialogTitle>Adicionar Categoria</DialogTitle>
           <DialogContent>
-            <form style={{ display: 'flex', justifyContent: 'center' }}>
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column' }}>
               <TextField
                 name="codigo"
                 label="Código"
@@ -282,6 +328,7 @@ export default function CategoryPage() {
                 sx={{
                   backgroundColor: '#fff',
                 }}
+                required
               />
               <TextField
                 name="nome"
@@ -294,54 +341,22 @@ export default function CategoryPage() {
                 sx={{
                   backgroundColor: '#fff',
                 }}
+                required
               />
-            </form>
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
-              <Button
-                onClick={() => {
-                  handleCreateOrUpdateCategory();
-                  handleCloseAddCategoryDialog();
-                }}
-                style={{
-                  marginTop: '10px',
-                  backgroundColor: '#1976D2',
-                  color: '#fff',
-                  width: '90px',
-                  height: '36px',
-                  marginRight: '8px',
-                  transition: 'background-color 0.3s',
-                  '&:hover': {
-                    backgroundColor: '#1565C0',
-                  },
-                  '&:active': {
-                    backgroundColor: '#0D47A1',
-                  },
-                }}
-              >
-                {categoryValues.update ? 'Salvar' : 'Adicionar'}
-              </Button>
-              {categoryValues.update && (
-                <Button
-                  onClick={() => handleDeleteCategory(categoryValues.update)}
-                  style={{
-                    marginTop: '10px',
-                    backgroundColor: '#D32F2F',
-                    color: '#fff',
-                    width: '90px',
-                    height: '36px',
-                    transition: 'background-color 0.3s',
-                    '&:hover': {
-                      backgroundColor: '#B71C1C',
-                    },
-                    '&:active': {
-                      backgroundColor: '#801414',
-                    },
-                  }}
-                >
-                  Excluir
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <Button type="submit" style={salvarButtonStyle}>
+                  {categoryValues.update ? 'Salvar' : 'Adicionar'}
                 </Button>
-              )}
-            </div>
+                {categoryValues.update && (
+                  <Button
+                    onClick={() => handleDeleteCategory(categoryValues.update)}
+                    style={excluirButtonStyle}
+                  >
+                    Excluir
+                  </Button>
+                )}
+              </div>
+            </form>
           </DialogContent>
         </Dialog>
       </Container>
