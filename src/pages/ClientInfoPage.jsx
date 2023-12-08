@@ -121,7 +121,8 @@ export default function ClienInfoPage() {
 
     const addCredit = async () => {
         try {
-            if (creditoValues.valor > 0) {
+            console.log(creditoValues.valor)
+            if (convertCurrencyToNumber(creditoValues.valor) > 0) {
                 const valorConvertido = convertCurrencyToNumber(creditoValues.valor);
                 const newCreditoValues = {
                     ...creditoValues,
@@ -687,7 +688,6 @@ export default function ClienInfoPage() {
                                                 customInput={TextField}
                                                 thousandSeparator="."
                                                 decimalSeparator=","
-                                                prefix="R$ "
                                                 required={true}
                                                 allowNegative={false}
                                                 decimalScale={2}
