@@ -73,7 +73,7 @@ export default function ProductCreatePage() {
   };
 
   const tamanhos = [
-    'Nenhum', 'PP', 'P', 'M', 'G', 'GG',
+    'Nenhum', 'PP', 'P', 'M', 'G', 'GG', '34', '35', '36', '37', '38', '39', '40', '41', '42', '43', '44'
   ];
 
   const generos = [
