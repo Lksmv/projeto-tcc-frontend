@@ -47,7 +47,9 @@ export default function ProductInfoPage() {
   const [corSuggestions, setCorSuggestions] = useState([]);
   const navigate = useNavigate();
 
-  const tamanhos = ['Nenhum', 'PP', 'P', 'M', 'G', 'GG'];
+  const tamanhos = [
+    'Nenhum', 'PP', 'P', 'M', 'G', 'GG', '34', '35', '36', '37', '38', '39', '40', '41', '42', '43', '44'
+  ];
 
   const generos = [
     { char: 'N', nome: 'Nenhum' },
