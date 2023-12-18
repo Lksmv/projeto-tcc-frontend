@@ -16,13 +16,11 @@ O sistema consiste em um conjunto de funcionalidades, incluindo:
 
 - **Catálogo de Produtos:** Permite aos clientes visualizar o catálogo de produtos disponíveis, com informações detalhadas, imagens e preços.
 
-- **Autenticação e Segurança:** Utiliza JWT Token para autenticação, garantindo um ambiente seguro para a interação entre usuários e o sistema.
-
 ## Tecnologias Utilizadas
 
 - **Banco de Dados:** PostgresSQL foi escolhido para armazenamento eficiente e confiável dos dados.
 
-- **Backend:** Desenvolvido em Java, utilizando o framework Spring para a implementação eficiente de lógica de negócios. O uso de JWT Token garante a segurança das transações.
+- **Backend:** Desenvolvido em Java, utilizando o framework Spring para a implementação eficiente de lógica de negócios.
 
 - **Armazenamento de Imagens:** As imagens são salvas em um bucket do Google Cloud, garantindo escalabilidade e confiabilidade.
 
@@ -43,15 +41,23 @@ O sistema consiste em um conjunto de funcionalidades, incluindo:
     2. Importe o projeto e as dependências utilizando sua IDE preferida.
     3. Configure o banco de dados PostgresSQL.
     4. Configure as VM args
-    5. Crie o arquivo credentials.json na root do projeto e salve suas 
-       credenciais do google cloud
+    (
+    -Dspring.datasource.url= url_conexao_bd
+    -Dspring.datasource.username= user_bd
+    -Dspring.datasource.password= senha_bd
+    -Dspring.datasource.hikari.schema= nome_schema_bd
+    -Djwt.secret= secret_para_token
+    )
+    5. Crie o arquivo credentials.json na root do projeto caso não houver e salve suas 
+       credenciais do google cloud para utilização do bucket
     6. Execute a aplicação Spring Boot.
 
 3. **Frontend:**
 
-- *Instale as dependências com:*
+- *Instale as dependências e faça o build com:*
    ```bash
     npm install
+    npm run build
 
 - Configure na .env o local do backend
 
@@ -61,7 +67,10 @@ O sistema consiste em um conjunto de funcionalidades, incluindo:
 
 4. **Acesso:**
 
-- *Acesse o sistema através do navegador: http://localhost:3000*
+- *Acesse o catálogo através do navegador: http://localhost:3000*
+- *Acesse o sistema através do navegador: http://localhost:3000/login*
+
+- O sistema cria um usuário por padrão: Login= admin | senha= admin123
 
 ## Contribuições e Problemas
 
